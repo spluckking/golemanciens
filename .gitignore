@@ -1,0 +1,7 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+.claude/settings.local.json
+public/icons/
+.claude/launch.json

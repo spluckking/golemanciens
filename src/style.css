@@ -1,0 +1,236 @@
+:root {
+  --ui-bg: rgba(20, 28, 60, 0.38);
+  --ui-bg-pressed: rgba(20, 28, 60, 0.6);
+  --ui-border: rgba(255, 255, 255, 0.55);
+  --ui-text: #ffffff;
+  --accent: #6ff0ff;
+  --gold: #f0c43c;
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--ui-text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #1d2b53;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+#app,
+#app canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  background: #1d2b53;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------- Commandes tactiles ---------- */
+
+.controls,
+.hud {
+  position: absolute;
+  inset: 0;
+}
+
+.zone {
+  position: absolute;
+  top: 110px;
+  bottom: 0;
+  pointer-events: auto;
+}
+
+.zone-stick {
+  left: 0;
+  width: 50%;
+}
+
+.zone-look {
+  right: 0;
+  width: 50%;
+}
+
+.stick-base {
+  position: absolute;
+  left: calc(150px + var(--safe-l));
+  top: calc(100% - 150px - var(--safe-b));
+  width: 150px;
+  height: 150px;
+  margin: -75px 0 0 -75px;
+  border-radius: 50%;
+  background: var(--ui-bg);
+  border: 3px solid var(--ui-border);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.stick-base.active {
+  opacity: 0.9;
+}
+
+.stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  transform: translate(-50%, -50%);
+}
+
+.btn-action,
+.btn-top {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 50%;
+  border: 3px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font: inherit;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-action.pressed,
+.btn-top.pressed {
+  background: var(--ui-bg-pressed);
+  transform: scale(0.94);
+}
+
+.btn-icon {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.btn-label {
+  font-size: 15px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.btn-jump {
+  right: calc(36px + var(--safe-r));
+  bottom: calc(40px + var(--safe-b));
+  width: 112px;
+  height: 112px;
+}
+
+.btn-attack {
+  right: calc(170px + var(--safe-r));
+  bottom: calc(30px + var(--safe-b));
+  width: 96px;
+  height: 96px;
+}
+
+.btn-attack .btn-icon {
+  color: var(--accent);
+}
+
+.btn-interact {
+  right: calc(70px + var(--safe-r));
+  bottom: calc(176px + var(--safe-b));
+  width: 96px;
+  height: 96px;
+  border-color: var(--gold);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 0 8px rgba(240, 196, 60, 0.25);
+  }
+}
+
+/* ---------- Barre du haut ---------- */
+
+.top-bar {
+  position: absolute;
+  top: 12px;
+  right: calc(16px + var(--safe-r));
+  display: flex;
+  gap: 12px;
+}
+
+.btn-top {
+  position: static;
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+}
+
+.btn-top .btn-icon {
+  font-size: 28px;
+}
+
+.btn-top .btn-label {
+  font-size: 12px;
+}
+
+.btn-top:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.toast {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 14px 28px;
+  border-radius: 16px;
+  background: rgba(20, 28, 60, 0.82);
+  border: 2px solid var(--gold);
+  font-size: 26px;
+  pointer-events: none;
+}
+
+.debug {
+  position: absolute;
+  left: calc(12px + var(--safe-l));
+  top: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  font: 14px/1.2 ui-monospace, Consolas, monospace;
+  pointer-events: none;
+}
