@@ -198,10 +198,10 @@ export function buildVillage(world: VoxelWorld, cx: number, cz: number, floorY: 
   }
   world.set(pen.x1, floorY, pen.z0 + 3, Block.Air);
 
-  // Puits.
+  // Puits : l'eau affleure le haut de la margelle, on en ressort d'un pas (pas de trou piège).
   for (let dx = -1; dx <= 1; dx++)
-    for (let dz = -1; dz <= 1; dz++) world.set(cx + dx, floorY, cz + dz, dx === 0 && dz === 0 ? Block.Air : Block.Stone);
-  world.set(cx, floorY - 1, cz, Block.Water);
+    for (let dz = -1; dz <= 1; dz++) world.set(cx + dx, floorY, cz + dz, dx === 0 && dz === 0 ? Block.Water : Block.Stone);
+  world.set(cx, floorY - 1, cz, Block.Stone);
 
   // Champ de blé (terre labourée, épis en décor).
   const wheat = { x0: cx - 20, z0: cz - 6, x1: cx - 14, z1: cz + 4 };

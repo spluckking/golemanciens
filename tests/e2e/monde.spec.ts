@@ -112,3 +112,43 @@ test('tous les golems K.O. : retour à la dernière lanterne, golems soignés', 
     expect(g.hp).toBe(40);
   }
 });
+
+/** Pouce posé sur le joystick et poussé vers le haut, maintenu holdMs. */
+async function pushStick(page: Page, holdMs: number): Promise<void> {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 200, y: 650, id: 1 }] });
+  for (let i = 1; i <= 5; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 200, y: 650 - i * 18, id: 1 }] });
+  await page.waitForTimeout(holdMs);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
+
+test('on ressort du puits en marchant', async ({ page }) => {
+  await openWithGolems(page);
+  // Dans le puits, au centre du village (36, 86), tourné vers le nord.
+  await page.evaluate(() => window.__game!.teleport(36.5, 86.5, 0));
+  await page.waitForTimeout(500);
+  await pushStick(page, 1500);
+  const hero = await page.evaluate(() => window.__game!.hero());
+  expect(Math.hypot(hero.x - 36.5, hero.z - 86.5)).toBeGreaterThan(1.5);
+});
+
+test('« Me débloquer » apparaît quand on pousse sans avancer, et ramène à un endroit sûr', async ({ page }) => {
+  await openWithGolems(page);
+  // Face au mur de l'Académie (hors de la porte), le héros ne peut pas avancer.
+  await page.evaluate(() => window.__game!.teleport(58.5, 35.5, 0));
+  await page.waitForTimeout(500);
+  const before = await page.evaluate(() => window.__game!.hero());
+  // On garde le pouce sur le joystick jusqu'à l'apparition du bouton (3 s de jeu,
+  // plus longtemps en temps réel avec le rendu logiciel des tests).
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 200, y: 650, id: 1 }] });
+  for (let i = 1; i <= 5; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 200, y: 650 - i * 18, id: 1 }] });
+  const interact = page.getByTestId('btn-interact');
+  await expect(interact).toBeVisible({ timeout: 20_000 });
+  await expect(interact).toContainText('Me débloquer');
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await interact.tap();
+  await expect(interact).toBeHidden();
+  const after = await page.evaluate(() => window.__game!.hero());
+  expect(Math.hypot(after.x - before.x, after.z - before.z)).toBeGreaterThan(1);
+});

@@ -33,6 +33,11 @@ const LOOK_PITCH_PER_PX = 0.004;
 const ATTACK_COOLDOWN = 0.35;
 const TITLE_ORBIT_SPEED = 0.08;
 const KO_FADE_MS = 1400;
+/** Le joueur pousse le joystick sans avancer pendant 3 s : on propose « Me débloquer » pendant 6 s. */
+const STUCK_HELP_S = 3;
+const UNSTUCK_OFFER_S = 6;
+const SAFE_SPOT_EVERY_S = 0.5;
+const TEXT_UNSTUCK = 'Me débloquer';
 
 export type GameMode = 'title' | 'play';
 
@@ -68,6 +73,11 @@ export class Game {
   /** Menu ouvert (journal) ou transition : le monde ne bouge plus. */
   private paused = false;
   private readonly tipWorld = new THREE.Vector3();
+  private stuckTime = 0;
+  private unstuckOffer = 0;
+  private safeTimer = 0;
+  /** Dernier endroit où le héros marchait librement (retour pour « Me débloquer »). */
+  private lastSafe: { x: number; z: number } | null = null;
   frameCount = 0;
 
   constructor(
@@ -237,9 +247,14 @@ export class Game {
 
     this.life.update(dt, h, this.camera, this.mode === 'play' && dt > 0);
 
+    this.watchStuck(dt, playing, Math.hypot(move.x, move.y), inWater);
     const near = playing ? this.interactions.nearest(h.x, h.y, h.z) : null;
-    this.controls.setInteract(near ? near.label : null);
-    if (this.input.consumeInteract() && near) near.action();
+    const offerUnstuck = playing && !near && this.unstuckOffer > 0;
+    this.controls.setInteract(near ? near.label : offerUnstuck ? TEXT_UNSTUCK : null);
+    if (this.input.consumeInteract()) {
+      if (near) near.action();
+      else if (offerUnstuck) this.unstuck();
+    }
 
     this.hud.setStats(this.state.food, this.state.shards);
     this.hud.setGolems(this.state.golems, (id) => this.life.isGolemKo(id));
@@ -247,6 +262,37 @@ export class Game {
     this.hud.setCompass(compassRotation(this.rig.yaw, h.x, h.z, target.x, target.z));
     this.hud.update(dt);
     this.rig.update(dt, h.x, h.y, h.z, this.solid);
+  }
+
+  /**
+   * Filet de sécurité : mémorise les endroits où le héros marche librement, et propose
+   * « Me débloquer » s'il pousse le joystick sans avancer pendant quelques secondes.
+   */
+  private watchStuck(dt: number, playing: boolean, push: number, inWater: boolean): void {
+    if (!playing) return;
+    const h = this.hero;
+    if (h.onGround && !inWater && h.speed > 2) {
+      this.safeTimer += dt;
+      if (this.safeTimer >= SAFE_SPOT_EVERY_S) {
+        this.safeTimer = 0;
+        this.lastSafe = { x: h.x, z: h.z };
+      }
+    }
+    if (push > 0.5 && h.speed < 0.3) this.stuckTime += dt;
+    else if (h.speed > 1) this.stuckTime = 0;
+    if (this.stuckTime > STUCK_HELP_S) {
+      this.unstuckOffer = UNSTUCK_OFFER_S;
+      this.stuckTime = 0;
+    }
+    this.unstuckOffer = Math.max(0, this.unstuckOffer - dt);
+  }
+
+  private unstuck(): void {
+    const p = this.lastSafe ?? this.layout.spawn;
+    this.teleport(p.x, p.z);
+    this.sparks.burst(this.hero.x, this.hero.y + 1, this.hero.z, 0x8ff0ff, 16);
+    this.unstuckOffer = 0;
+    this.stuckTime = 0;
   }
 
   /** Coup de bâton : étincelle vers la cible la plus proche devant le héros (aide à la visée). */

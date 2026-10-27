@@ -66,6 +66,31 @@ describe('Prairie de Cubeterre', () => {
     }
   });
 
+  it('aucun trou piège : de chaque endroit où l’on peut se tenir, on peut sortir', () => {
+    const s = (x: number, y: number, z: number): boolean => world.solidAt(x, y, z);
+    const traps: string[] = [];
+    for (let z = 0; z < world.sizeZ; z++)
+      for (let x = 0; x < world.sizeX; x++)
+        for (let y = 1; y < world.sizeY - 2; y++) {
+          // Endroit où le héros (2 blocs de haut) peut se tenir debout.
+          if (s(x, y, z) || s(x, y + 1, z) || !s(x, y - 1, z)) continue;
+          const canLeave = [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ].some(([dx, dz]) => {
+            const nx = x + dx;
+            const nz = z + dz;
+            // Passage de plain-pied (ou chute de l'autre côté), ou marche d'un bloc.
+            if (!s(nx, y, nz) && !s(nx, y + 1, nz)) return true;
+            return !s(nx, y + 1, nz) && !s(nx, y + 2, nz) && !s(x, y + 2, z);
+          });
+          if (!canLeave) traps.push(`(${x}, ${y}, ${z})`);
+        }
+    expect(traps).toEqual([]);
+  });
+
   it('le budget de triangles du terrain reste sous 300 000', () => {
     let triangles = 0;
     for (let cz = 0; cz < world.chunksZ; cz++)

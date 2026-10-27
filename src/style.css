@@ -817,3 +817,31 @@ body {
 .toast {
   top: 34%;
 }
+
+/* Boussole : flèche en SVG */
+.compass {
+  width: 72px;
+  height: 72px;
+  margin-left: -36px;
+}
+
+.compass-arrow {
+  display: block;
+  width: 50px;
+  height: 50px;
+  transition: transform 0.1s linear;
+}
+
+.compass-arrow svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+}
+
+.compass-arrow path {
+  fill: var(--gold);
+  stroke: #5a3c10;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
