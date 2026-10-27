@@ -8,7 +8,7 @@ async function openGame(page: Page): Promise<string[]> {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  await page.goto('?test');
+  await page.goto('?test&start=play');
   await page.waitForFunction(() => window.__game?.ready === true && window.__game.frames() > 10, null, { timeout: 30_000 });
   await page.waitForFunction(() => window.__game!.hero().onGround, null, { timeout: 10_000 });
   return errors;

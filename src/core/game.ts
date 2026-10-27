@@ -22,6 +22,9 @@ const FOG_FAR = 64;
 const LOOK_YAW_PER_PX = 0.006;
 const LOOK_PITCH_PER_PX = 0.004;
 const ATTACK_COOLDOWN = 0.35;
+const TITLE_ORBIT_SPEED = 0.08;
+
+export type GameMode = 'title' | 'play';
 
 export interface GameOptions {
   debug: boolean;
@@ -47,6 +50,7 @@ export class Game {
   private readonly solid: SolidFn;
   private lastTime = 0;
   private attackCooldown = 0;
+  private mode: GameMode = 'play';
   private readonly tipWorld = new THREE.Vector3();
   frameCount = 0;
 
@@ -115,6 +119,16 @@ export class Game {
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
+  /** « title » : la caméra tourne lentement, commandes masquées. « play » : le joueur contrôle le héros. */
+  setMode(mode: GameMode): void {
+    this.mode = mode;
+    const playing = mode === 'play';
+    this.controls.root.classList.toggle('hidden', !playing);
+    this.hud.root.classList.toggle('hidden', !playing);
+    this.input.stickX = this.input.stickY = 0;
+    this.input.jumpHeld = false;
+  }
+
   private resize(): void {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -132,16 +146,18 @@ export class Game {
   }
 
   private update(dt: number): void {
+    const playing = this.mode === 'play';
     const look = this.input.consumeLook();
-    this.rig.rotate(-look.dx * LOOK_YAW_PER_PX, look.dy * LOOK_PITCH_PER_PX);
+    if (playing) this.rig.rotate(-look.dx * LOOK_YAW_PER_PX, look.dy * LOOK_PITCH_PER_PX);
+    else this.rig.rotate(dt * TITLE_ORBIT_SPEED, 0);
 
-    const move = this.input.move();
+    const move = playing ? this.input.move() : { x: 0, y: 0 };
     const f = this.rig.forward();
     // Droite = avant tourné de 90° dans le sens horaire vu du dessus.
     const intent = {
       moveX: f.x * move.y - f.z * move.x,
       moveZ: f.z * move.y + f.x * move.x,
-      jump: this.input.jumpHeld,
+      jump: playing && this.input.jumpHeld,
     };
     const world = this.layout.world;
     const h = this.hero;
@@ -154,7 +170,7 @@ export class Game {
     this.updateShadow();
 
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
-    if (this.input.consumeAttack() && this.attackCooldown === 0) {
+    if (this.input.consumeAttack() && playing && this.attackCooldown === 0) {
       this.attackCooldown = ATTACK_COOLDOWN;
       this.heroModel.playAttack();
       this.heroModel.root.updateMatrixWorld(true);
@@ -164,7 +180,7 @@ export class Game {
     }
     this.sparks.update(dt, this.solid);
 
-    const near = this.interactions.nearest(h.x, h.y, h.z);
+    const near = playing ? this.interactions.nearest(h.x, h.y, h.z) : null;
     this.controls.setInteract(near ? near.label : null);
     if (this.input.consumeInteract() && near) near.action();
 

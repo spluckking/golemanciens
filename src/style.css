@@ -234,3 +234,285 @@ body {
   font: 14px/1.2 ui-monospace, Consolas, monospace;
   pointer-events: none;
 }
+
+/* ---------- Écrans (titre, prénom, lecture, questions) ---------- */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px calc(24px + var(--safe-r)) calc(24px + var(--safe-b)) calc(24px + var(--safe-l));
+  pointer-events: auto;
+  animation: fade-in 0.25s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.screen-title {
+  justify-content: space-around;
+  background: linear-gradient(to bottom, rgba(29, 43, 83, 0.55), rgba(29, 43, 83, 0) 55%);
+}
+
+.logo-wrap {
+  max-width: 92vw;
+}
+
+.logo {
+  display: block;
+  width: min(900px, 92vw);
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+}
+
+.btn-big {
+  position: relative;
+  min-width: 240px;
+  min-height: 84px;
+  padding: 0 40px;
+  border: 4px solid #ffffff;
+  border-radius: 20px;
+  background: #3a8f4a;
+  color: #ffffff;
+  font: 700 32px/1 system-ui, 'Segoe UI', Roboto, sans-serif;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 6px 0 #22582c;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn-big:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #22582c;
+}
+
+.btn-big:disabled {
+  background: #7d8a80;
+  box-shadow: 0 6px 0 #4f5a52;
+  cursor: default;
+}
+
+.screen-name,
+.screen-question,
+.screen-message {
+  background: rgba(20, 28, 60, 0.55);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: min(900px, 94vw);
+  max-height: 100%;
+  padding: 32px 40px;
+  border-radius: 28px;
+  background: #fffaf0;
+  color: #2a2338;
+  border: 5px solid #f0c43c;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.card-title {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.name-input {
+  width: min(520px, 80vw);
+  height: 84px;
+  padding: 0 24px;
+  border: 4px solid #2d3a8c;
+  border-radius: 18px;
+  font: 600 40px system-ui, 'Segoe UI', Roboto, sans-serif;
+  text-align: center;
+  color: #2a2338;
+  background: #ffffff;
+  user-select: text;
+  -webkit-user-select: text;
+  touch-action: manipulation;
+}
+
+/* Parchemin de lecture */
+.screen-story {
+  background: rgba(20, 28, 60, 0.6);
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.parchment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: min(1100px, 96vw);
+  height: 100%;
+  padding: 24px 48px;
+  border-radius: 18px;
+  background: linear-gradient(#f6e7c1, #efd9a6);
+  color: #3b2a17;
+  border: 6px solid #b98a4e;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.parchment h1 {
+  margin: 0;
+  font-size: 34px;
+  color: #7a4a1c;
+}
+
+.parchment-scroll {
+  flex: 1;
+  overflow-y: auto;
+  touch-action: pan-y;
+  font-size: 27px;
+  line-height: 1.5;
+  padding-right: 8px;
+}
+
+.parchment-scroll p {
+  margin: 0 0 0.7em;
+}
+
+.btn-read {
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.btn-read .wait-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: rgba(255, 255, 255, 0.28);
+  transition-property: width;
+  transition-timing-function: linear;
+}
+
+.btn-read .wait-fill.full {
+  width: 100%;
+}
+
+.btn-read.ready .wait-fill {
+  display: none;
+}
+
+.btn-read-label {
+  position: relative;
+}
+
+/* Questions */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.badge {
+  font-size: 40px;
+}
+
+.progress {
+  font-size: 22px;
+  color: #6b5d80;
+}
+
+.question-prompt {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.choices {
+  display: grid;
+  gap: 18px;
+  width: 100%;
+}
+
+.choices-3 {
+  grid-template-columns: 1fr;
+}
+
+.choices-4 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.choice {
+  min-height: 84px;
+  padding: 12px 20px;
+  border: 4px solid #2d3a8c;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #2a2338;
+  font: 600 28px/1.25 system-ui, 'Segoe UI', Roboto, sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.choice.chosen {
+  background: #dfe6ff;
+  transform: scale(0.97);
+}
+
+.choice:disabled {
+  cursor: default;
+}
+
+.choice.correct {
+  background: #c8f2c2;
+  border-color: #3a8f4a;
+}
+
+.choice.missed {
+  background: #f1eef5;
+  border-color: #b3a8c4;
+  color: #6b5d80;
+}
+
+.explanation {
+  margin: 0;
+  font-size: 28px;
+  color: #2d6a38;
+  text-align: center;
+}
+
+.message-text {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Confettis */
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti i {
+  position: absolute;
+  top: -20px;
+  width: 14px;
+  height: 14px;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+  to {
+    transform: translate(var(--drift), 110vh) rotate(var(--spin));
+  }
+}
