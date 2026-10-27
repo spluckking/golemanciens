@@ -516,3 +516,304 @@ body {
     transform: translate(var(--drift), 110vh) rotate(var(--spin));
   }
 }
+
+/* ---------- HUD de jeu (1.3) ---------- */
+
+.top-left {
+  position: absolute;
+  top: 12px;
+  left: calc(16px + var(--safe-l));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 14px;
+  background: var(--ui-bg);
+  border: 2px solid var(--ui-border);
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.stat-value.bump {
+  animation: bump 0.4s ease-out;
+}
+
+@keyframes bump {
+  40% {
+    transform: scale(1.5);
+    color: #ffe27a;
+  }
+}
+
+.golem-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.golem-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+  width: 190px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: var(--ui-bg);
+  border: 2px solid var(--ui-border);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.golem-card .hp-bar {
+  grid-column: 1 / -1;
+}
+
+.golem-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+}
+
+.dot-pierre {
+  background: #8d8f9c;
+}
+
+.dot-mousse {
+  background: #5aa04a;
+}
+
+.hp-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  width: 100%;
+  background: #6ed46e;
+  transition: width 0.2s;
+}
+
+.hp-monster .hp-fill {
+  background: #f06a5a;
+}
+
+.compass {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ui-bg);
+  border: 2px solid var(--gold);
+  pointer-events: none;
+}
+
+.compass-arrow {
+  font-size: 30px;
+  color: var(--gold);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.debug {
+  top: auto;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Étiquettes du monde */
+.world-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.world-labels > * {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.world-labels .hp-bar {
+  width: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.float-label {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+.float-label.dmg-golem {
+  color: #ff9a8a;
+}
+
+.float-label.dmg-super {
+  color: #ffe27a;
+  font-size: 32px;
+}
+
+.float-label.super {
+  font-size: 20px;
+  color: #ffe27a;
+}
+
+.float-label.food {
+  color: #ffffff;
+  font-size: 30px;
+}
+
+.tag-label {
+  font-size: 24px;
+  font-weight: 800;
+  color: #dfe6ff;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Dialogue */
+.dialog {
+  position: absolute;
+  left: 50%;
+  bottom: calc(24px + var(--safe-b));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: min(760px, 62vw);
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: #fffaf0;
+  color: #2a2338;
+  border: 4px solid var(--gold);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+
+.dialog-portrait .portrait {
+  width: 76px;
+  height: 76px;
+  image-rendering: pixelated;
+  border-radius: 10px;
+  border: 3px solid #2d3a8c;
+  display: block;
+}
+
+.dialog-body {
+  flex: 1;
+}
+
+.dialog-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #2d3a8c;
+}
+
+.dialog-text {
+  margin: 4px 0 0;
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialog-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  border: 3px solid #2d3a8c;
+  background: #ffffff;
+  font-size: 30px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Journal */
+.journal-card {
+  align-items: stretch;
+}
+
+.journal-card .card-title,
+.journal-card .btn-big {
+  align-self: center;
+}
+
+.journal-section {
+  margin: 0;
+  font-size: 24px;
+  color: #6b5d80;
+}
+
+.journal-list {
+  margin: 0;
+  padding-left: 28px;
+  font-size: 26px;
+  line-height: 1.4;
+}
+
+.journal-active {
+  font-weight: 700;
+  color: #2d3a8c;
+}
+
+.journal-active::marker {
+  content: '➜ ';
+  color: var(--gold);
+}
+
+.journal-empty {
+  list-style: none;
+  color: #8a7f99;
+  font-style: italic;
+}
+
+/* K.O. général : écran doux */
+.soft-fade {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 244, 220, 0.85);
+  animation: fade-in 0.6s ease-out;
+  pointer-events: auto;
+}
+
+/* La bulle de dialogue se place en haut, pour laisser libres les zones des pouces. */
+.dialog {
+  top: calc(96px + env(safe-area-inset-top, 0px));
+  bottom: auto;
+  width: min(760px, calc(100vw - 460px));
+  min-width: 420px;
+}
+
+.toast {
+  top: 34%;
+}

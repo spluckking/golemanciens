@@ -108,3 +108,122 @@ export function buildTree(world: VoxelWorld, x: number, groundY: number, z: numb
       }
   }
 }
+
+/** Maison simple : murs, fenêtres, porte ouverte au sud (+Z) ou au nord (−Z), toit en gradins. */
+function buildHouse(
+  world: VoxelWorld,
+  x0: number,
+  z0: number,
+  w: number,
+  d: number,
+  floorY: number,
+  wall: number,
+  roof: number,
+  doorSouth: boolean,
+): void {
+  const x1 = x0 + w - 1;
+  const z1 = z0 + d - 1;
+  const top = floorY + 3;
+  world.fill(x0, floorY - 1, z0, x1, floorY - 1, z1, Block.Plank);
+  for (let y = floorY; y <= top; y++) {
+    for (let x = x0; x <= x1; x++)
+      for (let z = z0; z <= z1; z++) {
+        const edgeX = x === x0 || x === x1;
+        const edgeZ = z === z0 || z === z1;
+        if (!edgeX && !edgeZ) {
+          world.set(x, y, z, Block.Air);
+          continue;
+        }
+        world.set(x, y, z, edgeX && edgeZ ? Block.Log : wall);
+      }
+  }
+  const cx = Math.floor((x0 + x1) / 2);
+  for (const z of [z0, z1]) world.set(cx + 2 <= x1 - 1 ? cx + 2 : cx, floorY + 1, z, Block.Window);
+  const dz = doorSouth ? z1 : z0;
+  world.set(cx, floorY, dz, Block.Air);
+  world.set(cx, floorY + 1, dz, Block.Air);
+  for (let level = 0; ; level++) {
+    const ax = x0 - 1 + level;
+    const bx = x1 + 1 - level;
+    if (ax > bx) break;
+    world.fill(ax, top + 1 + level, z0 - 1, bx, top + 1 + level, z1 + 1, roof);
+    if (level > 0) world.fill(ax + 1, top + level, z0, bx - 1, top + level, z1, Block.Air);
+  }
+}
+
+export interface VillagePlan {
+  npcs: { id: string; x: number; z: number; facing: number }[];
+  guardians: { x: number; z: number; facing: number }[];
+  lantern: { x: number; z: number };
+  wheat: { x0: number; z0: number; x1: number; z1: number };
+  well: { x: number; z: number };
+  pen: { x0: number; z0: number; x1: number; z1: number };
+}
+
+/**
+ * Ferme-des-Blocs : ferme de Mère Brique, boulangerie de Pâquerette, moulin de Gaston,
+ * enclos à poules, puits et champ de blé. (cx, cz) = centre de la place, floorY = sol.
+ */
+export function buildVillage(world: VoxelWorld, cx: number, cz: number, floorY: number): VillagePlan {
+  // Place centrale en terre battue.
+  for (let dx = -4; dx <= 4; dx++)
+    for (let dz = -4; dz <= 4; dz++) if (dx * dx + dz * dz <= 18) world.set(cx + dx, floorY - 1, cz + dz, Block.Path);
+
+  buildHouse(world, cx - 11, cz - 10, 7, 6, floorY, Block.Plank, Block.Roof, true);
+  buildHouse(world, cx + 5, cz - 10, 6, 5, floorY, Block.Brick, Block.Roof, true);
+
+  // Moulin : tour de pierre et ailes de planches (face nord).
+  const mx = cx + 7;
+  const mz = cz + 5;
+  world.fill(mx, floorY, mz, mx + 3, floorY + 6, mz + 3, Block.Stone);
+  world.fill(mx + 1, floorY, mz, mx + 2, floorY + 1, mz, Block.Air);
+  world.fill(mx, floorY + 7, mz, mx + 3, floorY + 7, mz + 3, Block.Roof);
+  const hubX = mx + 1;
+  const hubY = floorY + 5;
+  for (let k = -3; k <= 3; k++) {
+    world.set(hubX + k, hubY, mz - 1, Block.Plank);
+    world.set(hubX, hubY + k, mz - 1, Block.Plank);
+  }
+  world.set(hubX, hubY, mz - 1, Block.Log);
+
+  // Enclos à poules : barrière basse, ouverture vers la place.
+  const pen = { x0: cx - 12, z0: cz + 4, x1: cx - 5, z1: cz + 10 };
+  for (let x = pen.x0; x <= pen.x1; x++) {
+    world.set(x, floorY, pen.z0, Block.Log);
+    world.set(x, floorY, pen.z1, Block.Log);
+  }
+  for (let z = pen.z0; z <= pen.z1; z++) {
+    world.set(pen.x0, floorY, z, Block.Log);
+    world.set(pen.x1, floorY, z, Block.Log);
+  }
+  world.set(pen.x1, floorY, pen.z0 + 3, Block.Air);
+
+  // Puits.
+  for (let dx = -1; dx <= 1; dx++)
+    for (let dz = -1; dz <= 1; dz++) world.set(cx + dx, floorY, cz + dz, dx === 0 && dz === 0 ? Block.Air : Block.Stone);
+  world.set(cx, floorY - 1, cz, Block.Water);
+
+  // Champ de blé (terre labourée, épis en décor).
+  const wheat = { x0: cx - 20, z0: cz - 6, x1: cx - 14, z1: cz + 4 };
+  for (let x = wheat.x0; x <= wheat.x1; x++)
+    for (let z = wheat.z0; z <= wheat.z1; z++) {
+      const top = world.surfaceY(x, z) - 1;
+      if (world.get(x, top, z) === Block.Grass || world.get(x, top, z) === Block.Path) world.set(x, top, z, Block.Dirt);
+    }
+
+  return {
+    npcs: [
+      { id: 'mereBrique', x: cx - 7.5, z: cz - 2.5, facing: Math.PI },
+      { id: 'paquerette', x: cx + 7.5, z: cz - 3.5, facing: Math.PI },
+      { id: 'gaston', x: cx + 8.5, z: cz + 2.8, facing: 0 },
+    ],
+    guardians: [
+      { x: cx + 13.5, z: cz - 2.5, facing: -Math.PI / 2 },
+      { x: cx - 2.5, z: cz + 13.5, facing: Math.PI },
+    ],
+    lantern: { x: cx + 3.5, z: cz + 3.5 },
+    wheat,
+    well: { x: cx + 0.5, z: cz + 0.5 },
+    pen,
+  };
+}

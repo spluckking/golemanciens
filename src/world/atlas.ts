@@ -160,6 +160,36 @@ const painters: Record<TileId, (t: PixelTile, rng: Rng) => void> = {
   [Tile.FlowerYellow]: (t) => flower(t, [250, 215, 50], [200, 120, 30]),
   [Tile.FlowerBlue]: (t) => flower(t, [80, 130, 240], [255, 255, 255]),
   [Tile.FlowerWhite]: (t) => flower(t, [250, 250, 250], [250, 200, 60]),
+  [Tile.Crate]: (t, rng) => {
+    for (let y = 0; y < 16; y++)
+      for (let x = 0; x < 16; x++) {
+        const frame = x < 2 || y < 2 || x > 13 || y > 13;
+        const cross = Math.abs(x - y) < 2 || Math.abs(x + y - 15) < 2;
+        const c: Rgb = frame ? [110, 72, 38] : cross ? [140, 96, 52] : y % 5 === 4 ? [150, 108, 62] : [196, 150, 92];
+        t.set(x, y, jitter(c, rng, 0.05));
+      }
+  },
+  [Tile.Chest]: (t, rng) => {
+    for (let y = 0; y < 16; y++)
+      for (let x = 0; x < 16; x++) {
+        const band = y === 5 || y === 6 || x < 1 || x > 14 || y < 1 || y > 14;
+        t.set(x, y, band ? [90, 60, 32] : jitter([168, 112, 60], rng, 0.05));
+      }
+    for (let y = 4; y <= 8; y++) for (let x = 6; x <= 9; x++) t.set(x, y, [240, 196, 60]);
+    t.set(7, 7, [60, 40, 20]);
+    t.set(8, 7, [60, 40, 20]);
+  },
+  [Tile.Wheat]: (t, rng) => {
+    for (let k = 0; k < 6; k++) {
+      const x = 1 + k * 2 + Math.floor(rng() * 2);
+      const top = 2 + Math.floor(rng() * 3);
+      for (let y = top + 3; y < 16; y++) t.set(x, y, [176, 160, 70]);
+      for (let y = top; y < top + 4; y++) {
+        t.set(x, y, [236, 200, 90]);
+        t.set(x + 1, y, [222, 184, 74]);
+      }
+    }
+  },
   [Tile.GrassTuft]: (t, rng) => {
     for (let k = 0; k < 7; k++) {
       const x = 1 + Math.floor(rng() * 14);

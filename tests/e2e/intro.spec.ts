@@ -17,7 +17,7 @@ async function answer(page: Page, correct: boolean): Promise<void> {
 }
 
 test('titre → prénom → lecture de T1 avec une erreur → Prairie', async ({ page }) => {
-  // « fast » : les attentes de 20 s et 10 s deviennent 4 s et 2 s (règles vérifiées en tests unitaires).
+  // « fast » : les attentes de 20 s et 10 s deviennent 8 s et 4 s (règles vérifiées en tests unitaires).
   await page.goto('?test&fast');
   await page.waitForFunction(() => window.__game?.ready === true);
 
@@ -36,7 +36,7 @@ test('titre → prénom → lecture de T1 avec une erreur → Prairie', async ({
   await expect(page.getByTestId('screen-story')).toContainText(`${NAME} entre en première année`);
   const read = page.getByTestId('btn-read');
   await expect(read).toBeDisabled();
-  await expect(read).toBeEnabled({ timeout: 10_000 });
+  await expect(read).toBeEnabled({ timeout: 15_000 });
   await read.tap();
 
   // Une erreur volontaire : retour au texte, sans révéler la bonne réponse.
@@ -49,7 +49,7 @@ test('titre → prénom → lecture de T1 avec une erreur → Prairie', async ({
 
   // Relecture, puis 2 nouvelles questions.
   await expect(read).toBeDisabled();
-  await expect(read).toBeEnabled({ timeout: 10_000 });
+  await expect(read).toBeEnabled({ timeout: 15_000 });
   await read.tap();
   await answer(page, true);
   await answer(page, true);

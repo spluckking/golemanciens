@@ -1,18 +1,22 @@
 import './style.css';
 import { App, type ScreenId } from './core/app';
 import { Game } from './core/game';
-import { createGameState, type GameState } from './core/gameState';
+import { createGameState, createGolem, type GameState } from './core/gameState';
 import { createRng } from './core/rng';
+import { GOLEMS, type GolemSpecies } from './data/creatures';
 
 declare global {
   interface Window {
     /** Accès réservé aux tests de bout en bout (?test). */
     __game?: {
       ready: boolean;
-      hero: () => { x: number; y: number; z: number; onGround: boolean };
+      hero: () => { x: number; y: number; z: number; onGround: boolean; facing: number };
       frames: () => number;
       screen: () => ScreenId;
       state: () => GameState;
+      life: () => ReturnType<Game['life']['snapshot']>;
+      teleport: (x: number, z: number, facing?: number) => void;
+      drawCalls: () => number;
     };
   }
 }
@@ -28,31 +32,42 @@ window.addEventListener('contextmenu', (e) => e.preventDefault());
 
 function boot(root: HTMLElement, layer: HTMLElement): void {
   const isTest = params.has('test');
-  const game = new Game(root, layer, { debug: params.has('debug') || isTest });
   const state = createGameState();
-  // Mode test : « ?test&fast » divise les attentes de lecture par 5.
-  const timeScale = isTest && params.has('fast') ? 0.2 : 1;
-  const app = new App(game, layer, state, createRng((Date.now() ^ 0x9e3779b9) >>> 0), timeScale);
+  // Mode test : graine fixe, pour des tirages reproductibles.
+  const rng = createRng(isTest ? 12345 : (Date.now() ^ 0x9e3779b9) >>> 0);
+  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest });
+  // Mode test : « ?test&fast » divise les attentes de lecture par 2,5.
+  const timeScale = isTest && params.has('fast') ? 0.4 : 1;
+  const app = new App(game, layer, state, rng, timeScale);
   game.start();
   loading?.remove();
 
-  // Mode test : « ?test&start=play » saute l'introduction (prénom fictif).
-  if (isTest && params.get('start') === 'play') {
-    state.playerName = 'Testeur';
-    state.storiesRead.push('T1');
-    app.play();
-  } else {
-    void app.start();
-  }
-
   if (isTest) {
+    // « ?test&golems=pierre,mousse » donne des golems (l'œuf n'arrive qu'à la sous-étape 1.4).
+    for (const id of (params.get('golems') ?? '').split(',')) {
+      if (id in GOLEMS) state.golems.push(createGolem(id as GolemSpecies));
+    }
+    // « ?test&start=play » saute l'introduction (prénom fictif, tutoriel de déplacement déjà vu).
+    if (params.get('start') === 'play') {
+      state.playerName = 'Testeur';
+      state.storiesRead.push('T1');
+      if (!params.has('tutorial')) state.tutorialsSeen.push('move');
+      app.play();
+    } else {
+      void app.start();
+    }
     window.__game = {
       ready: true,
-      hero: () => ({ x: game.hero.x, y: game.hero.y, z: game.hero.z, onGround: game.hero.onGround }),
+      hero: () => ({ x: game.hero.x, y: game.hero.y, z: game.hero.z, onGround: game.hero.onGround, facing: game.hero.facing }),
       frames: () => game.frameCount,
       screen: () => app.screen,
       state: () => state,
+      life: () => game.life.snapshot(),
+      teleport: (x, z, facing) => game.teleport(x, z, facing),
+      drawCalls: () => game.drawCalls,
     };
+  } else {
+    void app.start();
   }
 }
 

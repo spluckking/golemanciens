@@ -75,12 +75,16 @@ test('le bouton Saut fait sauter le héros', async ({ page }) => {
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 });
 
-test("le bouton Interagir apparaît devant la porte de l'Académie", async ({ page }) => {
+test('le bouton Interagir apparaît près de Lumibloc et ouvre une bulle de dialogue', async ({ page }) => {
   await openGame(page);
   await expect(page.getByTestId('btn-interact')).toBeHidden();
-  const cdp = await page.context().newCDPSession(page);
-  await touchDrag(cdp, { x: 200, y: 650 }, { x: 200, y: 560 }, 900);
+  const lumi = await page.evaluate(() => window.__game!.life().npcs.find((n) => n.id === 'lumibloc')!);
+  await page.evaluate(([x, z]) => window.__game!.teleport(x, z), [lumi.x, lumi.z + 1.8]);
   await expect(page.getByTestId('btn-interact')).toBeVisible({ timeout: 5_000 });
+  await expect(page.getByTestId('btn-interact')).toContainText('Parler');
   await page.getByTestId('btn-interact').tap();
-  await expect(page.getByTestId('toast')).toHaveText('Académie des Golémanciens');
+  await expect(page.getByTestId('dialog')).toBeVisible();
+  await expect(page.getByTestId('dialog')).toContainText('Professeur Lumibloc');
+  await page.getByTestId('dialog-close').tap();
+  await expect(page.getByTestId('dialog')).toBeHidden();
 });

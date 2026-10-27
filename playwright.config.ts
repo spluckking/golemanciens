@@ -8,6 +8,8 @@ export default defineConfig({
   testDir: 'tests/e2e',
   timeout: 60_000,
   retries: isCI ? 1 : 0,
+  // Un seul navigateur à la fois : le rendu WebGL logiciel est lourd, le parallélisme fausse les délais.
+  workers: 1,
   reporter: isCI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: `http://localhost:${PORT}/golemanciens/`,

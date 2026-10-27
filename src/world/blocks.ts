@@ -41,6 +41,9 @@ export const Tile = {
   FlowerBlue: 18,
   FlowerWhite: 19,
   GrassTuft: 20,
+  Crate: 21,
+  Chest: 22,
+  Wheat: 23,
 } as const;
 export type TileId = (typeof Tile)[keyof typeof Tile];
 

@@ -1,7 +1,8 @@
 import { createRng, randInt } from '../core/rng';
+import type { MonsterSpecies } from '../data/creatures';
 import { Block, Tile, type TileId } from './blocks';
 import { Noise2D } from './noise';
-import { buildAcademy, buildTree } from './structures';
+import { buildAcademy, buildTree, buildVillage, type VillagePlan } from './structures';
 import { VoxelWorld, WORLD_HEIGHT } from './voxelWorld';
 
 export const PRAIRIE_SIZE = 128;
@@ -32,6 +33,20 @@ export interface BiomeLayout {
   landmarks: Record<LandmarkId, Point2>;
   decorations: Decoration[];
   academyDoor: { x: number; y: number; z: number };
+  village: VillagePlan;
+  /** Position de Lumibloc, devant l'Académie. */
+  lumibloc: { x: number; z: number; facing: number };
+  camps: Camp[];
+  crates: { id: string; x: number; y: number; z: number }[];
+  lanterns: { id: string; x: number; y: number; z: number }[];
+}
+
+export interface Camp {
+  id: string;
+  x: number;
+  z: number;
+  monsters: MonsterSpecies[];
+  chest: { x: number; z: number };
 }
 
 interface Pad extends Point2 {
@@ -46,6 +61,19 @@ const PADS: Record<Exclude<LandmarkId, 'academy'>, Pad> = {
   bossLair: { x: 18, z: 114, r: 9 },
 };
 const BRIDGE_Z = 100;
+
+/** Camps de monstres de la phase 1 (1 ou 2 monstres chacun). Le camp des slimes est près du champ de blé. */
+const CAMPS: Omit<Camp, 'chest'>[] = [
+  { id: 'slimes', x: 13, z: 80, monsters: ['slime', 'slime'] },
+  { id: 'zombies', x: 60, z: 108, monsters: ['zombie'] },
+  { id: 'spiders', x: 86, z: 40, monsters: ['spider', 'spider'] },
+  { id: 'mixed', x: 76, z: 90, monsters: ['zombie', 'slime'] },
+];
+const LANTERN_SPOTS: Record<string, Point2> = {
+  sanctuary: { x: 106.5, z: 103.5 },
+  bossLair: { x: 25.5, z: 107.5 },
+};
+const CRATE_COUNT = 20;
 
 export function riverX(z: number): number {
   return 101 + 5 * Math.sin(z / 17);
@@ -148,9 +176,27 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
   }
 
   const door = buildAcademy(world, ACADEMY.x, ACADEMY.z, ACADEMY_FLOOR);
+  const villageFloor = world.surfaceY(PADS.village.x, PADS.village.z);
+  const village = buildVillage(world, PADS.village.x, PADS.village.z, villageFloor);
 
-  // Arbres, hors des zones réservées, des chemins et de la rivière.
-  const clearZones: Pad[] = [{ ...ACADEMY, r: ACADEMY.r + 4 }, ...Object.values(PADS).map((p) => ({ ...p, r: p.r + 3 }))];
+  // Camps : sol piétiné, coffre au bord du camp.
+  const camps: Camp[] = CAMPS.map((c) => {
+    for (let dx = -3; dx <= 3; dx++)
+      for (let dz = -3; dz <= 3; dz++) {
+        if (dx * dx + dz * dz > 10) continue;
+        const top = world.surfaceY(c.x + dx, c.z + dz) - 1;
+        if (world.get(c.x + dx, top, c.z + dz) === Block.Grass) world.set(c.x + dx, top, c.z + dz, Block.Dirt);
+      }
+    return { ...c, chest: { x: c.x + 0.5, z: c.z - 2.5 } };
+  });
+
+  // Arbres, hors des zones réservées, des camps, des chemins et de la rivière.
+  const clearZones: Pad[] = [
+    { ...ACADEMY, r: ACADEMY.r + 4 },
+    ...Object.values(PADS).map((p) => ({ ...p, r: p.r + 3 })),
+    ...CAMPS.map((c) => ({ x: c.x, z: c.z, r: 5 })),
+    { x: PADS.village.x - 17, z: PADS.village.z - 1, r: 7 },
+  ];
   const isClear = (x: number, z: number, margin: number): boolean => {
     if (x < 3 || z < 3 || x > size - 4 || z > size - 4) return false;
     if (Math.abs(x - riverX(z)) < 6) return false;
@@ -179,6 +225,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     const z = randInt(rng, 2, size - 3);
     if (onPath[z * size + x]) continue;
     if (dist(ACADEMY, x, z) < ACADEMY.r - 1) continue;
+    if (dist(PADS.village, x, z) < PADS.village.r - 1) continue;
     const y = world.surfaceY(x, z);
     if (world.get(x, y - 1, z) !== Block.Grass || world.get(x, y, z) !== Block.Air) continue;
     const flower = rng() < 0.2;
@@ -190,8 +237,40 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     });
   }
 
+  // Épis de blé du champ.
+  const { wheat } = village;
+  for (let x = wheat.x0; x <= wheat.x1; x++)
+    for (let z = wheat.z0; z <= wheat.z1; z++) {
+      const y = world.surfaceY(x, z);
+      if (world.get(x, y - 1, z) !== Block.Dirt) continue;
+      for (const [ox, oz] of [[0.3, 0.3], [0.7, 0.7]]) decorations.push({ x: x + ox, y, z: z + oz, tile: Tile.Wheat });
+    }
+
   const spawnX = ACADEMY.x;
   const spawnZ = door.doorZ + 5;
+
+  // Caisses : la première près du point de départ (tutoriel), les autres dispersées.
+  const crates: BiomeLayout['crates'] = [];
+  const crateSpots: Point2[] = [{ x: spawnX + 3, z: spawnZ + 3 }];
+  for (let attempt = 0; attempt < 2000 && crateSpots.length < CRATE_COUNT; attempt++) {
+    const x = randInt(rng, 6, size - 7);
+    const z = randInt(rng, 6, size - 7);
+    if (onPath[z * size + x] || Math.abs(x - riverX(z)) < 5) continue;
+    if (dist(ACADEMY, x, z) < ACADEMY.r + 2 || dist(PADS.village, x, z) < 9) continue;
+    if (CAMPS.some((c) => dist(c, x, z) < 5) || crateSpots.some((c) => dist(c, x, z) < 7)) continue;
+    const y = world.surfaceY(x, z);
+    const below = world.get(x, y - 1, z);
+    if ((below !== Block.Grass && below !== Block.Dirt) || world.get(x, y, z) !== Block.Air || world.get(x, y + 1, z) !== Block.Air) continue;
+    crateSpots.push({ x, z });
+  }
+  crateSpots.forEach((c, i) => crates.push({ id: `crate-${i}`, x: c.x + 0.5, y: world.surfaceY(c.x, c.z), z: c.z + 0.5 }));
+
+  const at = (p: Point2): { x: number; y: number; z: number } => ({ x: p.x, y: world.surfaceY(Math.floor(p.x), Math.floor(p.z)), z: p.z });
+  const lanterns = [
+    { id: 'village', ...at(village.lantern) },
+    ...Object.entries(LANTERN_SPOTS).map(([id, p]) => ({ id, ...at(p) })),
+  ];
+
   return {
     world,
     spawn: { x: spawnX + 0.5, y: world.surfaceY(spawnX, spawnZ), z: spawnZ + 0.5 },
@@ -205,5 +284,10 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     },
     decorations,
     academyDoor: { x: door.doorX + 0.5, y: ACADEMY_FLOOR, z: door.doorZ + 0.5 },
+    village,
+    lumibloc: { x: door.doorX + 3.5, z: door.doorZ + 1.5, facing: Math.PI },
+    camps,
+    crates,
+    lanterns,
   };
 }
