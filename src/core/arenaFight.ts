@@ -32,10 +32,10 @@ const TEXT_VICTORY_BUTTON = 'Continuer';
 const TEXT_ARENA_DONE = 'Bravo, {prenom} ! Tu as gagné les 3 combats de l’arène.';
 const TEXT_DEFEAT_BUTTON = 'D’accord';
 
-const TYPE_COLORS: Record<AttackType, number> = { rock: 0xa9abb8, plant: 0x6fae52, sun: 0xffc040, star: 0xfff3a0 };
+const TYPE_COLORS: Record<AttackType, number> = { rock: 0xa9abb8, plant: 0x6fae52, sun: 0xffc040, spore: 0xb07ae0, star: 0xfff3a0 };
 
 /** Bruitage d'un coup réussi, selon le type d'attaque. */
-const HIT_SFX: Record<AttackType, SfxId> = { rock: 'hitRock', plant: 'hitPlant', sun: 'hitSun', star: 'hitStar' };
+const HIT_SFX: Record<AttackType, SfxId> = { rock: 'hitRock', plant: 'hitPlant', sun: 'hitSun', spore: 'poof', star: 'hitStar' };
 
 export interface FightHost {
   scene: THREE.Scene;

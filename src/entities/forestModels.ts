@@ -154,3 +154,154 @@ export function questMushroomModel(cap: number): ModelDef {
     },
   ];
 }
+
+/** Écorce : golem d'écorce brune, épaules feuillues, petite couronne de branches. */
+export function ecorceModel(): ModelDef {
+  const bark = 0x7a5232;
+  const dark = 0x553820;
+  const leaf = 0x5aa04a;
+  const leafLight = 0x86c86a;
+  return [
+    { name: 'legL', pivot: [-0.22, 0.45, 0], cubes: [[0.3, 0.45, 0.34, 0, -0.22, 0, dark]] },
+    { name: 'legR', pivot: [0.22, 0.45, 0], cubes: [[0.3, 0.45, 0.34, 0, -0.22, 0, dark]] },
+    {
+      name: 'body',
+      pivot: [0, 0.45, 0],
+      cubes: [
+        [0.82, 0.8, 0.6, 0, 0.42, 0, bark],
+        // Rainures verticales de l'écorce.
+        ...[-0.26, 0, 0.26].map((x): Cube => [0.06, 0.7, 0.02, x, 0.42, -0.31, dark]),
+        [0.6, 0.52, 0.54, 0, 1.06, -0.02, bark],
+        [0.12, 0.12, 0.02, -0.13, 1.1, -0.3, 0xfff0a0],
+        [0.12, 0.12, 0.02, 0.13, 1.1, -0.3, 0xfff0a0],
+        [0.36, 0.2, 0.36, -0.4, 0.86, 0, leaf],
+        [0.36, 0.2, 0.36, 0.4, 0.86, 0, leaf],
+        [0.08, 0.34, 0.08, -0.18, 1.48, 0, dark],
+        [0.08, 0.28, 0.08, 0.16, 1.46, 0.05, dark],
+        [0.22, 0.14, 0.22, -0.18, 1.68, 0, leafLight],
+        [0.2, 0.12, 0.2, 0.16, 1.62, 0.05, leafLight],
+      ],
+    },
+    { name: 'armL', pivot: [-0.55, 1.0, 0], cubes: [[0.22, 0.78, 0.26, 0, -0.36, 0, bark], [0.3, 0.14, 0.3, 0, -0.78, 0, leaf]] },
+    { name: 'armR', pivot: [0.55, 1.0, 0], cubes: [[0.22, 0.78, 0.26, 0, -0.36, 0, bark], [0.3, 0.14, 0.3, 0, -0.78, 0, leaf]] },
+  ];
+}
+
+/** Champignon : grand chapeau rouge à pois blancs, corps crème, petites jambes. */
+export function champignonModel(): ModelDef {
+  const cream = 0xf0e2c4;
+  const dark = 0xc8b48c;
+  const cap = 0xd8402e;
+  return [
+    { name: 'legL', pivot: [-0.2, 0.4, 0], cubes: [[0.26, 0.4, 0.3, 0, -0.2, 0, dark]] },
+    { name: 'legR', pivot: [0.2, 0.4, 0], cubes: [[0.26, 0.4, 0.3, 0, -0.2, 0, dark]] },
+    {
+      name: 'body',
+      pivot: [0, 0.4, 0],
+      cubes: [
+        [0.66, 0.8, 0.56, 0, 0.4, 0, cream],
+        [0.12, 0.12, 0.02, -0.13, 0.62, -0.29, 0x302018],
+        [0.12, 0.12, 0.02, 0.13, 0.62, -0.29, 0x302018],
+        [0.2, 0.06, 0.02, 0, 0.44, -0.29, 0xd88a7a],
+        [1.3, 0.34, 1.2, 0, 0.98, 0, cap],
+        [0.9, 0.22, 0.86, 0, 1.24, 0, cap],
+        [0.46, 0.14, 0.44, 0, 1.4, 0, cap],
+        ...[[-0.42, 1.16, -0.4], [0.3, 1.36, -0.25], [0.5, 1.1, 0.3], [-0.2, 1.48, 0.1], [-0.5, 1.1, 0.35]].map(([x, y, z]): Cube => [0.18, 0.06, 0.18, x, y, z, 0xffffff]),
+        [1.1, 0.06, 1.0, 0, 0.8, 0, 0xf6ead2],
+      ],
+    },
+    { name: 'armL', pivot: [-0.42, 0.75, 0], cubes: [[0.18, 0.5, 0.2, 0, -0.22, 0, cream]] },
+    { name: 'armR', pivot: [0.42, 0.75, 0], cubes: [[0.18, 0.5, 0.2, 0, -0.22, 0, cream]] },
+  ];
+}
+
+// ---------- Sanctuaire de Mousse (S2) ----------
+
+const WOOD = 0x8a5a2c;
+const WOOD_DARK = 0x5a3a20;
+const WATER = 0x4a9ae8;
+
+/**
+ * Morceau de rigole en bois (énigme des canaux) : droit (ouest-est) ou coudé (nord-est) au repos.
+ * La partie « water » ne s'affiche que quand l'eau y passe.
+ */
+export function canalModel(kind: 'straight' | 'corner'): ModelDef {
+  const L = 1.5;
+  const wall = 0.12;
+  const floor: Cube[] = [];
+  const water: Cube[] = [];
+  if (kind === 'straight') {
+    floor.push([L, 0.1, 0.62, 0, 0.05, 0, WOOD], [L, 0.22, wall, 0, 0.16, -0.31, WOOD_DARK], [L, 0.22, wall, 0, 0.16, 0.31, WOOD_DARK]);
+    water.push([L, 0.06, 0.48, 0, 0.14, 0, WATER]);
+  } else {
+    // Du centre vers le nord (−Z) et vers l'est (+X).
+    floor.push(
+      [0.62, 0.1, 0.62, 0, 0.05, 0, WOOD],
+      [0.62, 0.1, L / 2, 0, 0.05, -L / 4 - 0.15, WOOD],
+      [L / 2, 0.1, 0.62, L / 4 + 0.15, 0.05, 0, WOOD],
+      [wall, 0.22, L / 2 + 0.31, -0.31, 0.16, -L / 4 + 0.15, WOOD_DARK],
+      [L / 2 + 0.31, 0.22, wall, L / 4 - 0.15, 0.16, 0.31, WOOD_DARK],
+      [wall, 0.22, wall, 0.31, 0.16, -0.31, WOOD_DARK],
+    );
+    water.push([0.48, 0.06, 0.48, 0, 0.14, 0, WATER], [0.48, 0.06, L / 2, 0, 0.14, -L / 4 - 0.1, WATER], [L / 2, 0.06, 0.48, L / 4 + 0.1, 0.14, 0, WATER]);
+  }
+  return [
+    { name: 'body', pivot: [0, 0, 0], cubes: floor },
+    { name: 'water', pivot: [0, 0, 0], cubes: water },
+  ];
+}
+
+/** Levier de pierre moussue avec son symbole (soleil, lune ou étoile) ; la poignée bascule. */
+export function leverModel(symbol: 'sun' | 'moon' | 'star'): ModelDef {
+  const stone = 0x8a8e84;
+  const moss = 0x5a9a4a;
+  const sign: Cube[] =
+    symbol === 'sun'
+      ? [[0.34, 0.34, 0.04, 0, 1.25, -0.27, 0xffc030], [0.5, 0.08, 0.04, 0, 1.25, -0.27, 0xffd860], [0.08, 0.5, 0.04, 0, 1.25, -0.27, 0xffd860]]
+      : symbol === 'moon'
+        ? [[0.3, 0.36, 0.04, 0, 1.25, -0.27, 0xe8ecff], [0.18, 0.3, 0.05, 0.1, 1.27, -0.28, stone]]
+        : [[0.1, 0.44, 0.04, 0, 1.25, -0.27, 0xfff3a0], [0.44, 0.1, 0.04, 0, 1.25, -0.27, 0xfff3a0], [0.2, 0.2, 0.04, 0, 1.25, -0.27, 0xffffff]];
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [[0.6, 0.9, 0.5, 0, 0.45, 0, stone], [0.62, 0.1, 0.52, 0, 0.92, 0, moss], [0.62, 0.62, 0.06, 0, 1.25, -0.22, stone], ...sign],
+    },
+    { name: 'handle', pivot: [0, 0.75, -0.25], rest: [-0.6, 0, 0], cubes: [[0.08, 0.6, 0.08, 0, 0.3, 0, WOOD_DARK], [0.18, 0.18, 0.18, 0, 0.62, 0, 0xc04030]] },
+  ];
+}
+
+/** Roue de moulin (au bout des canaux) : elle tourne quand l'eau arrive. */
+export function millWheelModel(): ModelDef {
+  const paddles: Cube[] = [];
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * Math.PI * 2;
+    paddles.push([0.12, 0.5, 0.5, 0, Math.sin(a) * 0.75, Math.cos(a) * 0.75, WOOD]);
+  }
+  return [
+    { name: 'body', pivot: [0, 0, 0], cubes: [[0.16, 1.4, 0.16, 0, 0.7, -0.6, WOOD_DARK], [0.16, 1.4, 0.16, 0, 0.7, 0.6, WOOD_DARK]] },
+    { name: 'wheel', pivot: [0.15, 1.1, 0], cubes: [[0.1, 0.24, 0.24, 0, 0, 0, WOOD_DARK], ...paddles] },
+  ];
+}
+
+/** Source qui jaillit d'un bloc de pierre moussue (départ des canaux). */
+export function springModel(): ModelDef {
+  return [
+    { name: 'body', pivot: [0, 0, 0], cubes: [[0.8, 0.6, 0.8, 0, 0.3, 0, 0x8a8e84], [0.82, 0.1, 0.82, 0, 0.62, 0, 0x5a9a4a], [0.3, 0.12, 0.5, 0.45, 0.45, 0, WATER]] },
+  ];
+}
+
+/** Stèle gravée (l'inscription des leviers). */
+export function steleModel(): ModelDef {
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.9, 1.3, 0.24, 0, 0.65, 0, 0x8a8e84],
+        [0.92, 0.12, 0.26, 0, 1.34, 0, 0x5a9a4a],
+        ...[0.95, 0.75, 0.55].map((y): Cube => [0.6, 0.05, 0.02, 0, y, -0.13, 0x50544c]),
+      ],
+    },
+  ];
+}

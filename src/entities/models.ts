@@ -1,5 +1,5 @@
 import type { Cube, ModelDef, PartDef } from './cubeModel';
-import { giantWebModel, hopperModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, wolfModel } from './forestModels';
+import { canalModel, champignonModel, ecorceModel, giantWebModel, hopperModel, leverModel, millWheelModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, springModel, steleModel, wolfModel } from './forestModels';
 
 /**
  * Modèles en cubes, définis dans le code (aucun fichier externe).
@@ -1082,6 +1082,8 @@ export const MODELS = {
   hero: heroModel(),
   pierre: pierreModel(),
   mousse: mousseModel(),
+  ecorce: ecorceModel(),
+  champignon: champignonModel(),
   guardian: guardianModel(),
   slime: slimeModel(),
   zombie: zombieModel(),
@@ -1094,6 +1096,14 @@ export const MODELS = {
   pathWeb: pathWebModel(),
   mushroomBlue: questMushroomModel(0x4a7ae8),
   mushroomRed: questMushroomModel(0xd83a3a),
+  canalStraight: canalModel('straight'),
+  canalCorner: canalModel('corner'),
+  leverSun: leverModel('sun'),
+  leverMoon: leverModel('moon'),
+  leverStar: leverModel('star'),
+  millWheel: millWheelModel(),
+  spring: springModel(),
+  stele: steleModel(),
   lumibloc: lumiblocModel(),
   mereBrique: mereBriqueModel(),
   paquerette: paqueretteModel(),
@@ -1107,6 +1117,7 @@ export const MODELS = {
   eggPierre: eggModel(0x8d8f9c),
   eggMousse: eggModel(0x5aa04a),
   eggPrairie: eggModel(0x8d8f9c, 0x5aa04a),
+  eggForet: eggModel(0x7a5232, 0xd8402e),
   riddleStone: riddleStoneModel(),
   tileRed: floorTileModel(TILE_COLORS.red, false),
   tileYellow: floorTileModel(TILE_COLORS.yellow, false),
@@ -1122,6 +1133,8 @@ export const MODELS = {
   nest: nestModel(),
   shadowPierre: silhouette(pierreModel()),
   shadowMousse: silhouette(mousseModel()),
+  shadowEcorce: silhouette(ecorceModel()),
+  shadowChampignon: silhouette(champignonModel()),
   villagerFarmer: villagerModel(VILLAGER_LOOKS.farmer),
   villagerBaker: villagerModel(VILLAGER_LOOKS.baker),
   noisette: villagerModel(VILLAGER_LOOKS.noisette),

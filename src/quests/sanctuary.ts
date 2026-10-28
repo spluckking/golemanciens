@@ -8,9 +8,12 @@ import { drawRiddle, type RiddleMemory } from '../questions/riddleBank';
  * l'énigme du monde à zéro.
  */
 
-/** Étapes du sanctuaire S1 : la pierre, puis les dalles, puis la porte ouverte, puis l'éclosion. */
-export type SanctuaryStep = 'stone' | 'tiles' | 'open' | 'hatched';
+/** Étapes des sanctuaires : pierres-énigmes, énigmes du monde, porte ouverte, éclosion. */
+export type SanctuaryStep = 'stone' | 'tiles' | 'levers' | 'canals' | 'stone2' | 'open' | 'hatched';
+/** S1 (Prairie) : la pierre, puis les dalles, puis la porte ouverte, puis l'éclosion. */
 export const SANCTUARY_STEPS: readonly SanctuaryStep[] = ['stone', 'tiles', 'open', 'hatched'];
+/** S2 (Forêt) : pierre, trois leviers, canaux d'eau, deuxième pierre, porte ouverte, éclosion. */
+export const S2_STEPS: readonly SanctuaryStep[] = ['stone', 'levers', 'canals', 'stone2', 'open', 'hatched'];
 
 /** Avancement enregistré dans la sauvegarde. */
 export interface SanctuaryProgress {
@@ -23,9 +26,13 @@ export function createSanctuaryProgress(): SanctuaryProgress {
   return { step: 'stone', tileFails: 0 };
 }
 
-export function advance(progress: SanctuaryProgress): void {
-  const i = SANCTUARY_STEPS.indexOf(progress.step);
-  if (i < SANCTUARY_STEPS.length - 1) progress.step = SANCTUARY_STEPS[i + 1];
+/** Passe à l'étape suivante ; les échecs de l'énigme du monde repartent de zéro. */
+export function advance(progress: SanctuaryProgress, steps: readonly SanctuaryStep[] = SANCTUARY_STEPS): void {
+  const i = steps.indexOf(progress.step);
+  if (i < steps.length - 1) {
+    progress.step = steps[i + 1];
+    if (steps !== SANCTUARY_STEPS) progress.tileFails = 0;
+  }
 }
 
 /** Pierre-énigme : énigme de la banque au niveau fixé par la phase, sans adaptation. */
@@ -62,15 +69,15 @@ export const HINT_AFTER_FAILS = 3;
  * Dalles fleuries : marcher sur les dalles dans l'ordre de la fresque. Une erreur éteint
  * toutes les dalles et il faut recommencer. Remarcher sur la dalle déjà allumée ne compte pas.
  */
-export class TilePuzzle {
-  /** Dalles allumées, dans l'ordre. */
-  lit: TileColor[] = [];
+export class TilePuzzle<T extends string = TileColor> {
+  /** Dalles allumées (ou leviers abaissés), dans l'ordre. */
+  lit: T[] = [];
   fails = 0;
   solved = false;
 
-  constructor(readonly sequence: readonly TileColor[] = S1_FRESCO) {}
+  constructor(readonly sequence: readonly T[] = S1_FRESCO as unknown as readonly T[]) {}
 
-  step(color: TileColor): TileResult {
+  step(color: T): TileResult {
     if (this.solved) return 'ignored';
     if (this.lit.length > 0 && this.lit[this.lit.length - 1] === color) return 'ignored';
     if (color !== this.sequence[this.lit.length]) {
@@ -96,3 +103,7 @@ export class TilePuzzle {
     if (!this.solved) this.lit = [];
   }
 }
+
+/** Les trois leviers de S2 (CONTENU.md) : ce qui brille le jour, puis la nuit, puis ce qui scintille. */
+export type LeverSymbol = 'sun' | 'moon' | 'star';
+export const S2_LEVER_ORDER: readonly LeverSymbol[] = ['sun', 'moon', 'star'];

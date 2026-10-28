@@ -6,7 +6,7 @@ import type { AttackSlot } from './balance';
  * Type d'une attaque (révision 1.4) : la faiblesse d'un monstre se compare au type de l'attaque.
  * C'est l'élément du golem par défaut ; certaines attaques ont un autre type (☀️ Soleil).
  */
-export type AttackType = 'rock' | 'plant' | 'sun' | 'star';
+export type AttackType = 'rock' | 'plant' | 'sun' | 'spore' | 'star';
 
 /** Élément d'un golem : le type de ses attaques par défaut. */
 export type Element = AttackType;
@@ -15,6 +15,7 @@ export const TYPE_ICON: Record<AttackType, string> = {
   rock: '🪨',
   plant: '🌿',
   sun: '☀️',
+  spore: '🍄',
   star: '✨',
 };
 
@@ -22,6 +23,7 @@ export const TYPE_NAME: Record<AttackType, string> = {
   rock: 'Roche',
   plant: 'Plante',
   sun: 'Soleil',
+  spore: 'Spore',
   star: 'Étoile',
 };
 
@@ -39,7 +41,7 @@ export interface AttackInfo {
   effect?: AttackEffect;
 }
 
-export type GolemSpecies = 'pierre' | 'mousse';
+export type GolemSpecies = 'pierre' | 'mousse' | 'ecorce' | 'champignon';
 
 export interface GolemInfo {
   name: string;
@@ -72,6 +74,30 @@ export const GOLEMS: Record<GolemSpecies, GolemInfo> = {
       { slot: 'ultimate', name: 'Jardin géant', kind: 'magic', type: 'plant' },
     ],
   },
+  // Phase 2. Règle de conception (§ 4.1) : chacun a, dès l'éclosion, une attaque 🍄 (faiblesse de la Reine Araignée).
+  // Écorce : A2 « Spores de mousse » (🍄) remplace « Pluie de feuilles » (décision du jalon 2, à valider).
+  ecorce: {
+    name: 'Écorce',
+    element: 'plant',
+    phase: 2,
+    attacks: [
+      { slot: 'a1', name: 'Coup de branche', kind: 'force', type: 'plant' },
+      { slot: 'a2', name: 'Spores de mousse', kind: 'magic', type: 'spore' },
+      { slot: 'a3', name: 'Racines', kind: 'force', type: 'plant', effect: 'stun' },
+      { slot: 'ultimate', name: 'Forêt vivante', kind: 'magic', type: 'plant' },
+    ],
+  },
+  champignon: {
+    name: 'Champignon',
+    element: 'spore',
+    phase: 2,
+    attacks: [
+      { slot: 'a1', name: 'Coup de chapeau', kind: 'force', type: 'spore' },
+      { slot: 'a2', name: 'Nuage de spores', kind: 'magic', type: 'spore' },
+      { slot: 'a3', name: 'Spores dodo', kind: 'magic', type: 'spore', effect: 'sleep' },
+      { slot: 'ultimate', name: 'Champignon géant', kind: 'force', type: 'spore' },
+    ],
+  },
 };
 
 /** Attaques débloquées par stade (§ 4.3, révision 1.4) : A1 et A2 au stade 1, A3 au stade 2, Ultime au stade 3. */
@@ -81,7 +107,7 @@ export function unlockedAttacks(species: GolemSpecies, stage: number): AttackInf
   return GOLEMS[species].attacks.filter((a) => stage >= UNLOCK_STAGE[a.slot]);
 }
 
-export type MonsterSpecies = 'slime' | 'zombie' | 'spider';
+export type MonsterSpecies = 'slime' | 'zombie' | 'spider' | 'skeleton' | 'wolf' | 'hopper';
 
 export interface MonsterInfo {
   name: string;
@@ -95,15 +121,21 @@ export const MONSTERS: Record<MonsterSpecies, MonsterInfo> = {
   slime: { name: 'Slime', weakness: 'sun', phase: 1, attack: 'Rebond gluant' },
   zombie: { name: 'Zombie', weakness: 'rock', phase: 1, attack: 'Bras tendus' },
   spider: { name: 'Araignée', weakness: 'plant', phase: 1, attack: 'Morsure' },
+  // Phase 2 (noms d'attaques nouveaux, à valider).
+  skeleton: { name: 'Squelette archer', weakness: 'rock', phase: 2, attack: 'Flèche' },
+  wolf: { name: 'Loup d’ombre', weakness: 'spore', phase: 2, attack: 'Morsure d’ombre' },
+  hopper: { name: 'Champignon sauteur', weakness: 'plant', phase: 2, attack: 'Saut piquant' },
 };
 
-export type BossId = 'roiSlime';
+export type BossId = 'roiSlime' | 'reineAraignee';
 
 /** Une étape d'un boss : faiblesse, attaque, et éventuelle armure (seul un type l'entame). */
 export interface BossStage {
   weakness: AttackType;
   attack: string;
   armorOnly?: AttackType;
+  /** Son attaque étourdit le golem actif (il passe son prochain tour). */
+  stuns?: boolean;
 }
 
 export interface BossInfo {
@@ -119,6 +151,15 @@ export const BOSSES: Record<BossId, BossInfo> = {
     stages: [
       { weakness: 'sun', attack: 'Écrasement gluant' },
       { weakness: 'sun', attack: 'Pluie de gouttes' },
+    ],
+  },
+  // Étape 2 : « Toile », qui étourdit un tour (SPEC § 5.1).
+  reineAraignee: {
+    name: 'Reine Araignée',
+    phase: 2,
+    stages: [
+      { weakness: 'spore', attack: 'Crochets d’argent' },
+      { weakness: 'spore', attack: 'Toile', stuns: true },
     ],
   },
 };

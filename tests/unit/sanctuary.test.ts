@@ -81,6 +81,8 @@ describe('contenu du sanctuaire S1', () => {
     const md = readFileSync('CONTENU.md', 'utf8');
     const { S1_HINT } = await import('../../src/data/sanctuaries');
     expect(md).toContain(S1_HINT);
+    const { S2_INSCRIPTION, S2_LEVER_HINT, S2_CANAL_HINT } = await import('../../src/data/sanctuaries');
+    for (const text of [S2_INSCRIPTION, S2_LEVER_HINT, S2_CANAL_HINT]) expect(md).toContain(text);
     expect(md).toContain('rouge, jaune, bleue');
   });
 });

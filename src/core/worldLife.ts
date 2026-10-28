@@ -30,7 +30,7 @@ const LANTERN_RADIUS = 3;
 const ARCH_RADIUS = 3;
 const AIM_RANGE = 9;
 const AIM_CONE = Math.cos((40 * Math.PI) / 180);
-const MONSTER_COLORS: Record<MonsterAgent['species'], number> = { slime: 0x6ed46e, zombie: 0x7fae6a, spider: 0x6b4a2e };
+const MONSTER_COLORS: Record<MonsterAgent['species'], number> = { slime: 0x6ed46e, zombie: 0x7fae6a, spider: 0x6b4a2e, skeleton: 0xeeeae0, wolf: 0x3e3e4c, hopper: 0x8a4ac8 };
 
 /** Ce que le jeu fournit à la vie d'un biome. */
 export interface WorldHooks {
@@ -565,7 +565,7 @@ export abstract class WorldLife {
 
 function animateMonster(m: MonsterAgent, view: CreatureView): void {
   const model = view.model;
-  if (m.species === 'slime') {
+  if (m.species === 'slime' || m.species === 'hopper') {
     const hop = Math.abs(Math.sin(view.phase * 1.4));
     const body = model.part('body');
     if (body) {

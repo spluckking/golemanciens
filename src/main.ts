@@ -7,7 +7,7 @@ import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
 import { CINEMATICS, OUTRO_CINEMATICS, storyCaptions } from './story/cinematics';
-import { SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
+import { S2_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
 import { checkpointState } from './core/checkpoints';
 import { applyBlockTheme } from './ui/theme';
@@ -15,6 +15,7 @@ import { loadGame } from './save/store';
 import { audio } from './audio/audio';
 import type { ArenaFight } from './core/arenaFight';
 import type { PrairieLife } from './core/prairieLife';
+import { ForestLife } from './core/forestLife';
 
 declare global {
   interface Window {
@@ -30,6 +31,7 @@ declare global {
       teleport: (x: number, z: number, facing?: number) => void;
       drawCalls: () => number;
       sanctuary: () => ReturnType<PrairieLife['sanctuary']['snapshot']>;
+      forestSanctuary: () => ReturnType<ForestLife['sanctuary']['snapshot']>;
       quests: () => ReturnType<PrairieLife['quests']['snapshot']>;
       interactables: () => string[];
       answer: () => number;
@@ -61,9 +63,12 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   // La partie est enregistrée dans la tablette ; en mode test, seulement avec « &save ».
   const persist = !isTest || params.has('save');
   const state = (persist ? await loadGame() : null) ?? createGameState();
-  // Mode test : « ?test&sanctuary=tiles|open|hatched » avance la quête de l'œuf (avant la construction du monde).
+  // Mode test : « ?test&sanctuary=tiles|open|hatched » avance la quête de l'œuf de la Prairie ;
+  // « &forestSanctuary=levers|canals|stone2|open|hatched » celle de la Forêt (avant la construction du monde).
   const step = params.get('sanctuary');
-  if (isTest && step && SANCTUARY_STEPS.includes(step as SanctuaryStep)) progress(state).sanctuary.step = step as SanctuaryStep;
+  if (isTest && step && SANCTUARY_STEPS.includes(step as SanctuaryStep)) progress(state, 'prairie').sanctuary.step = step as SanctuaryStep;
+  const forestStep = params.get('forestSanctuary');
+  if (isTest && forestStep && S2_STEPS.includes(forestStep as SanctuaryStep)) progress(state, 'foret').sanctuary.step = forestStep as SanctuaryStep;
   // Mode test : graine fixe, pour des tirages reproductibles.
   const rng = createRng(isTest ? 12345 : (Date.now() ^ 0x9e3779b9) >>> 0);
   // Mode test : « ?test&fast » divise les attentes par 2,5.
@@ -135,6 +140,10 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       teleport: (x, z, facing) => game.teleport(x, z, facing),
       drawCalls: () => game.drawCalls,
       sanctuary: () => prairie().sanctuary.snapshot(),
+      forestSanctuary: () => {
+        if (!(game.life instanceof ForestLife)) throw new Error('Le héros n’est pas dans la Forêt');
+        return game.life.sanctuary.snapshot();
+      },
       quests: () => prairie().quests.snapshot(),
       interactables: () => game.interactions.ids(),
       answer: () => shownQuestion()?.correctIndex ?? -1,

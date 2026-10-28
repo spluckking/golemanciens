@@ -211,11 +211,32 @@ export function buildLair(world: VoxelWorld, cx: number, cz: number, floorY: num
   };
 }
 
+/** Plan du sanctuaire de Mousse (S2) : où se trouvent pierres, leviers, canaux, haie et porte. */
+export interface MossPlan {
+  floorY: number;
+  entrance: Point2;
+  stone1: Point2;
+  stone2: Point2;
+  stele: Point2;
+  levers: { symbol: 'sun' | 'moon' | 'star'; x: number; z: number }[];
+  /** Haie de branches entre l'entrée et la cour : elle s'ouvre avec les leviers (« le pont de branches »). */
+  hedgeGap: Cell[];
+  /** Porte du temple : elle s'ouvre avec la deuxième pierre. */
+  door: Cell[];
+  /** Grille des canaux : centre du morceau (0, 0) et écart entre deux morceaux. */
+  canal: { x0: number; z0: number; step: number };
+  spring: Point2;
+  mill: Point2;
+  restart: Point2;
+  nest: Point2;
+}
+
 /**
- * Ruines du sanctuaire de Mousse : un enclos de pierre moussue de 15 × 13, ouvert à l'ouest,
- * et un petit temple au fond. Les énigmes (leviers, canaux, pierres) sont posées à la sous-étape 2.4.
+ * Ruines du sanctuaire de Mousse : un enclos de pierre moussue de 15 × 13, ouvert à l'ouest.
+ * À l'ouest, la première pierre, la stèle et les trois leviers ; une haie de branches ; à l'est,
+ * les canaux d'eau, la deuxième pierre et le petit temple du nid. (cx, cz) = centre.
  */
-export function buildMossRuins(world: VoxelWorld, cx: number, cz: number, floorY: number): { entrance: Point2; nest: Point2 } {
+export function buildMossRuins(world: VoxelWorld, cx: number, cz: number, floorY: number): MossPlan {
   for (let dx = -7; dx <= 7; dx++)
     for (let dz = -6; dz <= 6; dz++) {
       const x = cx + dx;
@@ -227,13 +248,39 @@ export function buildMossRuins(world: VoxelWorld, cx: number, cz: number, floorY
       // Murs en ruine : hauteur irrégulière.
       if (wall && !entrance) for (let y = floorY; y < floorY + 2 + ((dx * 3 + dz * 5) & 1); y++) world.set(x, y, z, Block.MossStone);
     }
-  // Temple du fond : 5 × 5, toit de pierre moussue, porte vers l'ouest.
+  // Haie de branches (2 de haut) au milieu ; son passage (2 cases) s'ouvre avec les leviers.
+  const hedgeGap: Cell[] = [];
+  for (let dz = -5; dz <= 5; dz++)
+    for (let y = floorY; y < floorY + 2; y++) {
+      world.set(cx - 2, y, cz + dz, Block.Leaves);
+      if (dz === -1 || dz === 0) hedgeGap.push({ x: cx - 2, y, z: cz + dz });
+    }
+  // Temple du fond : 5 × 5, toit de pierre moussue, porte (fermée) vers l'ouest.
+  const door: Cell[] = [];
   for (let dx = 3; dx <= 7; dx++)
     for (let dz = -2; dz <= 2; dz++) {
       const edge = dx === 3 || dx === 7 || Math.abs(dz) === 2;
-      const door = dx === 3 && dz === 0;
-      for (let y = floorY; y < floorY + 3; y++) world.set(cx + dx, y, cz + dz, edge && !door ? Block.MossStone : Block.Air);
+      for (let y = floorY; y < floorY + 3; y++) world.set(cx + dx, y, cz + dz, edge ? Block.MossStone : Block.Air);
       world.set(cx + dx, floorY + 3, cz + dz, Block.MossStone);
+      if (dx === 3 && dz === 0) for (let y = floorY; y < floorY + 2; y++) door.push({ x: cx + dx, y, z: cz + dz });
     }
-  return { entrance: { x: cx - 8.5, z: cz + 0.5 }, nest: { x: cx + 5.5, z: cz + 0.5 } };
+  return {
+    floorY,
+    entrance: { x: cx - 8.5, z: cz + 0.5 },
+    stone1: { x: cx - 4.5, z: cz + 2.5 },
+    stele: { x: cx - 4.5, z: cz - 4.4 },
+    levers: [
+      { symbol: 'moon', x: cx - 5.5, z: cz - 2.5 },
+      { symbol: 'star', x: cx - 4.0, z: cz - 2.5 },
+      { symbol: 'sun', x: cx - 2.5 - 0.5, z: cz - 2.5 },
+    ],
+    hedgeGap,
+    door,
+    stone2: { x: cx + 1.5, z: cz - 2.5 },
+    canal: { x0: cx - 0.5, z0: cz + 3.3, step: 1.3 },
+    spring: { x: cx - 1.4, z: cz + 4.6 },
+    mill: { x: cx + 5.2, z: cz + 4.6 },
+    restart: { x: cx - 0.5, z: cz + 1.6 },
+    nest: { x: cx + 5.5, z: cz + 0.5 },
+  };
 }

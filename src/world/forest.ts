@@ -1,6 +1,6 @@
 import { createRng, randInt } from '../core/rng';
 import { Block, Tile, type TileId } from './blocks';
-import { buildBridge, buildLair, buildMossRuins, buildTreeVillage, type BrokenBridge, type LairPlan, type TreeVillagePlan } from './forestStructures';
+import { buildBridge, buildLair, buildMossRuins, buildTreeVillage, type BrokenBridge, type LairPlan, type MossPlan, type TreeVillagePlan } from './forestStructures';
 import type { Camp, Decoration, Point2, WorldLayout } from './layout';
 import { Noise2D } from './noise';
 import { buildArena, type ArenaPlan } from './structures';
@@ -43,7 +43,7 @@ export interface ForestLayout extends WorldLayout {
   brokenBridge: BrokenBridge;
   arena: ArenaPlan;
   lair: LairPlan;
-  sanctuary: { center: Point2; floorY: number; entrance: Point2; nest: Point2 };
+  sanctuary: MossPlan & { center: Point2 };
   /** Rune d'éveil cachée (SPEC § 4.3) : dans un creux entre les racines, au fond de la forêt. */
   rune: Point2;
   /** Champignons de la quête O1 : les bleus comptent, les rouges non. */
@@ -278,7 +278,7 @@ export function generateForest(seed = FOREST_SEED): ForestLayout {
     brokenBridge,
     arena,
     lair,
-    sanctuary: { center: PADS.sanctuary, floorY: BASE_Y, ...ruins },
+    sanctuary: { center: PADS.sanctuary, ...ruins },
     rune,
     mushrooms,
     webs,

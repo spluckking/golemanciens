@@ -10,7 +10,7 @@ import { arenaFight, bestAttack, bossFight, team } from './simulate';
 const RUNS = 2000;
 const ACCURACY = 0.7;
 const SPECIES: GolemSpecies[] = ['pierre', 'mousse'];
-const MONSTER_SPECIES = Object.keys(MONSTERS) as MonsterSpecies[];
+const MONSTER_SPECIES = (Object.keys(MONSTERS) as MonsterSpecies[]).filter((m) => MONSTERS[m].phase === 1);
 
 function share(values: number[], ok: (v: number) => boolean): number {
   return values.filter(ok).length / values.length;

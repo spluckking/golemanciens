@@ -51,3 +51,19 @@ Décisions :
 Texte modifié (objectif de fin du chapitre 1) :
 - avant : « Premier éclat retrouvé ! La suite de l'aventure arrive bientôt. »
 - maintenant : « Va à l'Arche des éclats, à côté de l'Académie »
+
+## Sous-étape 2.4 (sanctuaire de Mousse et éclosion)
+
+Décisions :
+- Écorce : l'attaque A2 s'appelle **« Spores de mousse »** (Magie, 🍄) au lieu de « Pluie de feuilles », pour qu'Écorce puisse viser la faiblesse de la Reine Araignée dès l'éclosion (règle de la spec). Le type 🍄 s'appelle « Spore ».
+- Le sanctuaire : à l'ouest, la première pierre, la stèle et les trois leviers (dans le désordre : lune, étoile, soleil) ; une **haie de branches** au milieu, qui s'écarte quand les leviers sont réussis (c'est mon interprétation de « le pont de branches se déploie », puisqu'il n'y a pas de ravin à franchir) ; à l'est, les canaux, la deuxième pierre et le temple du nid.
+- Canaux : on se tient sur un morceau de rigole et on touche « Tourner ». L'aide de Lumibloc arrive après 12 rotations sans succès (il n'y a pas d'« échec » à proprement parler).
+
+Textes nouveaux :
+- Boutons : « Inscription », « Abaisser », « Tourner »
+- « Les leviers remontent. Relis l'inscription ! »
+- « Les branches s'écartent : un passage s'ouvre ! »
+- « L'eau fait tourner la roue du moulin ! »
+- « La porte du temple s'ouvre ! »
+- Surnoms proposés : Écorce → Brindille, Noyer, Bouleau ; Champignon → Cèpe, Pois, Bolet
+- Attaques des monstres : Squelette archer « Flèche », Loup d'ombre « Morsure d'ombre », Champignon sauteur « Saut piquant » ; Reine Araignée « Crochets d'argent » puis « Toile »

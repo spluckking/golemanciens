@@ -34,16 +34,22 @@ describe('attaques et types', () => {
     expect(unlockedAttacks('pierre', 3).map((a) => a.slot)).toEqual(['a1', 'a2', 'a3', 'ultimate']);
   });
 
-  it('chacun des golems de la phase 1 a, dès le stade 1, une attaque qui vise la faiblesse du Roi Slime', () => {
-    const weakness = BOSSES.roiSlime.stages[0].weakness;
-    for (const species of Object.keys(GOLEMS) as (keyof typeof GOLEMS)[]) {
-      expect(unlockedAttacks(species, 1).some((a) => a.type === weakness)).toBe(true);
-    }
-  });
+  // Règle de conception (§ 4.1) : à chaque phase, chacun des 2 golems vise, dès l'éclosion, la faiblesse du boss.
+  for (const boss of Object.values(BOSSES)) {
+    it(`les golems de la phase ${boss.phase} visent dès le stade 1 la faiblesse de ${boss.name}`, () => {
+      const species = (Object.keys(GOLEMS) as (keyof typeof GOLEMS)[]).filter((s) => GOLEMS[s].phase === boss.phase);
+      expect(species).toHaveLength(2);
+      for (const s of species) expect(unlockedAttacks(s, 1).some((a) => a.type === boss.stages[0].weakness)).toBe(true);
+    });
+  }
 
-  it('chaque monstre de la phase 1 a une faiblesse visée par au moins un golem de la phase', () => {
-    const types = new Set(Object.keys(GOLEMS).flatMap((s) => unlockedAttacks(s as keyof typeof GOLEMS, 1).map((a) => a.type)));
-    for (const m of Object.values(MONSTERS)) expect(types.has(m.weakness)).toBe(true);
+  it('chaque monstre a une faiblesse visée par au moins un golem de sa phase ou d’avant', () => {
+    for (const m of Object.values(MONSTERS)) {
+      const types = new Set(
+        (Object.keys(GOLEMS) as (keyof typeof GOLEMS)[]).filter((s) => GOLEMS[s].phase <= m.phase).flatMap((s) => unlockedAttacks(s, 1).map((a) => a.type)),
+      );
+      expect(types.has(m.weakness), m.name).toBe(true);
+    }
   });
 });
 

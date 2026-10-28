@@ -26,6 +26,10 @@ import { Block } from '../world/blocks';
 import { BIOME_MUSIC, BIOME_NAMES, buildLayout, pendingStory, unlockedBiomes } from '../world/biomes';
 import type { WorldLayout } from '../world/layout';
 import type { PrairieLayout } from '../world/prairie';
+import type { ForestLayout } from '../world/forest';
+import type { Cell } from '../world/structures';
+import type { QuestionView } from '../questions/present';
+import type { GolemSpecies } from '../data/creatures';
 import { buildVolcanoSet } from '../world/volcanoSet';
 import { createAtlasTexture } from '../world/voxelMaterial';
 import { ArenaFight } from './arenaFight';
@@ -401,22 +405,24 @@ export class Game {
       onProgress: () => void this.save(),
       onArch: () => void this.useArch(),
     };
-    if (layout.id === 'foret') return new ForestLife(layout, this.state, this.atlas, this.solid, this.rng, this.interactions, hooks);
+    // Énigmes, éclosion et portes des sanctuaires (communs à tous les biomes).
+    const sanctuary = {
+      rebuild: (cells: Cell[]) => this.biome.rebuildCells(cells),
+      ask: (view: QuestionView) => askQuestion(this.uiLayer, view, this.state.playerName),
+      reveal: (view: QuestionView, chosen: number) => revealAnswer(this.uiLayer, view, chosen, this.state.playerName),
+      chooseGolem: (choices: readonly GolemSpecies[]) => chooseGolem(this.uiLayer, choices),
+      askNickname: (species: GolemSpecies) => askNickname(this.uiLayer, species),
+      lock: (locked: boolean) => this.lock(locked),
+      placeHero: (x: number, z: number, facing: number) => this.teleport(x, z, facing),
+      onProgress: () => void this.save(),
+    };
+    if (layout.id === 'foret') return new ForestLife(layout as ForestLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, sanctuary });
     return new PrairieLife(layout as PrairieLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, {
       ...hooks,
       onSleep: () => this.sleep(),
       onFight: () => void this.startFight('arena'),
       onBossFight: () => void this.startFight('boss'),
-      sanctuary: {
-        rebuild: (cells) => this.biome.rebuildCells(cells),
-        ask: (view) => askQuestion(this.uiLayer, view, this.state.playerName),
-        reveal: (view, chosen) => revealAnswer(this.uiLayer, view, chosen, this.state.playerName),
-        chooseGolem: (choices) => chooseGolem(this.uiLayer, choices),
-        askNickname: (species) => askNickname(this.uiLayer, species),
-        lock: (locked) => this.lock(locked),
-        placeHero: (x, z, facing) => this.teleport(x, z, facing),
-        onProgress: () => void this.save(),
-      },
+      sanctuary,
     });
   }
 

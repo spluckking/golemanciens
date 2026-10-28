@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONTENT } from '../data/content';
-import { GOLEMS, type GolemSpecies } from '../data/creatures';
+import type { GolemSpecies } from '../data/creatures';
 import {
   S1_EGG_CHOICES,
   S1_HINT,
@@ -11,18 +11,18 @@ import {
   TEXT_TILES_DONE,
   TEXT_TILES_WRONG,
   TEXT_TOUCH_EGG,
-  TEXT_WELCOME_GOLEM,
 } from '../data/sanctuaries';
 import { CubeModel } from '../entities/cubeModel';
 import { MODELS, PORTRAITS, type ModelId } from '../entities/models';
 import { presentRiddle, type QuestionView } from '../questions/present';
 import { RiddleStone, TilePuzzle, advance, type TileColor } from '../quests/sanctuary';
-import { lumiblocLine, NPC_NAMES } from '../story/dialogues';
+import { NPC_NAMES } from '../story/dialogues';
 import type { DialogBubble } from '../ui/dialog';
 import type { Cell, SanctuaryPlan } from '../world/structures';
 import type { VoxelWorld } from '../world/voxelWorld';
 import { Block } from '../world/blocks';
-import { createGolem, markSeen, progress, type GameState } from './gameState';
+import { progress, type GameState } from './gameState';
+import { hatchEgg } from './eggHatch';
 import { audio } from '../audio/audio';
 import { recordRiddle } from './stats';
 import type { Interactable, Interactions } from './interactions';
@@ -69,8 +69,6 @@ interface Tile {
   off: CubeModel;
   on: CubeModel;
 }
-
-const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Sanctuaire des Fleurs en jeu (CONTENU.md, S1) : pierre-énigme qui ouvre la porte de lianes,
@@ -237,50 +235,22 @@ export class SanctuaryLife {
 
   // ---------- Éclosion ----------
 
-  /** L'œuf tremble et éclot ; deux silhouettes apparaissent ; le joueur choisit, puis donne un surnom s'il veut. */
+  /** L'œuf tremble et éclot, et le joueur choisit son golem (éclosion commune aux sanctuaires). */
   private async hatch(): Promise<void> {
     if (this.busy || this.step !== 'open') return;
     this.busy = true;
     this.hooks.lock(true);
-    const { x, z } = this.plan.nest;
-    const y = this.floorY;
-    // Le héros recule un peu : la caméra voit le nid et les deux silhouettes.
-    this.hooks.placeHero(x - 3.4, z, -Math.PI / 2);
-    this.hooks.dialog.show(lumiblocLine('hatching'));
-    this.wobble = 1.6;
-    await wait(1600);
-    this.egg.root.visible = false;
-    this.hooks.burst(x, y + 0.8, z, 0xf6efdc, 30);
-    audio.sfx('shatter');
-
-    // Silhouettes : à gauche et à droite du nid, vues depuis la porte (gauche = nord).
-    const shadows = S1_EGG_CHOICES.map((species, i) => {
-      const m = this.place(species === 'pierre' ? 'shadowPierre' : 'shadowMousse', x - 0.6, z + (i === 0 ? -1.6 : 1.6), Math.PI / 2);
-      this.hooks.burst(m.root.position.x, y + 1, m.root.position.z, 0x9a8ad0, 14);
-      return { species, model: m };
-    });
-    for (const s of S1_EGG_CHOICES) markSeen(this.state, s);
-    await wait(1400);
-    this.hooks.dialog.close();
-    const species = await this.hooks.chooseGolem(S1_EGG_CHOICES);
-
-    // La silhouette choisie prend ses couleurs, l'autre s'efface.
-    for (const s of shadows) {
-      s.model.root.removeFromParent();
-      if (s.species !== species) this.hooks.burst(s.model.root.position.x, y + 1, s.model.root.position.z, 0x9a8ad0, 10);
-    }
-    const chosen = shadows.find((s) => s.species === species)!;
-    const golem = this.place(species, chosen.model.root.position.x, chosen.model.root.position.z, Math.PI / 2);
-    this.hooks.burst(golem.root.position.x, y + 1, golem.root.position.z, 0xffe27a, 30);
-    audio.sfx('hatch');
-    await wait(500);
-    const nickname = await this.hooks.askNickname(species);
-    golem.root.removeFromParent();
-
-    this.state.golems.push(createGolem(species, nickname));
+    const scene = {
+      egg: this.egg,
+      nest: this.plan.nest,
+      floorY: this.floorY,
+      choices: S1_EGG_CHOICES,
+      place: (id: ModelId, x: number, z: number, facing: number) => this.place(id, x, z, facing),
+      wobble: (seconds: number) => (this.wobble = seconds),
+    };
+    await hatchEgg(scene, this.state, this.hooks);
     advance(progress(this.state).sanctuary);
     this.syncWorld();
-    this.hooks.toast(TEXT_WELCOME_GOLEM.replace('{nom}', nickname || GOLEMS[species].name));
     this.hooks.lock(false);
     this.busy = false;
   }
