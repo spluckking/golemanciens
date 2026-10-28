@@ -23,6 +23,7 @@ import type { Cell, SanctuaryPlan } from '../world/structures';
 import type { VoxelWorld } from '../world/voxelWorld';
 import { Block } from '../world/blocks';
 import { createGolem, markSeen, type GameState } from './gameState';
+import { recordRiddle } from './stats';
 import type { Interactable, Interactions } from './interactions';
 import type { Rng } from './rng';
 
@@ -179,7 +180,9 @@ export class SanctuaryLife {
     for (;;) {
       const view = presentRiddle(this.riddle.current, this.rng);
       const chosen = await this.hooks.ask(view);
+      const level = this.riddle.current.level;
       const res = this.riddle.answer(view.sourceIndex[chosen]);
+      recordRiddle(this.state.stats, level, res.correct);
       if (res.correct) {
         this.hooks.burst(this.plan.stone.x, this.floorY + 1.2, this.plan.stone.z, 0x9ff0ff, 24);
         advance(this.state.sanctuary);

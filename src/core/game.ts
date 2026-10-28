@@ -19,6 +19,7 @@ import { Hud } from '../ui/hud';
 import { openEncyclopedia } from '../ui/encyclopediaScreen';
 import { openGolems } from '../ui/golemsScreen';
 import { openJournal } from '../ui/journal';
+import { openPause } from '../ui/pauseScreen';
 import { TouchControls } from '../ui/touchControls';
 import { WorldLabels } from '../ui/worldLabels';
 import { paintAtlas } from '../world/atlas';
@@ -55,6 +56,10 @@ const TEXT_UNSTUCK = 'Me débloquer';
 const TEXT_SLEPT = 'Tu as bien dormi !';
 const TEXT_SLEPT_GOLEMS = 'Tu as bien dormi ! Tes golems sont en pleine forme.';
 const SLEEP_FADE_MS = 1800;
+/** Pause demandée avec le bouton (texte nouveau, à valider). */
+const TEXT_PAUSE = 'Le jeu est en pause. Tes golems t’attendent !';
+/** Rappel de pause : « Continuer » après 10 s (SPEC.md § 11). */
+const PAUSE_WAIT_S = 10;
 const TEXT_SAVED = 'Bonne nuit ! Partie enregistrée.';
 /** Enregistrement automatique hors combat (SPEC.md § 13). */
 const AUTOSAVE_EVERY_S = 60;
@@ -90,7 +95,10 @@ export class Game {
   private readonly dialog: DialogBubble;
   private readonly fade = el('div', { className: 'soft-fade hidden', testId: 'ko-fade' });
   private readonly sleepFade = el('div', { className: 'sleep-fade hidden', testId: 'sleep-fade' }, [el('span', { className: 'sleep-zzz', text: 'Zzz…' })]);
-  private readonly debug: DebugOverlay | null;
+  private readonly debug: DebugOverlay;
+  private readonly forceDebug: boolean;
+  /** Temps de jeu depuis la dernière pause (rappel de pause, SPEC.md § 11). */
+  private sincePause = 0;
   private readonly solid: SolidFn;
   private readonly hemi: THREE.HemisphereLight;
   private readonly sun: THREE.DirectionalLight;
@@ -102,6 +110,8 @@ export class Game {
   private entered = false;
   /** Énigme ou éclosion en cours : le héros ne bouge plus. */
   private locked = false;
+  /** Le monde est à l'écran (ni cinématique, ni combat). */
+  private inWorld = true;
   /** Combat d'arène en cours. */
   fight: ArenaFight | null = null;
   private readonly timeScale: number;
@@ -171,11 +181,14 @@ export class Game {
       journal: () => void this.showJournal(),
       golems: () => void this.showGolems(),
       encyclopedia: () => void this.showEncyclopedia(),
+      pause: () => void this.showPause(false),
     });
     this.dialog = new DialogBubble(() => this.state.playerName);
     uiLayer.append(this.labels.root, this.controls.root, this.hud.root, this.dialog.root, this.fade, this.sleepFade);
-    this.debug = options.debug ? new DebugOverlay() : null;
-    if (this.debug) uiLayer.appendChild(this.debug.root);
+    // Compteur de FPS : toujours présent, affiché en mode test ou si le parent l'active.
+    this.forceDebug = options.debug;
+    this.debug = new DebugOverlay();
+    uiLayer.appendChild(this.debug.root);
     attachKeyboard(this.input, window);
 
     this.life = new BiomeLife(this.layout, state, atlas, this.solid, rng, this.interactions, {
@@ -249,7 +262,8 @@ export class Game {
     }
     const inWorld = mode !== 'cinematic' && mode !== 'combat';
     // Le compteur de FPS (mode test) ne doit pas cacher les sous-titres.
-    this.debug?.root.classList.toggle('hidden', !inWorld);
+    this.inWorld = inWorld;
+    this.applySettings();
     for (const obj of [this.heroModel.root, this.shadow, this.life.group]) obj.visible = inWorld;
     if (!playing) this.dialog.close();
     this.input.stickX = this.input.stickY = 0;
@@ -411,6 +425,26 @@ export class Game {
     return { text, target, current, done };
   }
 
+  /** Réglages du menu parent : affichage des FPS (les volumes sont lus par le son). */
+  applySettings(): void {
+    this.debug.root.classList.toggle('hidden', !this.inWorld || !(this.forceDebug || this.state.settings.showFps));
+  }
+
+  /**
+   * Pause : par le bouton (on reprend tout de suite), ou rappel de Lumibloc après X minutes de jeu,
+   * au premier moment calme (« Continuer » après 10 s).
+   */
+  private async showPause(reminder: boolean): Promise<void> {
+    if (this.paused) return;
+    this.paused = true;
+    this.input.stickX = this.input.stickY = 0;
+    this.dialog.close();
+    const text = reminder ? CONTENT.lumibloc.pause : TEXT_PAUSE;
+    await openPause(this.uiLayer, text, this.state.playerName, reminder ? PAUSE_WAIT_S * this.timeScale : 0, reminder ? 'pause-reminder' : 'pause');
+    this.sincePause = 0;
+    this.paused = false;
+  }
+
   /** Écran Golems : stats, attaques, repas. La réplique « Repas » de Lumibloc s'affiche la première fois. */
   private async showGolems(): Promise<void> {
     if (this.paused) return;
@@ -507,7 +541,11 @@ export class Game {
     if (this.mode === 'play' && dt > 0) {
       this.state.playTimeS += dt;
       this.sinceSave += dt;
+      this.sincePause += dt;
       if (this.sinceSave >= AUTOSAVE_EVERY_S && !this.fight) void this.save();
+      // Rappel de pause au premier moment calme : pas de combat, de question ni de cinématique.
+      const s = this.state.settings;
+      if (s.pauseReminder && this.sincePause >= s.pauseMinutes * 60 && !this.locked && !this.fight && !this.dialog.isOpen) void this.showPause(true);
     }
     const look = this.input.consumeLook();
     if (playing) this.rig.rotate(-look.dx * LOOK_YAW_PER_PX, look.dy * LOOK_PITCH_PER_PX);

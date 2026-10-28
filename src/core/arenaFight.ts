@@ -16,6 +16,7 @@ import { CombatHud } from '../ui/combatHud';
 import { askChoice, askQuestion, revealAnswer, showMessage } from '../ui/screens';
 import type { FightStage } from '../world/structures';
 import { markSeen, type GameState } from './gameState';
+import { recordCalc, recordRiddle } from './stats';
 import type { Rng } from './rng';
 
 /** Textes nouveaux (à valider par le parent). */
@@ -173,15 +174,16 @@ export class ArenaFight {
 
   // ---------- Questions ----------
 
-  private question(attack: AttackInfo): { view: QuestionView; category: 'calc' | 'riddle' } {
+  /** Question de l'attaque ; record() note la réponse dans les statistiques du menu parent. */
+  private question(attack: AttackInfo): { view: QuestionView; category: 'calc' | 'riddle'; record: (correct: boolean) => void } {
     const { state, rng } = this.host;
     const category = questionCategory(attack);
     if (category === 'calc') {
-      const level = levelForAttack('calc', state.levels.calc, attack.slot);
-      return { view: presentCalc(generateCalc(level, rng), rng), category };
+      const q = generateCalc(levelForAttack('calc', state.levels.calc, attack.slot), rng);
+      return { view: presentCalc(q, rng), category, record: (ok) => recordCalc(state.stats, q, ok) };
     }
-    const level = levelForAttack('riddle', state.levels.riddle, attack.slot);
-    return { view: presentRiddle(drawRiddle(CONTENT.riddles, state.riddles, level, rng), rng), category };
+    const r = drawRiddle(CONTENT.riddles, state.riddles, levelForAttack('riddle', state.levels.riddle, attack.slot), rng);
+    return { view: presentRiddle(r, rng), category, record: (ok) => recordRiddle(state.stats, r.level, ok) };
   }
 
   /** Bulle de Lumibloc (section G de CONTENU.md) la première fois seulement. */
@@ -214,10 +216,11 @@ export class ArenaFight {
         await this.play(c.switchTo(choice.golemId));
         continue;
       }
-      const { view, category } = this.question(choice.attack);
+      const { view, category, record } = this.question(choice.attack);
       const chosen = await askQuestion(this.host.uiLayer, view, name);
       const correct = chosen === view.correctIndex;
       recordAnswer(category, this.host.state.levels[category], correct);
+      record(correct);
       if (!correct) {
         await revealAnswer(this.host.uiLayer, view, chosen, name);
         await this.tutorial('combatMistake');

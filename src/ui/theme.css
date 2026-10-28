@@ -1311,3 +1311,203 @@
 .gs-meal-buttons {
   grid-template-columns: 1fr;
 }
+
+/* ---------- Menu parent ---------- */
+
+.pin-card {
+  width: min(460px, 92vw);
+  gap: 16px;
+}
+
+.pin-message {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.pin-display {
+  font-size: 40px;
+  letter-spacing: 0.3em;
+}
+
+.pin-display.shake {
+  animation: pin-shake 0.3s;
+}
+
+@keyframes pin-shake {
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.pin-key,
+.btn-parent,
+.pm-tab,
+.pm-step,
+.pm-toggle {
+  min-height: 72px;
+  border-radius: 6px;
+  border: 4px solid;
+  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  background: #f4f2ec;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 26px;
+  font-weight: 800;
+  box-shadow: 0 0 0 3px var(--outline);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pin-key:active,
+.btn-parent:active,
+.pm-tab:active,
+.pm-step:active,
+.pm-toggle:active {
+  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+}
+
+.parent-card {
+  width: min(1100px, 96vw);
+  height: min(92vh, 820px);
+  align-items: stretch;
+  gap: 14px;
+}
+
+.parent-card > .card-title,
+.parent-card > .btn-big {
+  align-self: center;
+}
+
+.pm-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.pm-tab {
+  font-size: 22px;
+}
+
+.pm-tab.active {
+  background: #2d3a8c;
+  color: #ffffff;
+  border-color: #6a78d0 #1a2260 #1a2260 #6a78d0;
+}
+
+.pm-content {
+  flex: 1;
+  overflow-y: auto;
+  touch-action: pan-y;
+  min-height: 0;
+}
+
+.pm-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.pm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 21px;
+}
+
+.pm-empty,
+.pm-note {
+  margin: 0;
+  font-size: 18px;
+  color: #4e4a58;
+}
+
+.pm-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pm-step {
+  width: 72px;
+  font-size: 32px;
+}
+
+.pm-value {
+  min-width: 90px;
+  text-align: center;
+  font-size: 24px;
+}
+
+.pm-toggle {
+  min-width: 120px;
+}
+
+.pm-toggle.on {
+  background: #bfeeb2;
+  border-color: #c8f5b8 #2f7a2a #2f7a2a #c8f5b8;
+}
+
+.pm-code {
+  width: 160px;
+  height: 64px;
+  border-radius: 4px;
+  border: 4px solid;
+  border-color: #5a5852 #ffffff #ffffff #5a5852;
+  font-family: inherit;
+  font-size: 28px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.3em;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.pm-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn-parent {
+  padding: 0 20px;
+  font-size: 21px;
+}
+
+.btn-parent.danger {
+  background: #f6d0c8;
+  border-color: #ffe8e2 #a04030 #a04030 #ffe8e2;
+}
+
+/* ---------- Pause ---------- */
+
+.pause-card {
+  width: min(780px, 92vw);
+}
+
+.pause-zzz {
+  font-size: 64px;
+  animation: sleep-zzz 1.6s ease-in-out infinite;
+}
+
+.choice-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}

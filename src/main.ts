@@ -30,6 +30,7 @@ declare global {
       interactables: () => string[];
       answer: () => number;
       fight: () => ReturnType<ArenaFight['snapshot']> | null;
+      save: () => Promise<boolean>;
     };
   }
 }
@@ -63,7 +64,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     state.sanctuary.step = 'hatched';
     for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) state.quests[id].status = id.startsWith('R') ? 'done' : 'available';
   }
-  if (isTest) state.arena.wins = Number(params.get('arenaWins') ?? 0);
+  if (isTest && params.has('arenaWins')) state.arena.wins = Number(params.get('arenaWins'));
   if (isTest && params.get('lesson') === 'done') state.arena.lessonDone = true;
   // « ?test&arena=open&boss=active » : arène terminée et quête du boss acceptée.
   if (isTest && params.get('boss') === 'active') {
@@ -116,6 +117,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       interactables: () => game.interactions.ids(),
       answer: () => shownQuestion()?.correctIndex ?? -1,
       fight: () => game.fight?.snapshot() ?? null,
+      save: () => game.save(),
     };
   } else {
     void app.start();

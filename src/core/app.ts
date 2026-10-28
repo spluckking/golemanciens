@@ -2,7 +2,11 @@ import { CONTENT } from '../data/content';
 import { presentReading } from '../questions/present';
 import { createReadingStats, ReadingLoop } from '../questions/readingLoop';
 import { CINEMATICS, storyCaptions } from '../story/cinematics';
+import { exportSave, parseSave, SaveError } from '../save/saveFile';
+import { clearGame, saveGame } from '../save/store';
+import { askParentCode, openParentMenu, type ParentActions } from '../ui/parentMenu';
 import { askPlayerName, askQuestion, confetti, showMessage, showStory, showTitle } from '../ui/screens';
+import { checkpointState } from './checkpoints';
 import type { Game } from './game';
 import type { GameState } from './gameState';
 import type { Rng } from './rng';
@@ -28,13 +32,53 @@ export class App {
     this.game.setMode('title');
     this.screen = 'title';
     // Partie déjà commencée : « Continuer » (on ne peut effacer la partie que depuis le menu parent).
-    await showTitle(this.layer, this.state.playerName ? 'Continuer' : 'Jouer');
+    // Un appui long sur le logo ouvre le menu parent (code), puis on revient au titre.
+    while ((await showTitle(this.layer, this.state.playerName ? 'Continuer' : 'Jouer')) === 'parent') {
+      if (await askParentCode(this.layer, this.state.settings.parentCode)) await openParentMenu(this.layer, this.parentActions());
+    }
     if (!this.state.playerName) {
       this.screen = 'name';
       this.state.playerName = await askPlayerName(this.layer);
     }
     if (!this.state.storiesRead.includes('T1')) await this.readStory('T1');
     this.play();
+  }
+
+  /** Actions du menu parent : enregistrer, exporter, importer, réinitialiser, aller à un moment du chapitre. */
+  private parentActions(): ParentActions {
+    const reload = (): void => window.location.reload();
+    return {
+      state: this.state,
+      save: () => this.game.save(),
+      applySettings: () => this.game.applySettings(),
+      exportFile: () => {
+        const blob = new Blob([exportSave(this.state)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const day = new Date().toISOString().slice(0, 10);
+        a.download = `golemanciens-${this.state.playerName || 'partie'}-${day}.json`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      },
+      importFile: async (text) => {
+        try {
+          const state = parseSave(text);
+          if (!(await saveGame(state))) return 'Impossible d’enregistrer la partie importée.';
+          reload();
+          return null;
+        } catch (e) {
+          return e instanceof SaveError ? e.message : 'Ce fichier n’est pas une sauvegarde valide.';
+        }
+      },
+      reset: async () => {
+        await clearGame();
+        reload();
+      },
+      checkpoint: async (id) => {
+        await saveGame(checkpointState(this.state, id));
+        reload();
+      },
+    };
   }
 
   play(): void {

@@ -18,14 +18,28 @@ function bigButton(label: string, testId: string, className = 'btn-big'): HTMLBu
 }
 
 /** Écran titre : logo en blocs et bouton Jouer. */
-export function showTitle(layer: HTMLElement, label = 'Jouer'): Promise<void> {
+/** Appui long sur le logo pour ouvrir le menu parent (SPEC.md § 14). */
+export const PARENT_HOLD_MS = 3000;
+
+/** Écran titre : « play » quand on touche le bouton, « parent » après un appui long de 3 s sur le logo. */
+export function showTitle(layer: HTMLElement, label = 'Jouer'): Promise<'play' | 'parent'> {
   return new Promise((resolve) => {
     const play = bigButton(label, 'btn-play');
-    const root = screen('screen-title', 'screen-title', [el('div', { className: 'logo-wrap' }, [createLogo()]), play]);
-    play.addEventListener('click', () => {
+    const logo = el('div', { className: 'logo-wrap', testId: 'title-logo' }, [createLogo()]);
+    const root = screen('screen-title', 'screen-title', [logo, play]);
+    const done = (choice: 'play' | 'parent'): void => {
+      clearTimeout(hold);
       root.remove();
-      resolve();
+      resolve(choice);
+    };
+    let hold = 0;
+    logo.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      clearTimeout(hold);
+      hold = window.setTimeout(() => done('parent'), PARENT_HOLD_MS);
     });
+    for (const ev of ['pointerup', 'pointerleave', 'pointercancel'] as const) logo.addEventListener(ev, () => clearTimeout(hold));
+    play.addEventListener('click', () => done('play'));
     layer.appendChild(root);
   });
 }
