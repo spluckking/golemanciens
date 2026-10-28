@@ -16,7 +16,7 @@ export function animateCape(model: CubeModel, speed: number, airborne: boolean, 
 
 /**
  * Apprenti golémancien : uniforme bleu nuit, cape violette en deux pans, bâton à crosse et gemme lumineuse.
- * 9 pièces, donc 9 appels de dessin. L'origine est entre les pieds ; il regarde vers -Z.
+ * 10 pièces, donc 10 appels de dessin. L'origine est entre les pieds ; il regarde vers -Z.
  */
 export class HeroModel {
   private readonly model = new CubeModel(MODELS.hero);
@@ -28,7 +28,7 @@ export class HeroModel {
 
   constructor() {
     this.staffTip.position.set(...HERO_STAFF_TIP);
-    this.model.part('armR')?.add(this.staffTip);
+    this.model.part('staff')?.add(this.staffTip);
   }
 
   /** Lance l'animation de coup de bâton. */

@@ -17,8 +17,8 @@ function eyes(y: number, z: number, spacing: number, color: number, size = 0.07)
 
 // ---------- Héros ----------
 
-/** Gemme du bâton, dans le repère du bras droit (le bâton est tenu dans la main, devant le bras). */
-export const HERO_STAFF_TIP: [number, number, number] = [0, 0.4, -0.29];
+/** Gemme du bâton, dans le repère du bâton (point de départ des étincelles). */
+export const HERO_STAFF_TIP: [number, number, number] = [0, 0.12, -0.87];
 
 export function heroModel(): ModelDef {
   const skin = 0xf2c6a0;
@@ -80,21 +80,29 @@ export function heroModel(): ModelDef {
     {
       name: 'armR',
       pivot: [0.34, 1.12, 0],
-      rest: [-0.25, 0, 0],
       cubes: [
         [0.16, 0.5, 0.2, 0, -0.22, 0, robe],
         [0.18, 0.06, 0.22, 0, -0.42, 0, trim],
         // Main fermée sur le manche.
-        [0.17, 0.13, 0.27, 0, -0.5, -0.06, skin],
-        // Bâton tenu dans le poing, devant le bras : manche, bague dorée, crosse qui tient la gemme.
-        [0.07, 1.3, 0.07, 0, -0.45, -0.19, wood],
-        [0.09, 0.06, 0.09, 0, -0.05, -0.19, trim],
-        [0.07, 0.07, 0.2, 0, 0.23, -0.29, wood],
-        [0.07, 0.24, 0.07, 0, 0.36, -0.39, wood],
-        [0.07, 0.07, 0.14, 0, 0.5, -0.32, wood],
+        [0.17, 0.14, 0.2, 0, -0.52, -0.02, skin],
       ],
     },
-    { name: 'gem', parent: 'armR', pivot: [0, 0, 0], glow: true, cubes: [[0.15, 0.15, 0.15, ...HERO_STAFF_TIP, 0x6ff0ff], [0.06, 0.06, 0.04, 0.04, 0.44, -0.37, 0xe8ffff]] },
+    // Bâton tenu dans le poing, presque à l'horizontale, pointé vers l'avant : manche, bague dorée,
+    // crosse relevée qui tient la gemme. Repère : la main, l'axe du manche vers -Z.
+    {
+      name: 'staff',
+      parent: 'armR',
+      pivot: [0, -0.52, -0.02],
+      rest: [0.16, 0, 0],
+      cubes: [
+        [0.07, 0.07, 1.25, 0, 0, -0.33, wood],
+        [0.09, 0.09, 0.06, 0, 0, -0.16, trim],
+        [0.09, 0.09, 0.06, 0, 0, 0.26, trim],
+        [0.07, 0.3, 0.07, 0, 0.12, -0.99, wood],
+        [0.07, 0.07, 0.16, 0, 0.27, -0.9, wood],
+      ],
+    },
+    { name: 'gem', parent: 'staff', pivot: [0, 0, 0], glow: true, cubes: [[0.14, 0.14, 0.14, 0, 0.12, -0.87, 0x6ff0ff], [0.05, 0.05, 0.04, 0.04, 0.16, -0.93, 0xe8ffff]] },
   ];
 }
 
