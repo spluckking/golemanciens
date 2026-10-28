@@ -1275,6 +1275,12 @@ export const CONTENT: Content = {
     "firstEvolutionItem": "Une Rune d'éveil ! Va dans l'écran Golems pour la donner à l'un de tes golems.",
     "meal": "Donne un repas à un golem pour le rendre plus solide ou plus fort. Mais attention, chaque golem ne peut manger que 4 repas par stade !",
     "galaxy": "Choisis bien : un seul de tes golems pourra devenir Galaxie.",
+    "starsStart": "Les cinq éclats sont réunis, mais la Poussière d'étoile n'obéit qu'à un vrai golémancien. Allume les douze étoiles de la constellation : chaque bonne réponse en allume une. Prends ton temps, ce sont les questions les plus difficiles de Cubeterre !",
+    "stars4": "Déjà quatre étoiles ! La constellation commence à se dessiner.",
+    "stars8": "Huit étoiles ! Plus que quatre, tu y es presque.",
+    "starsMistake": "Cette étoile hésite encore. Regarde l'explication, puis essaie celle-ci !",
+    "starsEnd": "Les douze étoiles brillent ! La Poussière d'étoile t'a choisi. Maintenant, choisis le golem qui deviendra Galaxie.",
+    "starsLater": "Revenir plus tard",
     "pause": "Tu joues depuis un moment, golémancien ! Tes golems font une petite sieste. Et si tu faisais une pause, toi aussi ?"
   }
 };

@@ -16,10 +16,17 @@ export interface Song {
   drums: string;
   /** Volume de la mélodie (0 à 1), pour les morceaux calmes. */
   leadLevel: number;
+  /**
+   * Nappe d'accords (facultative) : « C4+E4+G4 - - - » ; sans elle, une nappe douce est
+   * déduite de la basse (fondamentale, quinte et octave, une par mesure).
+   */
+  pad?: string;
+  /** Volume de la nappe (0 à 1). */
+  padLevel?: number;
 }
 
-/** Une partie d'un morceau : les 3 voix, de même longueur. */
-export type Section = Pick<Song, 'lead' | 'bass' | 'drums'>;
+/** Une partie d'un morceau : les voix, de même longueur. */
+export type Section = Pick<Song, 'lead' | 'bass' | 'drums' | 'pad'>;
 
 /** Enchaîne les parties d'un morceau selon sa forme (« A B A2 C »). */
 export function compose(bpm: number, leadLevel: number, sections: Record<string, Section>, form: string): Song {
@@ -28,16 +35,68 @@ export function compose(bpm: number, leadLevel: number, sections: Record<string,
     if (!part) throw new Error(`Partie inconnue : ${name}`);
     const n = voiceLength(part.lead);
     if (voiceLength(part.bass) !== n || voiceLength(part.drums) !== n) throw new Error(`Partie ${name} : voix de longueurs différentes`);
+    if (part.pad && voiceLength(part.pad) !== n) throw new Error(`Partie ${name} : nappe de longueur différente`);
     return part;
   });
-  const join = (voice: keyof Section): string => parts.map((p) => p[voice].trim()).join(' ');
-  return { bpm, leadLevel, lead: join('lead'), bass: join('bass'), drums: join('drums') };
+  const join = (voice: 'lead' | 'bass' | 'drums'): string => parts.map((p) => p[voice].trim()).join(' ');
+  const pad = parts.map((p) => (p.pad ?? autoPad(p.bass)).trim()).join(' ');
+  return { bpm, leadLevel, lead: join('lead'), bass: join('bass'), drums: join('drums'), pad };
+}
+
+const NOTE_INDEX: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+const NOTE_NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+function midiToName(midi: number): string {
+  return `${NOTE_NAMES[midi % 12]}${Math.floor(midi / 12) - 1}`;
+}
+
+/** Nappe déduite de la basse : par mesure (8 croches), fondamentale, quinte et octave au-dessus. */
+export function autoPad(bass: string): string {
+  const tokens = bass.trim().split(/\s+/);
+  const out: string[] = [];
+  for (let bar = 0; bar < tokens.length; bar += 8) {
+    const slice = tokens.slice(bar, bar + 8);
+    const first = slice.find((t) => t !== '-' && t !== '.');
+    if (!first) {
+      out.push(...slice.map(() => '.'));
+      continue;
+    }
+    // La nappe se place entre do 3 et do 4 : ni trop grave, ni dans les pieds de la mélodie.
+    let root = noteToMidi(first);
+    while (root < 48) root += 12;
+    while (root >= 60) root -= 12;
+    out.push([root, root + 7, root + 12].map(midiToName).join('+'), ...slice.slice(1).map(() => '-'));
+  }
+  return out.join(' ');
+}
+
+/** Les notes de la nappe, une liste par voix de l'accord. */
+export function padChords(song: Song): NoteEvent[][] {
+  const pad = song.pad ?? autoPad(song.bass);
+  const tokens = pad.trim().split(/\s+/);
+  const voices: NoteEvent[][] = [];
+  let current: NoteEvent[] = [];
+  tokens.forEach((t, step) => {
+    if (t === '-') {
+      for (const n of current) n.length++;
+      return;
+    }
+    current = [];
+    if (t === '.') return;
+    t.split('+').forEach((name, i) => {
+      const ev = { step, length: 1, hz: midiToHz(noteToMidi(name)) };
+      (voices[i] ??= []).push(ev);
+      current.push(ev);
+    });
+  });
+  return voices;
 }
 
 const PRAIRIE_A: Section = {
   lead: 'E5 G5 C6 G5 A5 G5 E5 - F5 A5 G5 E5 D5 - - . E5 G5 C6 G5 A5 C6 B5 A5 G5 E5 D5 E5 C5 - - .',
   bass: 'C3 . G3 . A2 . E3 . F2 . C3 . G2 . G3 . C3 . G3 . A2 . E3 . F2 . G2 . C3 . . .',
   drums: 'k . h . k . h . k . h . k . h . k . h . k . h . k . h . k h k .',
+  pad: 'C4+E4+G4 - - - A3+C4+E4 - - - F3+A3+C4 - - - G3+B3+D4 - - - C4+E4+G4 - - - A3+C4+E4 - - - F3+A3+C4 - G3+B3+D4 - C4+E4+G4 - - -',
 };
 
 export const SONGS: Record<TrackId, Song> = {
@@ -52,36 +111,60 @@ export const SONGS: Record<TrackId, Song> = {
         lead: 'A5 - C6 - B5 A5 G5 - F5 - A5 - G5 - E5 - D5 - F5 - E5 D5 C5 - D5 - E5 - G5 - - .',
         bass: 'F2 . C3 . F2 . C3 . E2 . B2 . A2 . E3 . D2 . A2 . D3 . A2 . G2 . D3 . G2 . B2 .',
         drums: 'k . . h s . h . k . . h s . h . k . . h s . h . k . h h s h s .',
+        pad: 'F3+A3+C4 - - - - - - - E3+G3+B3 - - - A3+C4+E4 - - - D3+F3+A3 - - - - - - - G3+B3+D4 - - - - - - -',
       },
       A2: {
         lead: 'G5 E5 C6 E5 A5 F5 E5 - F5 A5 C6 A5 G5 - - . E5 G5 C6 D6 E6 D6 C6 A5 G5 A5 B5 D6 C6 - - .',
         bass: PRAIRIE_A.bass,
+        pad: PRAIRIE_A.pad,
         drums: 'k . h h k . h . k . h h k . h . k . h h k . h . k . h h k h k h',
       },
       C: {
         lead: 'C5 - - - E5 - - - G5 - - - E5 - - - F5 - - - A5 - - - G5 - - - - - . .',
         bass: 'C3 - - - - - - - A2 - - - - - - - F2 - - - - - - - G2 - - - - - - -',
         drums: 'h . . . h . . . h . . . h . . . h . . . h . . . h . h . h . h .',
+        pad: 'C4+E4+G4 - - - - - - - A3+C4+E4 - - - - - - - F3+A3+C4 - - - - - - - G3+B3+D4 - - - - - - -',
       },
     },
     'A B A2 C',
   ),
   // Arène : la mineur, entraînant.
-  arena: {
-    bpm: 132,
-    leadLevel: 0.75,
-    lead: 'A4 C5 E5 A5 G5 E5 C5 E5 F5 A5 C6 A5 G5 E5 D5 E5 A4 C5 E5 A5 B5 A5 G5 E5 F5 E5 D5 C5 B4 - A4 .',
-    bass: 'A2 A2 A3 A2 A2 A2 A3 A2 F2 F2 F3 F2 G2 G2 G3 G2 A2 A2 A3 A2 A2 A2 A3 A2 F2 F2 G2 G2 E2 E2 A2 .',
-    drums: 'k h s h k h s h k h s h k k s h k h s h k h s h k h s h k s s s',
-  },
-  // Boss : ré mineur, plus tendu.
-  boss: {
-    bpm: 144,
-    leadLevel: 0.75,
-    lead: 'D5 . F5 D5 A5 . G5 F5 E5 . C5 E5 G5 . F5 E5 D5 . F5 D5 A5 . Bb5 A5 G5 F5 E5 F5 D5 - - .',
-    bass: 'D2 D3 D2 D3 D2 D3 D2 D3 C2 C3 C2 C3 C2 C3 C2 C3 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 A1 A2 A1 A2 A1 A2 A1 A2',
-    drums: 'k . s . k k s . k . s . k k s h k . s . k k s . k s k s k s s s',
-  },
+  arena: compose(
+    132,
+    0.75,
+    {
+      A: {
+        lead: 'A4 C5 E5 A5 G5 E5 C5 E5 F5 A5 C6 A5 G5 E5 D5 E5 A4 C5 E5 A5 B5 A5 G5 E5 F5 E5 D5 C5 B4 - A4 .',
+        bass: 'A2 A2 A3 A2 A2 A2 A3 A2 F2 F2 F3 F2 G2 G2 G3 G2 A2 A2 A3 A2 A2 A2 A3 A2 F2 F2 G2 G2 E2 E2 A2 .',
+        drums: 'k h s h k h s h k h s h k k s h k h s h k h s h k h s h k s s s',
+      },
+      // Un passage en fa, do, ré, mi : la tension monte, puis on revient au thème.
+      B: {
+        lead: 'C6 - B5 A5 G5 - E5 - F5 - G5 A5 E5 - - . D5 E5 F5 G5 A5 - G5 F5 E5 - D5 - C5 B4 A4 .',
+        bass: 'F2 F2 F3 F2 F2 F2 F3 F2 C2 C2 C3 C2 C2 C2 C3 C2 D2 D2 D3 D2 D2 D2 D3 D2 E2 E2 E3 E2 E2 E2 E3 E2',
+        drums: 'k h s h k h s h k h s h k k s h k h s h k h s h k s k s k s s s',
+      },
+    },
+    'A B',
+  ),
+  // Boss : ré mineur, plus tendu ; un second thème plus large (B).
+  boss: compose(
+    144,
+    0.75,
+    {
+      A: {
+        lead: 'D5 . F5 D5 A5 . G5 F5 E5 . C5 E5 G5 . F5 E5 D5 . F5 D5 A5 . Bb5 A5 G5 F5 E5 F5 D5 - - .',
+        bass: 'D2 D3 D2 D3 D2 D3 D2 D3 C2 C3 C2 C3 C2 C3 C2 C3 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 A1 A2 A1 A2 A1 A2 A1 A2',
+        drums: 'k . s . k k s . k . s . k k s h k . s . k k s . k s k s k s s s',
+      },
+      B: {
+        lead: 'A5 - - G5 F5 - E5 - D5 - F5 - A5 - - . Bb5 - A5 G5 F5 - E5 - D5 E5 F5 G5 A5 - - .',
+        bass: 'Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 F2 F3 F2 F3 F2 F3 F2 F3 G1 G2 G1 G2 G1 G2 G1 G2 A1 A2 A1 A2 A1 A2 C#2 E2',
+        drums: 'k . s . k k s h k . s . k k s h k . s . k k s h k s k s s s s s',
+      },
+    },
+    'A B',
+  ),
   // Dragon d'Ombre : do mineur, rapide et menaçant, avec un passage qui s'envole (B).
   dragon: compose(
     152,
@@ -148,8 +231,6 @@ export const SONGS: Record<TrackId, Song> = {
     drums: 'k . . . . . . . k . . . . . . . k . . . . . . . k . . . . . . .',
   },
 };
-
-const NOTE_INDEX: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 
 /** « A4 » → 69 (MIDI) ; « Bb2 », « F#3 ». */
 export function noteToMidi(note: string): number {

@@ -123,6 +123,8 @@ JALON 5 : chapitre 5 complet et évolution Galaxie.
 - Biome Île Céleste (îlots flottants, ponts arc-en-ciel, tours). Golems Nuage et Arc-en-ciel (bonus ×1,5 permanent).
   Monstres de la phase 5. Chutes sans dégâts (retour à la dernière plateforme sûre).
 - Sanctuaire S5 : nuages arc-en-ciel (6 couleurs), balance à contrepoids ⚙️ (toute combinaison égale à 8, herse animée), 2 pierres niveau 5.
+- Épreuve des Étoiles (révision 1.7) : 12 étoiles à allumer au sommet de l'Académie avant la cérémonie, avec le calcul
+  niveau 7 « défi » (générateur testé sur 1000 tirages comme les autres niveaux), progression enregistrée.
 - Quêtes de la phase 5, arène, quête P5, Griffon d'Ombre, outro O5 avec la cérémonie de la Poussière d'étoile :
   choix d'un golem au stade 4, transformation en Galaxie (nouveau modèle étoilé, attaques ✨).
   Garantie : si aucun golem n'est au stade 4, Lumibloc donne les objets manquants.

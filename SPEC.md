@@ -133,6 +133,7 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 | **Poussière d'étoile** (×1, fin de phase 5) | Formée par les 5 éclats réunis | Un seul golem au **stade 4**, choisi par le joueur, devient **Galaxie** : ×1,4, nouveau modèle, toutes ses attaques deviennent ✨ Étoile |
 
 - Un objet ne s'applique qu'à un golem du **bon stade**. L'interface grise les autres.
+- **Épreuve des Étoiles** (révision 1.7) : avant la cérémonie de la Poussière d'étoile, le joueur doit allumer les **12 étoiles** d'une constellation au sommet de l'Académie, une par bonne réponse. C'est l'épreuve la plus longue et la plus difficile du jeu : 6 calculs du **niveau 7 « défi »** (§ 8.1, réservé à cette épreuve), 3 calculs du niveau 6 et 3 énigmes du niveau 5, en alternance, sans adaptation de difficulté. Rien de punitif : pas de chrono ; une erreur montre l'explication et propose une autre question du même genre, sans éteindre d'étoile ; les étoiles allumées sont enregistrées, et l'on peut partir (« Revenir plus tard ») et reprendre à tout moment. Lumibloc encourage à la 4e et à la 8e étoile. Quand la constellation est complète, le joueur choisit le golem au stade 4, puis l'outro O5 raconte la naissance du Galaxie.
 - **Garantie** : les objets donnés par les boss suffisent à amener un golem au stade 4. Si le joueur arrive à la Poussière d'étoile sans golem au stade 4, Lumibloc lui donne les objets manquants, avec une ligne de dialogue.
 - **Animation d'évolution** : flash, golem en rotation, nouveau modèle, son ascendant. Moins de 4 s, et on peut la passer.
 
@@ -261,6 +262,7 @@ Une même boîte de dialogue sert à tout : grande carte centrale, texte en au m
 | 4 | + et − avec des centaines jusqu'à 1000 (ex. 340 + 200, 700 − 250) ; tables ×7, ×8, ×9 ; compléments à 100 |
 | 5 | + jusqu'à 1000 avec retenue ; toutes les tables de 1 à 10 mélangées ; petits problèmes de monnaie (euros entiers) et d'heure (heure pile, demie, ajouter 15 ou 30 min) |
 | 6 | Problèmes à 2 étapes simples ; ×10 et ×100 ; partages simples dans les tables (« 24 billes pour 4 amis ») |
+| 7 « défi » (révision 1.7, **Épreuve des Étoiles seulement**) | Nombre à 2 chiffres × 1 chiffre (jusqu'à 49 × 9, ex. 23 × 4) ; partages exacts jusqu'à 100 par 2 à 9 (« 72 étoiles en 8 groupes ») ; problèmes à 2 étapes avec des centaines, résultat jusqu'à 1000 |
 
 - **Les tables de 1 à 10 sont toutes couvertes** au fil des niveaux.
 - **Distracteurs plausibles et distincts** : ±1, ±10, table voisine (a × (b ± 1)), inversion addition/soustraction. Tous sont positifs et différents de la bonne réponse.
@@ -274,7 +276,7 @@ Une même boîte de dialogue sert à tout : grande carte centrale, texte en au m
 
 ### 8.3 Difficulté adaptative
 
-- Il y a un **niveau courant par catégorie** : calcul de 1 à 6, énigme de 1 à 5. Les deux commencent à 1, ou à la valeur réglée dans le menu parent.
+- Il y a un **niveau courant par catégorie** : calcul de 1 à 6, énigme de 1 à 5. Le niveau 7 de calcul n'est jamais atteint par l'adaptation : il est réservé à l'Épreuve des Étoiles. Les deux commencent à 1, ou à la valeur réglée dans le menu parent.
 - **3 réussites d'affilée** font monter d'un niveau, **2 erreurs d'affilée** le font baisser.
 - **Décalage selon l'attaque** : A1 et A2 +0, A3 +1, Ultime +2, dans la limite des bornes.
 - Dans les **sanctuaires**, le niveau des pierres-énigmes est fixé par la phase (§ 10.1), sans adaptation.

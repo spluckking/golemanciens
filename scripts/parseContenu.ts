@@ -15,6 +15,13 @@ const LUMIBLOC_KEYS: Record<string, LumiblocLineKey> = {
   'Repas': 'meal',
   'Galaxie': 'galaxy',
   'Pause': 'pause',
+  // Épreuve des Étoiles (révision 1.7).
+  'Épreuve des Étoiles, début': 'starsStart',
+  'Épreuve des Étoiles, 4e étoile': 'stars4',
+  'Épreuve des Étoiles, 8e étoile': 'stars8',
+  'Épreuve des Étoiles, erreur': 'starsMistake',
+  'Épreuve des Étoiles, fin': 'starsEnd',
+  'Épreuve des Étoiles, bouton pour partir': 'starsLater',
 };
 
 const CHOICE = /^\s*- \[(x| )\] (.+)$/;

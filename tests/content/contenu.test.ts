@@ -15,7 +15,7 @@ describe('CONTENU.md et src/data', () => {
     expect(CONTENT.stories.map((s) => s.id)).toEqual(['T1', 'T2', 'T3', 'T4', 'T5', 'T6']);
     expect(CONTENT.outros.map((o) => o.id)).toEqual(['O1', 'O2', 'O3', 'O4', 'O5', 'O6']);
     expect(CONTENT.riddles).toHaveLength(60);
-    expect(Object.keys(CONTENT.lumibloc)).toHaveLength(11);
+    expect(Object.keys(CONTENT.lumibloc)).toHaveLength(17);
   });
 });
 

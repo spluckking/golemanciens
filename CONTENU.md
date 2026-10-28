@@ -793,6 +793,12 @@ Fin : choix entre **Nuage** et **Arc-en-ciel**.
 - **Premier objet d'évolution** : « Une Rune d'éveil ! Va dans l'écran Golems pour la donner à l'un de tes golems. »
 - **Repas** : « Donne un repas à un golem pour le rendre plus solide ou plus fort. Mais attention, chaque golem ne peut manger que 4 repas par stade ! »
 - **Galaxie** : « Choisis bien : un seul de tes golems pourra devenir Galaxie. »
+- **Épreuve des Étoiles, début** : « Les cinq éclats sont réunis, mais la Poussière d'étoile n'obéit qu'à un vrai golémancien. Allume les douze étoiles de la constellation : chaque bonne réponse en allume une. Prends ton temps, ce sont les questions les plus difficiles de Cubeterre ! »
+- **Épreuve des Étoiles, 4e étoile** : « Déjà quatre étoiles ! La constellation commence à se dessiner. »
+- **Épreuve des Étoiles, 8e étoile** : « Huit étoiles ! Plus que quatre, tu y es presque. »
+- **Épreuve des Étoiles, erreur** : « Cette étoile hésite encore. Regarde l'explication, puis essaie celle-ci ! »
+- **Épreuve des Étoiles, fin** : « Les douze étoiles brillent ! La Poussière d'étoile t'a choisi. Maintenant, choisis le golem qui deviendra Galaxie. »
+- **Épreuve des Étoiles, bouton pour partir** : « Revenir plus tard »
 - **Pause** : « Tu joues depuis un moment, golémancien ! Tes golems font une petite sieste. Et si tu faisais une pause, toi aussi ? »
 
 ---

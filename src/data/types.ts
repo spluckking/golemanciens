@@ -41,7 +41,13 @@ export type LumiblocLineKey =
   | 'firstEvolutionItem'
   | 'meal'
   | 'galaxy'
-  | 'pause';
+  | 'pause'
+  | 'starsStart'
+  | 'stars4'
+  | 'stars8'
+  | 'starsMistake'
+  | 'starsEnd'
+  | 'starsLater';
 
 export interface Content {
   stories: StoryText[];
