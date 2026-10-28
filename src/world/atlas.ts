@@ -156,6 +156,33 @@ const painters: Record<TileId, (t: PixelTile, rng: Rng) => void> = {
     t.set(11, 9, [240, 196, 60]);
     t.set(11, 10, [240, 196, 60]);
   },
+  [Tile.Basalt]: (t, rng) => {
+    t.noise(rng, [52, 46, 58], 0.12);
+    // Petites fissures plus sombres et quelques reflets violets.
+    for (let k = 0; k < 7; k++) {
+      const x = Math.floor(rng() * 14);
+      const y = Math.floor(rng() * 16);
+      t.set(x, y, [32, 28, 38]);
+      t.set(x + 1, y, [32, 28, 38]);
+      t.set(x + 2, y + (rng() < 0.5 ? 1 : 0), [32, 28, 38]);
+    }
+    for (let k = 0; k < 5; k++) t.set(Math.floor(rng() * 16), Math.floor(rng() * 16), [92, 70, 110]);
+  },
+  [Tile.Lava]: (t, rng) => {
+    t.noise(rng, [255, 120, 30], 0.08);
+    // Veines jaunes et croûtes rouge sombre.
+    for (let y = 0; y < 16; y++)
+      for (let x = 0; x < 16; x++) {
+        const v = Math.sin(x * 0.9 + y * 0.5) + Math.sin(y * 1.3 - x * 0.4);
+        if (v > 1.2) t.set(x, y, [255, 226, 90]);
+        else if (v < -1.4) t.set(x, y, jitter([170, 40, 20], rng, 0.1));
+      }
+  },
+  [Tile.Ash]: (t, rng) => {
+    t.noise(rng, [84, 78, 82], 0.1);
+    for (let k = 0; k < 10; k++) t.set(Math.floor(rng() * 16), Math.floor(rng() * 16), [120, 112, 114]);
+    for (let k = 0; k < 3; k++) t.set(Math.floor(rng() * 16), Math.floor(rng() * 16), [230, 110, 40]);
+  },
   [Tile.FlowerRed]: (t) => flower(t, [230, 60, 60], [255, 220, 80]),
   [Tile.FlowerYellow]: (t) => flower(t, [250, 215, 50], [200, 120, 30]),
   [Tile.FlowerBlue]: (t) => flower(t, [80, 130, 240], [255, 255, 255]),

@@ -3,9 +3,11 @@
  * Chaque morceau a 3 voix (mélodie, basse, percussions) sur une grille de croches, en boucle.
  * Notation : « C5 » = do 5, « Bb2 » = si bémol 2, « - » = la note précédente continue, « . » = silence.
  * Percussions : « k » grosse caisse, « s » caisse claire, « h » charleston.
+ * Les morceaux longs sont écrits en parties (A, B…) enchaînées selon une forme (« A B A2 C »),
+ * pour que la boucle ne revienne qu'au bout de 30 s à 1 min.
  */
 
-export type TrackId = 'prairie' | 'arena' | 'boss' | 'storyDay' | 'storyNight' | 'storyMorning';
+export type TrackId = 'prairie' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
 
 export interface Song {
   bpm: number;
@@ -16,15 +18,54 @@ export interface Song {
   leadLevel: number;
 }
 
+/** Une partie d'un morceau : les 3 voix, de même longueur. */
+export type Section = Pick<Song, 'lead' | 'bass' | 'drums'>;
+
+/** Enchaîne les parties d'un morceau selon sa forme (« A B A2 C »). */
+export function compose(bpm: number, leadLevel: number, sections: Record<string, Section>, form: string): Song {
+  const parts = form.trim().split(/\s+/).map((name) => {
+    const part = sections[name];
+    if (!part) throw new Error(`Partie inconnue : ${name}`);
+    const n = voiceLength(part.lead);
+    if (voiceLength(part.bass) !== n || voiceLength(part.drums) !== n) throw new Error(`Partie ${name} : voix de longueurs différentes`);
+    return part;
+  });
+  const join = (voice: keyof Section): string => parts.map((p) => p[voice].trim()).join(' ');
+  return { bpm, leadLevel, lead: join('lead'), bass: join('bass'), drums: join('drums') };
+}
+
+const PRAIRIE_A: Section = {
+  lead: 'E5 G5 C6 G5 A5 G5 E5 - F5 A5 G5 E5 D5 - - . E5 G5 C6 G5 A5 C6 B5 A5 G5 E5 D5 E5 C5 - - .',
+  bass: 'C3 . G3 . A2 . E3 . F2 . C3 . G2 . G3 . C3 . G3 . A2 . E3 . F2 . G2 . C3 . . .',
+  drums: 'k . h . k . h . k . h . k . h . k . h . k . h . k . h . k h k .',
+};
+
 export const SONGS: Record<TrackId, Song> = {
-  // Prairie : do majeur, tranquille et lumineux.
-  prairie: {
-    bpm: 104,
-    leadLevel: 0.8,
-    lead: 'E5 G5 C6 G5 A5 G5 E5 - F5 A5 G5 E5 D5 - - . E5 G5 C6 G5 A5 C6 B5 A5 G5 E5 D5 E5 C5 - - .',
-    bass: 'C3 . G3 . A2 . E3 . F2 . C3 . G2 . G3 . C3 . G3 . A2 . E3 . F2 . G2 . C3 . . .',
-    drums: 'k . h . k . h . k . h . k . h . k . h . k . h . k . h . k h k .',
-  },
+  // Prairie : do majeur, tranquille et lumineux ; un passage plus chantant (B), une reprise
+  // ornée (A2) et une pause toute douce (C) avant de reboucler (environ 37 s).
+  prairie: compose(
+    104,
+    0.8,
+    {
+      A: PRAIRIE_A,
+      B: {
+        lead: 'A5 - C6 - B5 A5 G5 - F5 - A5 - G5 - E5 - D5 - F5 - E5 D5 C5 - D5 - E5 - G5 - - .',
+        bass: 'F2 . C3 . F2 . C3 . E2 . B2 . A2 . E3 . D2 . A2 . D3 . A2 . G2 . D3 . G2 . B2 .',
+        drums: 'k . . h s . h . k . . h s . h . k . . h s . h . k . h h s h s .',
+      },
+      A2: {
+        lead: 'G5 E5 C6 E5 A5 F5 E5 - F5 A5 C6 A5 G5 - - . E5 G5 C6 D6 E6 D6 C6 A5 G5 A5 B5 D6 C6 - - .',
+        bass: PRAIRIE_A.bass,
+        drums: 'k . h h k . h . k . h h k . h . k . h h k . h . k . h h k h k h',
+      },
+      C: {
+        lead: 'C5 - - - E5 - - - G5 - - - E5 - - - F5 - - - A5 - - - G5 - - - - - . .',
+        bass: 'C3 - - - - - - - A2 - - - - - - - F2 - - - - - - - G2 - - - - - - -',
+        drums: 'h . . . h . . . h . . . h . . . h . . . h . . . h . h . h . h .',
+      },
+    },
+    'A B A2 C',
+  ),
   // Arène : la mineur, entraînant.
   arena: {
     bpm: 132,
@@ -41,6 +82,47 @@ export const SONGS: Record<TrackId, Song> = {
     bass: 'D2 D3 D2 D3 D2 D3 D2 D3 C2 C3 C2 C3 C2 C3 C2 C3 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 A1 A2 A1 A2 A1 A2 A1 A2',
     drums: 'k . s . k k s . k . s . k k s h k . s . k k s . k s k s k s s s',
   },
+  // Dragon d'Ombre : do mineur, rapide et menaçant, avec un passage qui s'envole (B).
+  dragon: compose(
+    152,
+    0.75,
+    {
+      A: {
+        lead: 'C5 . Eb5 C5 G5 . F5 Eb5 D5 . Bb4 D5 F5 . Eb5 D5 C5 . Eb5 C5 G5 . Ab5 G5 F5 Eb5 D5 Eb5 C5 - - .',
+        bass: 'C2 C3 C2 C3 C2 C3 C2 C3 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 Bb1 Bb2 Ab1 Ab2 Ab1 Ab2 Ab1 Ab2 Ab1 Ab2 G1 G2 G1 G2 B1 B2 B1 B2',
+        drums: 'k . s . k k s . k . s . k k s h k . s . k k s . k s k s k s s s',
+      },
+      B: {
+        lead: 'G5 - - Ab5 G5 - F5 - Eb5 - - F5 Eb5 - D5 - C5 - - D5 Eb5 - F5 - G5 - Ab5 - B5 - - .',
+        bass: 'Ab1 Ab2 Ab1 Ab2 Ab1 Ab2 Ab1 Ab2 Eb2 Eb3 Eb2 Eb3 Bb1 Bb2 Bb1 Bb2 F1 F2 F1 F2 Ab1 Ab2 Ab1 Ab2 G1 G2 G1 G2 G1 G2 G1 G2',
+        drums: 'k . h . s . h . k . h . s . h . k . h . s . h . k k s s k s s s',
+      },
+    },
+    'A B',
+  ),
+  // Finale et générique : do majeur, fanfare joyeuse.
+  finale: compose(
+    116,
+    0.75,
+    {
+      A: {
+        lead: 'C5 . C5 E5 G5 - - . E5 . G5 C6 E6 - - . D6 C6 B5 A5 G5 - E5 - F5 A5 G5 F5 E5 - - .',
+        bass: 'C3 . G2 . C3 . G2 . C3 . G2 . C3 . E3 . F2 . F2 . G2 . G2 . F2 . F2 . C3 . G2 .',
+        drums: 'k . h . s . h . k . h . s . h . k . h . s . h . k . k . s s s .',
+      },
+      B: {
+        lead: 'A5 - G5 - F5 - E5 - D5 - E5 F5 G5 - - . A5 - B5 - C6 - D6 - E6 - D6 - B5 - G5 -',
+        bass: 'F2 . C3 . F2 . C3 . G2 . D3 . G2 . D3 . A2 . E3 . A2 . E3 . G2 . D3 . G2 . B2 .',
+        drums: 'k . h h s . h . k . h h s . h . k . h h s . h . k s k s k s s s',
+      },
+      A2: {
+        lead: 'C5 E5 G5 C6 E6 - - . D6 - C6 - B5 - G5 - A5 B5 C6 D6 E6 - G5 - C6 - - - - - . .',
+        bass: 'C3 . G2 . C3 . G2 . G2 . D3 . G2 . B2 . F2 . A2 . G2 . B2 . C3 - - - - - . .',
+        drums: 'k . h . s . h . k . h . s . h . k . h . s . h . k . . . k . . .',
+      },
+    },
+    'A B A2',
+  ),
   // Histoire, le jour et le matin : fa majeur, arpèges doux, sans percussions.
   storyDay: {
     bpm: 84,

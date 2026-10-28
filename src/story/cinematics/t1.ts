@@ -25,7 +25,7 @@ export function key(pos: Vec3, look: Vec3): CameraKey {
 }
 
 /** Fait voler le dragon : battements d'ailes, queue qui ondule, cap dans le sens du vol. */
-function flyDragon(dragon: Actor, from: Vec3, to: Vec3, t: number): void {
+export function flyDragon(dragon: Actor, from: Vec3, to: Vec3, t: number): void {
   dragon.x = to[0];
   dragon.y = to[1];
   dragon.z = to[2];
@@ -46,7 +46,7 @@ function flyDragon(dragon: Actor, from: Vec3, to: Vec3, t: number): void {
 }
 
 /** Angle intermédiaire entre deux caps, par le plus court chemin. */
-function turnTowards(from: number, to: number, k: number): number {
+export function turnTowards(from: number, to: number, k: number): number {
   let d = to - from;
   while (d > Math.PI) d -= Math.PI * 2;
   while (d < -Math.PI) d += Math.PI * 2;

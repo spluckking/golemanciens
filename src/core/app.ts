@@ -18,6 +18,8 @@ const RETRY_MESSAGE = 'Relis bien le texte, la réponse s’y cache !';
 /** Enchaînement des écrans : titre → prénom → cinématique et questions du texte 1 → Prairie. */
 export class App {
   screen: ScreenId = 'title';
+  /** Le parent a demandé à voir la fin du jeu depuis le menu parent. */
+  private finaleRequested = false;
 
   constructor(
     private readonly game: Game,
@@ -34,7 +36,15 @@ export class App {
     // Partie déjà commencée : « Continuer » (on ne peut effacer la partie que depuis le menu parent).
     // Un appui long sur le logo ouvre le menu parent (code), puis on revient au titre.
     while ((await showTitle(this.layer, this.state.playerName ? 'Continuer' : 'Jouer')) === 'parent') {
-      if (await askParentCode(this.layer, this.state.settings.parentCode)) await openParentMenu(this.layer, this.parentActions());
+      if (!(await askParentCode(this.layer, this.state.settings.parentCode))) continue;
+      await openParentMenu(this.layer, this.parentActions());
+      if (this.finaleRequested) {
+        this.finaleRequested = false;
+        this.screen = 'cinematic';
+        await this.game.playOutro('O6', 0, false);
+        this.game.setMode('title');
+        this.screen = 'title';
+      }
     }
     if (!this.state.playerName) {
       this.screen = 'name';
@@ -73,6 +83,9 @@ export class App {
       reset: async () => {
         await clearGame();
         reload();
+      },
+      previewFinale: () => {
+        this.finaleRequested = true;
       },
       checkpoint: async (id) => {
         await saveGame(checkpointState(this.state, id));

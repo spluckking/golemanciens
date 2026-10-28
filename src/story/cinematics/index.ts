@@ -2,6 +2,7 @@ import type { Outro, StoryText } from '../../data/types';
 import { groupCaptions, splitSentences, storySentences } from './captions';
 import type { CinematicScript } from './director';
 import { O1_CINEMATIC } from './o1';
+import { O6_CINEMATIC } from './o6';
 import { T1_CINEMATIC } from './t1';
 
 /** Cinématiques des textes d'histoire, par identifiant (les autres arrivent avec leur jalon). */
@@ -12,6 +13,7 @@ export const CINEMATICS: Record<string, CinematicScript> = {
 /** Cinématiques des outros (fin de phase, sans questions). */
 export const OUTRO_CINEMATICS: Record<string, CinematicScript> = {
   O1: O1_CINEMATIC,
+  O6: O6_CINEMATIC,
 };
 
 /** Sous-titres d'une cinématique : les phrases du texte, regroupées plan par plan. */

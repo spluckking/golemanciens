@@ -6,7 +6,7 @@ import { createGameState, createGolem, type GameState } from './core/gameState';
 import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
-import { CINEMATICS, OUTRO_CINEMATICS, outroCaptions, storyCaptions } from './story/cinematics';
+import { CINEMATICS, OUTRO_CINEMATICS, storyCaptions } from './story/cinematics';
 import { SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
 import { applyBlockTheme } from './ui/theme';
@@ -98,8 +98,10 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       state.playerName = 'Testeur';
       state.storiesRead.push('T1');
       state.tutorialsSeen.push('move');
-      const captions = story ? storyCaptions(story, script) : outroCaptions(outro!, script);
-      void game.playCinematic(script, captions, { skippable: true, timeScale, startShot: Number(params.get('shot') ?? 0) }).then(() => app.play());
+      const startShot = Number(params.get('shot') ?? 0);
+      // Les outros passent par le jeu (le générique suit O6).
+      const played = story ? game.playCinematic(script, storyCaptions(story, script), { skippable: true, timeScale, startShot }) : game.playOutro(outro!.id, startShot);
+      void played.then(() => app.play());
     } else if (params.get('start') === 'play') {
       state.playerName = 'Testeur';
       state.storiesRead.push('T1');

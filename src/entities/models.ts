@@ -946,6 +946,26 @@ function trophyRoiSlimeModel(): ModelDef {
 }
 
 /**
+ * Médaille d'or de la fin du jeu (outro O6). Placée au même endroit et avec le même cap que le
+ * héros, elle pend sur sa poitrine : ruban bleu et rouge, disque doré, étoile qui brille.
+ */
+function medalModel(): ModelDef {
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.06, 0.2, 0.02, -0.08, 1.04, -0.175, 0x2d5ad0],
+        [0.06, 0.2, 0.02, 0.08, 1.04, -0.175, 0xd03a3a],
+        [0.18, 0.18, 0.04, 0, 0.88, -0.19, 0xf0c43c],
+        [0.12, 0.12, 0.02, 0, 0.88, -0.205, 0xffd65a],
+      ],
+    },
+    { name: 'star', pivot: [0, 0.88, -0.22], glow: true, cubes: [[0.07, 0.03, 0.02, 0, 0, 0, 0xfff2a8], [0.03, 0.07, 0.02, 0, 0, 0, 0xfff2a8]] },
+  ];
+}
+
+/**
  * Rivet, le golem de maison : petit, rond, couleur cuivre avec des taches de vert-de-gris,
  * un tuyau de poêle sur la tête et un balai. Il ne combat pas.
  */
@@ -1058,6 +1078,7 @@ export const MODELS = {
   bed: bedModel(),
   trophyShelf: trophyShelfModel(),
   trophyRoiSlime: trophyRoiSlimeModel(),
+  medal: medalModel(),
   rivet: houseGolemModel(),
   gong: gongModel(),
   roiSlime: roiSlimeModel(),

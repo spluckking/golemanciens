@@ -1017,3 +1017,65 @@ body {
     opacity: 0.6;
   }
 }
+
+/* ---------- Générique de fin (outro O6) ---------- */
+
+.credits {
+  position: fixed;
+  inset: 0;
+  z-index: 31;
+  overflow: hidden;
+  pointer-events: auto;
+  background: radial-gradient(ellipse at 50% 120%, #2a2a6a 0%, #10123a 55%, #06071c 100%);
+}
+
+.credits-roll {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(900px, 86vw);
+  transform: translate(-50%, 100vh);
+  text-align: center;
+  color: #fff6d8;
+  animation: credits-roll linear both;
+}
+
+@keyframes credits-roll {
+  from {
+    transform: translate(-50%, 100vh);
+  }
+  to {
+    transform: translate(-50%, -100%);
+  }
+}
+
+.credits-logo canvas {
+  max-width: 100%;
+  image-rendering: pixelated;
+}
+
+.credits-section {
+  margin: 9vh 0;
+}
+
+.credits-title {
+  margin: 0 0 12px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffd65a;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.credits-line {
+  margin: 6px 0;
+  font-size: 32px;
+  line-height: 1.4;
+}
+
+.credits-continue {
+  position: absolute;
+  left: 50%;
+  bottom: 12vh;
+  transform: translateX(-50%);
+}

@@ -21,6 +21,8 @@ export interface ParentActions {
   importFile: (text: string) => Promise<string | null>;
   reset: () => Promise<void>;
   checkpoint: (id: CheckpointId) => Promise<void>;
+  /** Demande à voir la fin du jeu (outro O6 et générique) une fois le menu fermé. */
+  previewFinale: () => void;
 }
 
 function button(text: string, testId: string, className = 'btn-parent'): HTMLButtonElement {
@@ -190,13 +192,18 @@ function settingsPanel(a: ParentActions, changed: () => void): HTMLElement {
   ]);
 }
 
-function testPanel(a: ParentActions, changed: () => void): HTMLElement {
+function testPanel(a: ParentActions, changed: () => void, closeMenu: () => void): HTMLElement {
   const food = button('+10 🍎', 'parent-add-food');
   const foodValue = el('strong', { text: `🍎 ${a.state.food}`, testId: 'parent-food' });
   food.addEventListener('click', () => {
     a.state.food += 10;
     foodValue.textContent = `🍎 ${a.state.food}`;
     changed();
+  });
+  const finale = button('Voir la fin du jeu', 'parent-finale');
+  finale.addEventListener('click', () => {
+    a.previewFinale();
+    closeMenu();
   });
   return el('div', { className: 'pm-panel', testId: 'parent-test' }, [
     el('h3', { className: 'journal-section', text: 'Aller à un moment du chapitre 1' }),
@@ -212,6 +219,9 @@ function testPanel(a: ParentActions, changed: () => void): HTMLElement {
     ),
     el('h3', { className: 'journal-section', text: 'Nourriture' }),
     el('div', { className: 'pm-row' }, [foodValue, food]),
+    el('h3', { className: 'journal-section', text: 'Fin du jeu' }),
+    el('p', { className: 'pm-note', text: 'Joue la cinématique de fin (O6) et le générique, sans les ajouter au journal.' }),
+    el('div', { className: 'pm-buttons' }, [finale]),
   ]);
 }
 
@@ -262,10 +272,14 @@ export function openParentMenu(layer: HTMLElement, a: ParentActions): Promise<vo
       a.applySettings();
       void a.save();
     };
+    const closeMenu = (): void => {
+      root.remove();
+      resolve();
+    };
     const tabs: [string, string, () => HTMLElement][] = [
       ['stats', 'Statistiques', () => statsPanel(a.state)],
       ['settings', 'Réglages', () => settingsPanel(a, changed)],
-      ['test', 'Mode test', () => testPanel(a, changed)],
+      ['test', 'Mode test', () => testPanel(a, changed, closeMenu)],
       ['save', 'Sauvegarde', () => savePanel(a)],
     ];
     const content = el('div', { className: 'pm-content' });
@@ -280,10 +294,7 @@ export function openParentMenu(layer: HTMLElement, a: ParentActions): Promise<vo
     const close = button('Fermer', 'parent-close', 'btn-big');
     const card = el('div', { className: 'card parent-card' }, [el('h2', { className: 'card-title', text: '👪 Menu parent' }), el('div', { className: 'pm-tabs' }, tabButtons), content, close]);
     const root = el('div', { className: 'screen screen-message', testId: 'parent-menu' }, [card]);
-    close.addEventListener('click', () => {
-      root.remove();
-      resolve();
-    });
+    close.addEventListener('click', closeMenu);
     layer.appendChild(root);
     tabButtons[0].click();
   });

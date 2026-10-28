@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SONGS, midiToHz, noteToMidi, parseVoice, stepSeconds, voiceLength } from '../../src/audio/music';
+import { SONGS, compose, midiToHz, noteToMidi, parseVoice, stepSeconds, voiceLength } from '../../src/audio/music';
 
 describe('musiques', () => {
   it('notes : la 4 = 440 Hz, altérations', () => {
@@ -16,6 +16,22 @@ describe('musiques', () => {
       [0, 2],
       [3, 1],
     ]);
+  });
+
+  it('compose enchaîne les parties selon la forme', () => {
+    const a = { lead: 'C5 -', bass: 'C3 .', drums: 'k .' };
+    const b = { lead: 'E5 G5', bass: 'G2 .', drums: 'h h' };
+    const song = compose(100, 1, { A: a, B: b }, 'A B A');
+    expect(song.lead).toBe('C5 - E5 G5 C5 -');
+    expect(song.drums).toBe('k . h h k .');
+    expect(() => compose(100, 1, { A: a }, 'A C')).toThrow();
+  });
+
+  it('les musiques de biome durent au moins 30 s avant de reboucler', () => {
+    for (const id of ['prairie'] as const) {
+      const song = SONGS[id];
+      expect(voiceLength(song.lead) * stepSeconds(song.bpm)).toBeGreaterThanOrEqual(30);
+    }
   });
 
   for (const [id, song] of Object.entries(SONGS)) {

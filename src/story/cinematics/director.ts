@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { audio, type SfxId } from '../../audio/audio';
+import type { TrackId } from '../../audio/music';
 import type { SolidFn } from '../../core/physics';
 import { createRng } from '../../core/rng';
 import { formatText } from '../../core/text';
@@ -17,7 +18,16 @@ import { readingSeconds } from './captions';
  * et les sous-titres. Aucun fichier vidéo.
  */
 
-export type SkyPreset = 'day' | 'dusk' | 'night' | 'morning';
+export type SkyPreset = 'day' | 'dusk' | 'night' | 'morning' | 'ember';
+/** Décors construits pour une cinématique (en dehors du biome). */
+export type SetId = 'volcano';
+
+/** Un décor de cinématique : son monde de blocs et son rendu (libéré à la fin). */
+export interface CinematicSet {
+  world: VoxelWorld;
+  group: THREE.Object3D;
+  dispose(): void;
+}
 export type Vec3 = [number, number, number];
 
 /** Position et point visé de la caméra. */
@@ -55,6 +65,8 @@ const SKIES: Record<SkyPreset, SkyLook> = {
   morning: { background: 0xc4e4ff, hemiSky: 0xfff0e0, hemiGround: 0x7a6a50, hemi: 1.7, sun: 1.4, sunColor: 0xffe6c0, stars: 0 },
   dusk: { background: 0xf0a878, hemiSky: 0xffd0a8, hemiGround: 0x5a4058, hemi: 1.25, sun: 0.9, sunColor: 0xff9a60, stars: 0.25 },
   night: { background: 0x141a3c, hemiSky: 0x6070b0, hemiGround: 0x1c1c2c, hemi: 0.75, sun: 0.35, sunColor: 0x8c9cff, stars: 1 },
+  // Ciel du volcan : rouge sombre, lueur de lave par en dessous.
+  ember: { background: 0x8a3a34, hemiSky: 0xffb08a, hemiGround: 0x8a3020, hemi: 1.8, sun: 0.9, sunColor: 0xff7a48, stars: 0 },
 };
 
 const STAR_COUNT = 420;
@@ -143,6 +155,10 @@ export class Actor {
 export interface ShotContext {
   readonly world: VoxelWorld;
   readonly playerName: string;
+  /** Décor du plan : un décor construit pour la cinématique, ou null pour le biome. */
+  set(id: SetId | null): void;
+  /** Musique du plan (sinon, elle suit le ciel). */
+  music(id: TrackId): void;
   ground(x: number, z: number): number;
   actor(id: string, model: ModelId, x: number, z: number, facing: number, opts?: { y?: number; scale?: number }): Actor;
   get(id: string): Actor;
@@ -164,6 +180,10 @@ export interface DirectorHost {
   sparks: Sparks;
   solid: SolidFn;
   uiLayer: HTMLElement;
+  /** Construit un décor de cinématique (dans la même scène, le biome étant caché). */
+  buildSet(id: SetId): CinematicSet;
+  /** Affiche ou cache le biome (pendant un décor de cinématique). */
+  showWorld(visible: boolean): void;
 }
 
 export interface PlayOptions {
@@ -184,8 +204,9 @@ function smooth(t: number): number {
 }
 
 export class CinematicDirector implements ShotContext {
-  readonly world: VoxelWorld;
   playerName = '';
+  private readonly sets = new Map<SetId, CinematicSet>();
+  private currentSet: CinematicSet | null = null;
   private readonly group = new THREE.Group();
   private readonly actors = new Map<string, Actor>();
   private readonly stars: THREE.Points;
@@ -208,7 +229,6 @@ export class CinematicDirector implements ShotContext {
   private saved: { background: THREE.Color; fog: THREE.Color } | null = null;
 
   constructor(private readonly host: DirectorHost) {
-    this.world = host.world;
     const positions = new Float32Array(STAR_COUNT * 3);
     const rng = createRng(0x57a2);
     for (let i = 0; i < STAR_COUNT; i++) {
@@ -233,6 +253,30 @@ export class CinematicDirector implements ShotContext {
   }
 
   // ---------- API des plans ----------
+
+  get world(): VoxelWorld {
+    return this.currentSet?.world ?? this.host.world;
+  }
+
+  set(id: SetId | null): void {
+    const next = id ? (this.sets.get(id) ?? this.buildSet(id)) : null;
+    if (next === this.currentSet) return;
+    if (this.currentSet) this.currentSet.group.visible = false;
+    this.currentSet = next;
+    if (next) next.group.visible = true;
+    this.host.showWorld(!next);
+  }
+
+  private buildSet(id: SetId): CinematicSet {
+    const set = this.host.buildSet(id);
+    this.sets.set(id, set);
+    this.host.scene.add(set.group);
+    return set;
+  }
+
+  music(id: TrackId): void {
+    audio.music(id);
+  }
 
   /** Sol où l'on peut se tenir : le premier vide de 2 blocs en partant du bas (ignore les avancées de toit). */
   ground(x: number, z: number): number {
@@ -370,6 +414,10 @@ export class CinematicDirector implements ShotContext {
     this.group.removeFromParent();
     this.running = false;
     this.shot = null;
+    // Décors libérés : un seul monde en mémoire hors cinématique.
+    this.set(null);
+    for (const s of this.sets.values()) s.dispose();
+    this.sets.clear();
     this.applySky(SKIES.day);
     if (this.saved) {
       (this.host.scene.background as THREE.Color).copy(this.saved.background);
@@ -385,7 +433,8 @@ export class CinematicDirector implements ShotContext {
     for (const a of this.actors.values()) a.update(dt);
     this.shot.update?.(this, this.shotTime, dt);
     for (const a of this.actors.values()) a.sync();
-    this.host.sparks.update(dt, this.host.solid, () => false);
+    const world = this.world;
+    this.host.sparks.update(dt, world === this.host.world ? this.host.solid : (x, y, z) => world.solidAt(x, y, z), () => false);
 
     // Ciel : transition douce entre deux ambiances.
     if (this.skyDuration > 0 && this.skyTime < this.skyDuration) {

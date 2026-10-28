@@ -15,6 +15,10 @@ export const Block = {
   Path: 12,
   Gold: 13,
   Door: 14,
+  /** Volcan (finale) : roche noire, lave, cendre. */
+  Basalt: 15,
+  Lava: 16,
+  Ash: 17,
 } as const;
 export type BlockId = (typeof Block)[keyof typeof Block];
 
@@ -44,6 +48,9 @@ export const Tile = {
   Crate: 21,
   Chest: 22,
   Wheat: 23,
+  Basalt: 24,
+  Lava: 25,
+  Ash: 26,
 } as const;
 export type TileId = (typeof Tile)[keyof typeof Tile];
 
@@ -75,6 +82,9 @@ const defs: Record<number, BlockDef> = {
   [Block.Path]: uniform(Tile.Path),
   [Block.Gold]: uniform(Tile.Gold),
   [Block.Door]: uniform(Tile.Door),
+  [Block.Basalt]: uniform(Tile.Basalt),
+  [Block.Lava]: uniform(Tile.Lava),
+  [Block.Ash]: { top: Tile.Ash, side: Tile.Basalt, bottom: Tile.Basalt },
 };
 
 function uniform(t: TileId): BlockDef {

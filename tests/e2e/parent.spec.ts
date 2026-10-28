@@ -122,3 +122,19 @@ test('bouton Pause, et rappel de pause de Lumibloc (« Continuer » après l’a
   await page.getByTestId('pause-reminder-continue').tap();
   await expect(page.getByTestId('pause-reminder')).toHaveCount(0);
 });
+
+test('menu parent : « Voir la fin du jeu » joue O6 et le générique, sans toucher au journal', async ({ page }) => {
+  await page.goto('?test&fast');
+  await waitReady(page);
+  await openParent(page, '1234');
+  await page.getByTestId('parent-tab-test').tap();
+  await page.getByTestId('parent-finale').tap();
+  await expect(page.getByTestId('parent-menu')).toHaveCount(0);
+  await expect(page.getByTestId('cinematic')).toBeVisible();
+  await page.getByTestId('cinematic-skip').tap();
+  await expect(page.getByTestId('credits')).toBeVisible();
+  await page.getByTestId('credits-skip').tap();
+  // Retour à l'écran titre ; O6 n'est pas dans les histoires lues.
+  await expect(page.getByTestId('title-logo')).toBeVisible();
+  expect(await page.evaluate(() => window.__game!.state().storiesRead)).not.toContain('O6');
+});

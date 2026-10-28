@@ -5,6 +5,9 @@ import { CHUNK_SIZE } from './voxelWorld';
 import type { BiomeLayout } from './prairie';
 import { createVoxelMaterial } from './voxelMaterial';
 
+/** Ce qu'il faut pour dessiner un monde : les blocs et la végétation (biome ou décor de cinématique). */
+export type SceneLayout = Pick<BiomeLayout, 'world' | 'decorations'>;
+
 /** Rendu Three.js d'un biome : chunks opaques, eau et végétation instanciée. */
 export class BiomeScene {
   readonly group = new THREE.Group();
@@ -16,7 +19,7 @@ export class BiomeScene {
   private readonly chunkMeshes = new Map<string, THREE.Mesh[]>();
 
   constructor(
-    private readonly layout: BiomeLayout,
+    private readonly layout: SceneLayout,
     atlas: THREE.Texture,
   ) {
     this.opaqueMat = createVoxelMaterial(atlas);
@@ -87,7 +90,7 @@ export class BiomeScene {
   }
 
   /** Herbes et fleurs : 2 quads croisés, un InstancedMesh par type de tuile. */
-  private addDecorations(layout: BiomeLayout, atlas: THREE.Texture): void {
+  private addDecorations(layout: SceneLayout, atlas: THREE.Texture): void {
     const byTile = new Map<TileId, typeof layout.decorations>();
     for (const d of layout.decorations) {
       const list = byTile.get(d.tile) ?? [];

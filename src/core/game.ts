@@ -20,12 +20,14 @@ import { openEncyclopedia } from '../ui/encyclopediaScreen';
 import { openGolems } from '../ui/golemsScreen';
 import { openJournal } from '../ui/journal';
 import { openPause } from '../ui/pauseScreen';
+import { showCredits } from '../ui/credits';
 import { TouchControls } from '../ui/touchControls';
 import { WorldLabels } from '../ui/worldLabels';
 import { paintAtlas } from '../world/atlas';
 import { BiomeScene } from '../world/biomeScene';
 import { Block } from '../world/blocks';
 import { generatePrairie, type BiomeLayout } from '../world/prairie';
+import { buildVolcanoSet } from '../world/volcanoSet';
 import { createAtlasTexture } from '../world/voxelMaterial';
 import { ArenaFight } from './arenaFight';
 import { BiomeLife } from './biomeLife';
@@ -64,6 +66,8 @@ const PAUSE_WAIT_S = 10;
 const TEXT_SAVED = 'Bonne nuit ! Partie enregistrée.';
 /** Enregistrement automatique hors combat (SPEC.md § 13). */
 const AUTOSAVE_EVERY_S = 60;
+/** L'outro de la fin du jeu, suivie du générique. */
+const FINAL_OUTRO = 'O6';
 /** Un bruit de pas tous les 1,7 bloc parcourus au sol. */
 const STEP_EVERY = 1.7;
 
@@ -106,6 +110,7 @@ export class Game {
   private readonly hemi: THREE.HemisphereLight;
   private readonly sun: THREE.DirectionalLight;
   private readonly director: CinematicDirector;
+  private readonly atlas: THREE.Texture;
   private lastTime = 0;
   private attackCooldown = 0;
   private mode: GameMode = 'play';
@@ -162,6 +167,7 @@ export class Game {
     const world = this.layout.world;
     this.solid = (x, y, z) => world.solidAt(x, y, z);
     const atlas = createAtlasTexture(paintAtlas());
+    this.atlas = atlas;
     this.biome = new BiomeScene(this.layout, atlas);
     this.scene.add(this.biome.group);
 
@@ -228,6 +234,15 @@ export class Game {
       sparks: this.sparks,
       solid: this.solid,
       uiLayer,
+      buildSet: () => {
+        // Un seul décor pour l'instant : le Volcan d'Ombre (outro O6).
+        const { world } = buildVolcanoSet();
+        const scene = new BiomeScene({ world, decorations: [] }, this.atlas);
+        return { world, group: scene.group, dispose: () => scene.dispose() };
+      },
+      showWorld: (visible) => {
+        this.biome.group.visible = visible;
+      },
     });
 
     window.addEventListener('resize', () => this.resize());
@@ -345,13 +360,20 @@ export class Game {
     this.setMode('play');
   }
 
-  /** Outro de fin de phase (cinématique, sans questions) ; elle rejoint « Revoir l'histoire ». */
-  private async playOutro(id: string): Promise<void> {
+  /**
+   * Outro de fin de phase (cinématique, sans questions) ; elle rejoint « Revoir l'histoire ».
+   * L'outro finale O6 est suivie du générique. record = false : aperçu du menu parent, hors journal.
+   */
+  async playOutro(id: string, startShot = 0, record = true): Promise<void> {
     const outro = CONTENT.outros.find((o) => o.id === id);
     const script = OUTRO_CINEMATICS[id];
     if (!outro || !script) return;
-    await this.playCinematic(script, outroCaptions(outro, script), { skippable: true, timeScale: this.timeScale });
-    if (!this.state.storiesRead.includes(id)) this.state.storiesRead.push(id);
+    await this.playCinematic(script, outroCaptions(outro, script), { skippable: true, timeScale: this.timeScale, startShot });
+    if (record && !this.state.storiesRead.includes(id)) this.state.storiesRead.push(id);
+    if (id === FINAL_OUTRO) {
+      audio.music('finale');
+      await showCredits(this.uiLayer, this.state, this.timeScale);
+    }
   }
 
   /** Joue une cinématique, puis revient au mode précédent. */
