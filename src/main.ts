@@ -1,4 +1,5 @@
 import './style.css';
+import './ui/theme.css';
 import { App, type ScreenId } from './core/app';
 import { Game } from './core/game';
 import { createGameState, createGolem, type GameState } from './core/gameState';
@@ -6,6 +7,7 @@ import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
 import { CINEMATICS, storyCaptions } from './story/cinematics';
+import { applyBlockTheme } from './ui/theme';
 
 declare global {
   interface Window {
@@ -28,6 +30,9 @@ const container = document.getElementById('app');
 const ui = document.getElementById('ui');
 const loading = document.getElementById('loading');
 if (!container || !ui) throw new Error('Structure de page incomplète');
+
+// Thème « blocs » : textures en pixels de l'interface, peintes au démarrage.
+applyBlockTheme();
 
 // Pas de menu contextuel ni de zoom au double appui sur tablette.
 window.addEventListener('contextmenu', (e) => e.preventDefault());

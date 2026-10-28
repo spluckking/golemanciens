@@ -364,7 +364,7 @@ export class Game {
     this.stuckTime = 0;
   }
 
-  /** Coup de bâton : étincelle vers la cible la plus proche devant le héros (aide à la visée). */
+  /** Coup de baguette : étincelle vers la cible la plus proche devant le héros (aide à la visée). */
   private castSpark(): void {
     const h = this.hero;
     this.attackCooldown = ATTACK_COOLDOWN;
@@ -373,7 +373,7 @@ export class Game {
     this.heroModel.root.rotation.y = h.facing;
     this.heroModel.playAttack();
     this.heroModel.root.updateMatrixWorld(true);
-    this.heroModel.staffTip.getWorldPosition(this.tipWorld);
+    this.heroModel.wandTip.getWorldPosition(this.tipWorld);
     const tip = this.tipWorld;
     const ox = h.x - Math.sin(h.facing) * 0.5;
     const oz = h.z - Math.cos(h.facing) * 0.5;

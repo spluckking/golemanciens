@@ -6,7 +6,7 @@ const LOOK_SPEED = 1;
 
 /**
  * Commandes tactiles en DOM : joystick dynamique à gauche, zone de caméra à droite,
- * boutons Saut, Bâton et Interagir (contextuel). Fonctionne aussi à la souris.
+ * boutons Saut, Baguette et Interagir (contextuel). Fonctionne aussi à la souris.
  */
 export class TouchControls {
   readonly root: HTMLDivElement;
@@ -27,7 +27,7 @@ export class TouchControls {
     stickZone.appendChild(this.stickBase);
 
     const jump = this.button('btn-action btn-jump', '⬆', 'Saut', 'btn-jump');
-    const attack = this.button('btn-action btn-attack', '✦', 'Bâton', 'btn-attack');
+    const attack = this.button('btn-action btn-attack', '✦', 'Baguette', 'btn-attack');
     this.interactLabel = el('span', { className: 'btn-label', text: 'Parler' });
     this.interactBtn = el('button', { className: 'btn-action btn-interact hidden', aria: 'Interagir', testId: 'btn-interact' }, [
       el('span', { className: 'btn-icon', text: '✋' }),
@@ -95,8 +95,11 @@ export class TouchControls {
     this.stickPointer = e.pointerId;
     this.stickOrigin = { x: e.clientX, y: e.clientY };
     this.stickBase.classList.add('active');
-    this.stickBase.style.left = `${e.clientX}px`;
-    this.stickBase.style.top = `${e.clientY}px`;
+    // Le joystick apparaît exactement sous le pouce : coordonnées relatives à sa zone,
+    // qui ne commence pas en haut de l'écran.
+    const zone = (this.stickBase.parentElement ?? this.root).getBoundingClientRect();
+    this.stickBase.style.left = `${e.clientX - zone.left}px`;
+    this.stickBase.style.top = `${e.clientY - zone.top}px`;
     this.setKnob(0, 0);
   }
 

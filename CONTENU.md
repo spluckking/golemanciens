@@ -777,7 +777,7 @@ Fin : choix entre **Nuage** et **Arc-en-ciel**.
 ## G. Répliques clés de Lumibloc
 
 - **Tutoriel (déplacement)** : « Pose ton pouce à gauche pour marcher. Glisse à droite pour regarder autour de toi. »
-- **Tutoriel (caisse)** : « Une caisse ! Appuie sur le bouton bâton pour la casser. Parfois, il y a des pommes dedans. »
+- **Tutoriel (caisse)** : « Une caisse ! Appuie sur le bouton baguette pour la casser. Parfois, il y a des pommes dedans. »
 - **Éclosion** : « L'œuf hésite… Il peut devenir deux golems différents. À toi de choisir ! »
 - **Premier combat d'arène** : « Ici, pour attaquer, il faut réfléchir ! 🔢, c'est un calcul. 🧩, c'est une énigme. Prends ton temps, il n'y a pas de chrono. »
 - **Faiblesse** : « Regarde l'icône au-dessus du monstre : c'est sa faiblesse. Une attaque avec la même icône fait plus de dégâts ! »

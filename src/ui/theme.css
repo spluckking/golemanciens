@@ -1,0 +1,374 @@
+/* =====================================================================
+   Thème « blocs » : panneaux et boutons en relief, textures en pixels
+   (peintes au démarrage par ui/theme.ts), contours nets, ombres franches.
+   Chargé après style.css : il habille les composants qui y sont définis.
+   ===================================================================== */
+
+:root {
+  --tex-size: 64px;
+  --outline: #15161c;
+  --text-shadow-block: 2px 2px 0 rgba(0, 0, 0, 0.55);
+  --ink: #26252b;
+  font-family: 'Trebuchet MS', system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+#loading {
+  background: var(--tex-plank, none) 0 0 / var(--tex-size), #6b4a28;
+  image-rendering: pixelated;
+  text-shadow: var(--text-shadow-block);
+  font-weight: 800;
+}
+
+/* ---------- Boutons en blocs (HUD, actions) ---------- */
+
+.btn-action,
+.btn-top {
+  border-radius: 8px;
+  border: 4px solid;
+  border-color: #c7c7c7 #404040 #404040 #c7c7c7;
+  background: var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 3px var(--outline),
+    0 6px 14px rgba(0, 0, 0, 0.3);
+  opacity: 0.94;
+  transition:
+    transform 0.08s,
+    filter 0.08s;
+}
+
+.btn-action.pressed,
+.btn-top.pressed,
+.btn-top:active:not(:disabled) {
+  border-color: #404040 #c7c7c7 #c7c7c7 #404040;
+  filter: brightness(0.85);
+  transform: translateY(3px);
+}
+
+.btn-label {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-shadow: var(--text-shadow-block);
+}
+
+.btn-icon {
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.45));
+}
+
+.btn-attack {
+  background: linear-gradient(rgba(70, 140, 220, 0.35), rgba(70, 140, 220, 0.35)), var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
+}
+
+.btn-interact {
+  border-color: #fff0b0 #8a6410 #8a6410 #fff0b0;
+  background: linear-gradient(rgba(240, 196, 60, 0.6), rgba(240, 196, 60, 0.6)), var(--tex-stone) 0 0 / var(--tex-size), #c9a040;
+  animation: pulse-block 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-block {
+  50% {
+    box-shadow:
+      0 0 0 3px var(--outline),
+      0 0 0 9px rgba(240, 196, 60, 0.35);
+  }
+}
+
+.btn-top:disabled {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+
+/* Joystick : anneau sombre et pommeau en pierre. */
+.stick-base {
+  border: 4px solid rgba(255, 255, 255, 0.35);
+  background: rgba(21, 22, 28, 0.35);
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.35);
+}
+
+.stick-knob {
+  border-radius: 14px;
+  border: 4px solid;
+  border-color: #d0d0d0 #454545 #454545 #d0d0d0;
+  background: var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 3px var(--outline);
+}
+
+/* ---------- HUD ---------- */
+
+.stat,
+.golem-card,
+.compass,
+.toast,
+.debug {
+  border-radius: 6px;
+  border: 3px solid;
+  border-color: #4c5266 #101219 #101219 #4c5266;
+  background: var(--tex-slate) 0 0 / var(--tex-size), #262a36;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 2px var(--outline);
+  text-shadow: var(--text-shadow-block);
+}
+
+.stat,
+.golem-card {
+  opacity: 0.94;
+}
+
+.compass {
+  border-color: #ffe27a #8a6410 #8a6410 #ffe27a;
+}
+
+.toast {
+  color: #fff4c8;
+  font-weight: 800;
+  border-color: #ffe27a #8a6410 #8a6410 #ffe27a;
+  box-shadow:
+    0 0 0 3px var(--outline),
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.golem-dot {
+  border-radius: 2px;
+  border: 2px solid var(--outline);
+}
+
+/* Barres de vie en pixels : fond sombre, reflet en haut du remplissage. */
+.hp-bar {
+  height: 10px;
+  border-radius: 0;
+  border: 2px solid var(--outline);
+  background: #3a1e1e;
+}
+
+.hp-fill {
+  background: linear-gradient(#a6f08a 0 30%, #5ec44a 30% 100%);
+}
+
+.hp-monster .hp-fill {
+  background: linear-gradient(#ff9a8a 0 30%, #e0503e 30% 100%);
+}
+
+.world-labels .hp-bar {
+  border: 2px solid var(--outline);
+}
+
+.float-label,
+.tag-label {
+  text-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.6),
+    0 0 6px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Écrans et cartes ---------- */
+
+.btn-big {
+  border-radius: 6px;
+  border: 5px solid;
+  border-color: #a8e88a #2b5a1d #2b5a1d #a8e88a;
+  background: var(--tex-grass) 0 0 / var(--tex-size), #5a9e3c;
+  image-rendering: pixelated;
+  font-family: inherit;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-shadow: var(--text-shadow-block);
+  box-shadow:
+    0 0 0 3px var(--outline),
+    0 7px 0 3px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.08s,
+    box-shadow 0.08s;
+}
+
+.btn-big:active:not(:disabled) {
+  transform: translateY(4px);
+  border-color: #2b5a1d #a8e88a #a8e88a #2b5a1d;
+  box-shadow:
+    0 0 0 3px var(--outline),
+    0 3px 0 3px rgba(0, 0, 0, 0.35);
+}
+
+.btn-big:disabled {
+  border-color: #b8b8b8 #4a4a4a #4a4a4a #b8b8b8;
+  background: var(--tex-stone) 0 0 / var(--tex-size), #7d7d7d;
+  box-shadow:
+    0 0 0 3px var(--outline),
+    0 7px 0 3px rgba(0, 0, 0, 0.25);
+}
+
+.card,
+.dialog {
+  border-radius: 6px;
+  border: 5px solid;
+  border-color: #ffffff #6e6b66 #6e6b66 #ffffff;
+  background: var(--tex-panel) 0 0 / var(--tex-size), #c9c6c0;
+  image-rendering: pixelated;
+  color: var(--ink);
+  box-shadow:
+    0 0 0 4px var(--outline),
+    0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+.card-title {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.screen-name,
+.screen-question,
+.screen-message,
+.screen-story {
+  background: rgba(16, 18, 26, 0.6);
+}
+
+/* Champ de texte enfoncé dans le panneau. */
+.name-input {
+  border-radius: 4px;
+  border: 5px solid;
+  border-color: #5a5852 #ffffff #ffffff #5a5852;
+  background: #fbfaf6;
+  box-shadow: 0 0 0 3px var(--outline);
+  font-family: inherit;
+  font-weight: 800;
+}
+
+.choice {
+  border-radius: 6px;
+  border: 5px solid;
+  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  background: #f4f2ec;
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  box-shadow: 0 0 0 3px var(--outline);
+  transition:
+    transform 0.08s,
+    background 0.12s;
+}
+
+.choice:active:not(:disabled),
+.choice.chosen {
+  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+  background: #dfe6ff;
+}
+
+.choice.correct {
+  border-color: #c8f5b8 #2f7a2a #2f7a2a #c8f5b8;
+  background: #bfeeb2;
+  box-shadow: 0 0 0 3px #1d4a1a;
+}
+
+.choice.missed {
+  background: #e4e1da;
+  border-color: #f4f2ec #b0aca4 #b0aca4 #f4f2ec;
+}
+
+.explanation {
+  color: #23602c;
+  font-weight: 700;
+}
+
+/* Parchemin : papier en pixels dans un cadre de bois. */
+.parchment {
+  border-radius: 4px;
+  border: 10px solid transparent;
+  background:
+    var(--tex-paper) 0 0 / var(--tex-size) padding-box,
+    var(--tex-plank) 0 0 / var(--tex-size) border-box;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 4px var(--outline),
+    0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.parchment h1 {
+  letter-spacing: 0.02em;
+}
+
+/* Dialogue : portrait encadré comme un emplacement d'inventaire. */
+.dialog-portrait .portrait {
+  border-radius: 2px;
+  border: 4px solid;
+  border-color: #5a5852 #ffffff #ffffff #5a5852;
+  background: #8b8b8b;
+}
+
+.dialog-name {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 3px;
+  background: #2d3a8c;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.dialog-btn,
+.btn-replay {
+  border-radius: 6px;
+  border: 4px solid;
+  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  background: #f4f2ec;
+  box-shadow: 0 0 0 3px var(--outline);
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.dialog-btn:active,
+.btn-replay:active {
+  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+}
+
+.journal-section {
+  color: #4e4a58;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 20px;
+}
+
+/* ---------- Cinématiques ---------- */
+
+.cine-caption {
+  border-radius: 6px;
+  border: 4px solid;
+  border-color: #4c5266 #101219 #101219 #4c5266;
+  background: var(--tex-slate) 0 0 / var(--tex-size), #262a36;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 3px var(--outline),
+    0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.cine-caption-text {
+  text-shadow: var(--text-shadow-block);
+}
+
+.cine-next {
+  border-radius: 8px;
+  border: 4px solid;
+  border-color: #fff0b0 #8a6410 #8a6410 #fff0b0;
+  background: linear-gradient(rgba(240, 196, 60, 0.75), rgba(240, 196, 60, 0.75)), var(--tex-stone) 0 0 / var(--tex-size);
+  color: #ffffff;
+  text-shadow: var(--text-shadow-block);
+  box-shadow: 0 0 0 3px var(--outline);
+}
+
+@keyframes cine-next-pulse {
+  50% {
+    box-shadow:
+      0 0 0 3px var(--outline),
+      0 0 0 10px rgba(240, 196, 60, 0.3);
+  }
+}
+
+.cine-skip {
+  border-radius: 6px;
+  border: 4px solid;
+  border-color: #c7c7c7 #404040 #404040 #c7c7c7;
+  background: var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
+  image-rendering: pixelated;
+  font-family: inherit;
+  font-weight: 800;
+  text-shadow: var(--text-shadow-block);
+  box-shadow: 0 0 0 3px var(--outline);
+}

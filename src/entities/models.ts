@@ -17,8 +17,8 @@ function eyes(y: number, z: number, spacing: number, color: number, size = 0.07)
 
 // ---------- Héros ----------
 
-/** Gemme du bâton, dans le repère du bâton (point de départ des étincelles). */
-export const HERO_STAFF_TIP: [number, number, number] = [0, 0.12, -0.87];
+/** Pointe de la baguette, dans son repère (point de départ des étincelles). */
+export const HERO_WAND_TIP: [number, number, number] = [0, 0, -0.71];
 
 export function heroModel(): ModelDef {
   const skin = 0xf2c6a0;
@@ -28,7 +28,7 @@ export function heroModel(): ModelDef {
   const trim = 0xf0c43c;
   const cape = 0x7b2d8b;
   const capeLining = 0xa04ab4;
-  const wood = 0x8a5a32;
+  const wandWood = 0x5c3a20;
   return [
     {
       name: 'legL',
@@ -87,22 +87,24 @@ export function heroModel(): ModelDef {
         [0.17, 0.14, 0.2, 0, -0.52, -0.02, skin],
       ],
     },
-    // Bâton tenu dans le poing, presque à l'horizontale, pointé vers l'avant : manche, bague dorée,
-    // crosse relevée qui tient la gemme. Repère : la main, l'axe du manche vers -Z.
+    // Baguette magique tenue dans le poing, presque à l'horizontale, pointée vers l'avant :
+    // pommeau doré, poignée sculptée, tige qui s'affine. Repère : la main, l'axe de la baguette vers -Z.
     {
-      name: 'staff',
+      name: 'wand',
       parent: 'armR',
       pivot: [0, -0.52, -0.02],
-      rest: [0.16, 0, 0],
+      rest: [0.2, 0, 0],
       cubes: [
-        [0.07, 0.07, 1.25, 0, 0, -0.33, wood],
-        [0.09, 0.09, 0.06, 0, 0, -0.16, trim],
-        [0.09, 0.09, 0.06, 0, 0, 0.26, trim],
-        [0.07, 0.3, 0.07, 0, 0.12, -0.99, wood],
-        [0.07, 0.07, 0.16, 0, 0.27, -0.9, wood],
+        [0.09, 0.09, 0.06, 0, 0, 0.14, trim],
+        [0.08, 0.08, 0.22, 0, 0, 0.02, 0x3a2416],
+        [0.095, 0.095, 0.03, 0, 0, -0.1, trim],
+        [0.085, 0.085, 0.03, 0, 0, -0.15, 0x5a3a22],
+        [0.065, 0.065, 0.2, 0, 0, -0.27, wandWood],
+        [0.052, 0.052, 0.2, 0, 0, -0.46, wandWood],
+        [0.04, 0.04, 0.14, 0, 0, -0.62, wandWood],
       ],
     },
-    { name: 'gem', parent: 'staff', pivot: [0, 0, 0], glow: true, cubes: [[0.14, 0.14, 0.14, 0, 0.12, -0.87, 0x6ff0ff], [0.05, 0.05, 0.04, 0.04, 0.16, -0.93, 0xe8ffff]] },
+    { name: 'wandTip', parent: 'wand', pivot: [0, 0, 0], glow: true, cubes: [[0.05, 0.05, 0.05, ...HERO_WAND_TIP, 0xe8ffff]] },
   ];
 }
 

@@ -1266,7 +1266,7 @@ export const CONTENT: Content = {
   ],
   "lumibloc": {
     "tutorialMove": "Pose ton pouce à gauche pour marcher. Glisse à droite pour regarder autour de toi.",
-    "tutorialCrate": "Une caisse ! Appuie sur le bouton bâton pour la casser. Parfois, il y a des pommes dedans.",
+    "tutorialCrate": "Une caisse ! Appuie sur le bouton baguette pour la casser. Parfois, il y a des pommes dedans.",
     "hatching": "L'œuf hésite… Il peut devenir deux golems différents. À toi de choisir !",
     "firstArena": "Ici, pour attaquer, il faut réfléchir ! 🔢, c'est un calcul. 🧩, c'est une énigme. Prends ton temps, il n'y a pas de chrono.",
     "weakness": "Regarde l'icône au-dessus du monstre : c'est sa faiblesse. Une attaque avec la même icône fait plus de dégâts !",

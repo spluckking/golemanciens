@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { animateWalk, CubeModel } from './cubeModel';
-import { HERO_STAFF_TIP, MODELS } from './models';
+import { HERO_WAND_TIP, MODELS } from './models';
 
 /**
  * Cape en deux pans : elle se soulève vers l'arrière avec la vitesse et ondule doucement.
@@ -15,23 +15,23 @@ export function animateCape(model: CubeModel, speed: number, airborne: boolean, 
 }
 
 /**
- * Apprenti golémancien : uniforme bleu nuit, cape violette en deux pans, bâton à crosse et gemme lumineuse.
+ * Apprenti golémancien : uniforme bleu nuit, cape violette en deux pans, baguette magique à pointe lumineuse.
  * 10 pièces, donc 10 appels de dessin. L'origine est entre les pieds ; il regarde vers -Z.
  */
 export class HeroModel {
   private readonly model = new CubeModel(MODELS.hero);
   readonly root = this.model.root;
-  readonly staffTip = new THREE.Object3D();
+  readonly wandTip = new THREE.Object3D();
   private walkPhase = 0;
   private attackTime = 0;
   private time = 0;
 
   constructor() {
-    this.staffTip.position.set(...HERO_STAFF_TIP);
-    this.model.part('staff')?.add(this.staffTip);
+    this.wandTip.position.set(...HERO_WAND_TIP);
+    this.model.part('wand')?.add(this.wandTip);
   }
 
-  /** Lance l'animation de coup de bâton. */
+  /** Lance l'animation de coup de baguette. */
   playAttack(): void {
     this.attackTime = 0.3;
   }

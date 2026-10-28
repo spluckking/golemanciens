@@ -77,14 +77,14 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 
 ## 3. Héros et contrôles
 
-- Le **héros** est un apprenti golémancien en uniforme d'école de magie (cape, bâton). Son **prénom** est saisi au premier lancement et utilisé dans les textes via `{prenom}`. Les accords sont au **masculin**.
+- Le **héros** est un apprenti golémancien en uniforme d'école de magie (cape, baguette magique). Son **prénom** est saisi au premier lancement et utilisé dans les textes via `{prenom}`. Les accords sont au **masculin**.
 - **Le héros ne perd jamais de PV** : seuls les golems combattent et peuvent être K.O.
 - **Caméra** : à la 3e personne, au-dessus et derrière le héros, à environ 8 blocs, avec une rotation horizontale. Elle évite de passer à travers les murs.
 - **Contrôles tactiles** (paysage) :
   - **Joystick virtuel** à gauche.
   - **Glisser sur la moitié droite** pour tourner la caméra.
   - **Bouton Saut**.
-  - **Bouton Attaque** : le bâton lance une petite étincelle. Elle sert à casser les caisses et à engager un monstre. Avant d'avoir le premier golem, elle ne sert qu'à casser les caisses.
+  - **Bouton Attaque** : la baguette magique lance une petite étincelle. Elle sert à casser les caisses et à engager un monstre. Avant d'avoir le premier golem, elle ne sert qu'à casser les caisses.
   - **Bouton Interagir** : contextuel, il n'apparaît que près d'un PNJ, d'une pierre-énigme, d'un levier, d'un bloc à pousser ou d'une arche.
   - **Boutons d'interface** en haut : Journal, Golems, Encyclopédie, Pause.
 - Tous les boutons font au moins **72 px CSS**, sont placés à la portée des pouces et restent légèrement translucides.

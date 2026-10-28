@@ -33,7 +33,7 @@ test('caisse, combat contre le camp des slimes, coffre, PNJ, journal', async ({ 
   await expect(page.getByTestId('hud-shards')).toHaveText('0/5');
   await expect(page.getByTestId('compass')).toBeVisible();
 
-  // Casser la première caisse avec le bâton.
+  // Casser la première caisse avec la baguette.
   const crate = await page.evaluate(() => window.__game!.life().crates[0]);
   await approach(page, crate.x, crate.z, 3);
   await page.getByTestId('btn-attack').tap();

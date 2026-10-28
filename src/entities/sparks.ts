@@ -28,7 +28,7 @@ interface Particle {
 /** Touche-t-on quelque chose en (x, y, z) ? Vrai = l'étincelle éclate. */
 export type SparkHitTest = (x: number, y: number, z: number) => boolean;
 
-/** Étincelles du bâton et éclats de cubes (InstancedMesh). */
+/** Étincelles de la baguette et éclats de cubes (InstancedMesh). */
 export class Sparks {
   readonly group = new THREE.Group();
   private readonly sparks: Spark[] = [];

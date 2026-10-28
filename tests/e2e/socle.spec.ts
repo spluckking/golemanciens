@@ -91,3 +91,16 @@ test('le bouton Interagir apparaît près de Lumibloc et ouvre une bulle de dial
   await page.getByTestId('dialog-close').tap();
   await expect(page.getByTestId('dialog')).toBeHidden();
 });
+
+test('le joystick apparaît exactement là où le pouce se pose', async ({ page }) => {
+  await openGame(page);
+  const cdp = await page.context().newCDPSession(page);
+  for (const p of [{ x: 260, y: 520 }, { x: 420, y: 300 }]) {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: p.x, y: p.y, id: 1 }] });
+    const box = await page.getByTestId('stick').boundingBox();
+    expect(box).not.toBeNull();
+    expect(Math.abs(box!.x + box!.width / 2 - p.x)).toBeLessThan(3);
+    expect(Math.abs(box!.y + box!.height / 2 - p.y)).toBeLessThan(3);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  }
+});
