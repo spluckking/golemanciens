@@ -1,16 +1,17 @@
 import { CONTENT } from '../data/content';
 import { presentReading } from '../questions/present';
 import { createReadingStats, ReadingLoop } from '../questions/readingLoop';
+import { CINEMATICS, storyCaptions } from '../story/cinematics';
 import { askPlayerName, askQuestion, confetti, showMessage, showStory, showTitle } from '../ui/screens';
 import type { Game } from './game';
 import type { GameState } from './gameState';
 import type { Rng } from './rng';
 
-export type ScreenId = 'title' | 'name' | 'story' | 'question' | 'message' | 'play';
+export type ScreenId = 'title' | 'name' | 'cinematic' | 'story' | 'question' | 'message' | 'play';
 
 const RETRY_MESSAGE = 'Relis bien le texte, la réponse s’y cache !';
 
-/** Enchaînement des écrans : titre → prénom → texte 1 → Prairie. */
+/** Enchaînement des écrans : titre → prénom → cinématique et questions du texte 1 → Prairie. */
 export class App {
   screen: ScreenId = 'title';
 
@@ -40,7 +41,11 @@ export class App {
     this.game.setMode('play');
   }
 
-  /** Boucle de lecture d'un texte, jusqu'à la réussite. */
+  /**
+   * Boucle de lecture d'un texte, jusqu'à la réussite (SPEC.md § 9.1). La première fois, le texte est
+   * raconté par sa cinématique ; après une erreur, elle n'est pas rejouée : le texte entier s'affiche
+   * en une seule bulle.
+   */
   async readStory(id: string): Promise<void> {
     const story = CONTENT.stories.find((s) => s.id === id);
     if (!story) throw new Error(`Texte inconnu : ${id}`);
@@ -48,9 +53,17 @@ export class App {
     const loop = new ReadingLoop(story, this.rng, stats);
     const name = this.state.playerName;
 
+    const script = CINEMATICS[id];
+    let first = true;
     for (;;) {
-      this.screen = 'story';
-      await showStory(this.layer, story, name, loop.waitSeconds * this.timeScale);
+      if (first && script) {
+        this.screen = 'cinematic';
+        await this.game.playCinematic(script, storyCaptions(story, script), { skippable: false, timeScale: this.timeScale });
+      } else {
+        this.screen = 'story';
+        await showStory(this.layer, story, name, loop.waitSeconds * this.timeScale);
+      }
+      first = false;
       loop.finishReading();
       while (loop.phase === 'questions') {
         const q = loop.currentQuestion();

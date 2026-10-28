@@ -3,7 +3,9 @@ import { App, type ScreenId } from './core/app';
 import { Game } from './core/game';
 import { createGameState, createGolem, type GameState } from './core/gameState';
 import { createRng } from './core/rng';
+import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
+import { CINEMATICS, storyCaptions } from './story/cinematics';
 
 declare global {
   interface Window {
@@ -48,7 +50,18 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
       if (id in GOLEMS) state.golems.push(createGolem(id as GolemSpecies));
     }
     // « ?test&start=play » saute l'introduction (prénom fictif, tutoriel de déplacement déjà vu).
-    if (params.get('start') === 'play') {
+    // « ?test&cine=T1&shot=4 » joue une cinématique (à partir d'un plan), puis lance la partie.
+    const cine = params.get('cine');
+    const story = CONTENT.stories.find((s) => s.id === cine);
+    if (cine && story && CINEMATICS[cine]) {
+      state.playerName = 'Testeur';
+      state.storiesRead.push('T1');
+      state.tutorialsSeen.push('move');
+      const script = CINEMATICS[cine];
+      void game
+        .playCinematic(script, storyCaptions(story, script), { skippable: true, timeScale, startShot: Number(params.get('shot') ?? 0) })
+        .then(() => app.play());
+    } else if (params.get('start') === 'play') {
       state.playerName = 'Testeur';
       state.storiesRead.push('T1');
       if (!params.has('tutorial')) state.tutorialsSeen.push('move');

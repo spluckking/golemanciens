@@ -12,15 +12,18 @@ export interface PartDef {
   parent?: string;
   /** Rotation de repos (radians). */
   rest?: [number, number, number];
+  /** Pièce lumineuse (gemme, yeux, cristal) : non éclairée, elle brille même la nuit. */
+  glow?: boolean;
 }
 
 export type ModelDef = PartDef[];
 
-/** Matériau unique partagé par tous les modèles en cubes (couleurs par sommet). */
+/** Matériaux partagés par tous les modèles en cubes (couleurs par sommet). */
 let sharedMaterial: THREE.MeshLambertMaterial | null = null;
-function material(): THREE.MeshLambertMaterial {
-  sharedMaterial ??= new THREE.MeshLambertMaterial({ vertexColors: true });
-  return sharedMaterial;
+let glowMaterial: THREE.MeshBasicMaterial | null = null;
+function material(glow: boolean): THREE.Material {
+  if (glow) return (glowMaterial ??= new THREE.MeshBasicMaterial({ vertexColors: true }));
+  return (sharedMaterial ??= new THREE.MeshLambertMaterial({ vertexColors: true }));
 }
 
 const geometryCache = new Map<PartDef, THREE.BufferGeometry>();
@@ -38,7 +41,7 @@ function partGeometry(part: PartDef): THREE.BufferGeometry {
     for (let i = 0; i < n; i++) {
       // Léger assombrissement des faces latérales et du dessous, pour lire les volumes.
       const ny = g.getAttribute('normal').getY(i);
-      const k = ny > 0.5 ? 1 : ny < -0.5 ? 0.7 : 0.88;
+      const k = part.glow ? 1 : ny > 0.5 ? 1 : ny < -0.5 ? 0.7 : 0.88;
       colors[i * 3] = tmpColor.r * k;
       colors[i * 3 + 1] = tmpColor.g * k;
       colors[i * 3 + 2] = tmpColor.b * k;
@@ -67,7 +70,7 @@ export class CubeModel {
       pivot.position.set(...part.pivot);
       if (part.rest) pivot.rotation.set(...part.rest);
       pivot.userData.rest = part.rest ?? [0, 0, 0];
-      pivot.add(new THREE.Mesh(partGeometry(part), material()));
+      pivot.add(new THREE.Mesh(partGeometry(part), material(part.glow ?? false)));
       this.parts.set(part.name, pivot);
       const parent = part.parent ? this.parts.get(part.parent) : null;
       (parent ?? this.root).add(pivot);

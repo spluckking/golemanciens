@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { createHero, stepHero, type HeroState } from '../entities/heroController';
 import { HeroModel } from '../entities/heroModel';
 import { Sparks } from '../entities/sparks';
+import { CONTENT } from '../data/content';
+import { CINEMATICS, storyCaptions } from '../story/cinematics';
+import { CinematicDirector, type CinematicScript } from '../story/cinematics/director';
 import { JOURNAL_NO_DONE, OBJECTIVE_FIND_EGG } from '../story/dialogues';
 import { DebugOverlay } from '../ui/debugOverlay';
 import { DialogBubble } from '../ui/dialog';
@@ -39,7 +42,7 @@ const UNSTUCK_OFFER_S = 6;
 const SAFE_SPOT_EVERY_S = 0.5;
 const TEXT_UNSTUCK = 'Me débloquer';
 
-export type GameMode = 'title' | 'play';
+export type GameMode = 'title' | 'play' | 'cinematic';
 
 export interface GameOptions {
   debug: boolean;
@@ -67,6 +70,9 @@ export class Game {
   private readonly fade = el('div', { className: 'soft-fade hidden', testId: 'ko-fade' });
   private readonly debug: DebugOverlay | null;
   private readonly solid: SolidFn;
+  private readonly hemi: THREE.HemisphereLight;
+  private readonly sun: THREE.DirectionalLight;
+  private readonly director: CinematicDirector;
   private lastTime = 0;
   private attackCooldown = 0;
   private mode: GameMode = 'play';
@@ -94,10 +100,10 @@ export class Game {
 
     this.scene.background = new THREE.Color(SKY_COLOR);
     this.scene.fog = new THREE.Fog(SKY_COLOR, FOG_NEAR, FOG_FAR);
-    this.scene.add(new THREE.HemisphereLight(0xeaf6ff, 0x7a6a50, 1.9));
-    const sun = new THREE.DirectionalLight(0xfff4e0, 1.6);
-    sun.position.set(0.5, 1, 0.35);
-    this.scene.add(sun);
+    this.hemi = new THREE.HemisphereLight(0xeaf6ff, 0x7a6a50, 1.9);
+    this.sun = new THREE.DirectionalLight(0xfff4e0, 1.6);
+    this.sun.position.set(0.5, 1, 0.35);
+    this.scene.add(this.hemi, this.sun);
 
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, FOG_FAR + 20);
 
@@ -140,6 +146,17 @@ export class Game {
     });
     this.scene.add(this.life.group);
 
+    this.director = new CinematicDirector({
+      scene: this.scene,
+      camera: this.camera,
+      world,
+      hemi: this.hemi,
+      sun: this.sun,
+      sparks: this.sparks,
+      solid: this.solid,
+      uiLayer,
+    });
+
     window.addEventListener('resize', () => this.resize());
   }
 
@@ -156,14 +173,27 @@ export class Game {
     this.renderer.setAnimationLoop((t) => this.frame(t));
   }
 
-  /** « title » : la caméra tourne lentement, commandes masquées. « play » : le joueur contrôle le héros. */
+  /**
+   * « title » : la caméra tourne lentement, commandes masquées. « play » : le joueur contrôle le héros.
+   * « cinematic » : le metteur en scène prend la caméra ; le héros et la vie du biome sont cachés.
+   */
   setMode(mode: GameMode): void {
     this.mode = mode;
     const playing = mode === 'play';
     for (const node of [this.controls.root, this.hud.root, this.labels.root]) node.classList.toggle('hidden', !playing);
+    const inWorld = mode !== 'cinematic';
+    for (const obj of [this.heroModel.root, this.shadow, this.life.group]) obj.visible = inWorld;
     if (!playing) this.dialog.close();
     this.input.stickX = this.input.stickY = 0;
     this.input.jumpHeld = false;
+  }
+
+  /** Joue une cinématique, puis revient au mode précédent. */
+  async playCinematic(script: CinematicScript, captions: string[], options: { skippable: boolean; timeScale: number; startShot?: number }): Promise<void> {
+    const previous = this.mode;
+    this.setMode('cinematic');
+    await this.director.play(script, { captions, playerName: this.state.playerName, ...options });
+    this.setMode(previous);
   }
 
   /** Mode test : place le héros (et ses golems suivront). */
@@ -182,7 +212,14 @@ export class Game {
     if (this.paused) return;
     this.paused = true;
     this.input.stickX = this.input.stickY = 0;
-    await openJournal(this.uiLayer, [{ text: OBJECTIVE_FIND_EGG, active: true }], [], JOURNAL_NO_DONE, this.state.playerName);
+    const replays = CONTENT.stories.filter((s) => this.state.storiesRead.includes(s.id) && CINEMATICS[s.id]).map((s) => ({ id: s.id, title: s.title }));
+    const replay = await openJournal(this.uiLayer, [{ text: OBJECTIVE_FIND_EGG, active: true }], [], JOURNAL_NO_DONE, this.state.playerName, replays);
+    const story = CONTENT.stories.find((s) => s.id === replay);
+    if (story) {
+      // Histoire déjà vue : on peut la passer.
+      const script = CINEMATICS[story.id];
+      await this.playCinematic(script, storyCaptions(story, script), { skippable: true, timeScale: 1 });
+    }
     this.paused = false;
   }
 
@@ -210,7 +247,8 @@ export class Game {
     const dt = Math.min(0.05, Math.max(0, (time - this.lastTime) / 1000));
     this.lastTime = time;
     this.labels.begin();
-    this.update(this.paused ? 0 : dt);
+    if (this.director.active) this.director.update(dt);
+    else this.update(this.paused ? 0 : dt);
     this.renderer.render(this.scene, this.camera);
     this.labels.end(dt);
     this.debug?.update(dt, this.renderer);

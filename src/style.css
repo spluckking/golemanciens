@@ -797,6 +797,24 @@ body {
   font-style: italic;
 }
 
+.journal-replays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn-replay {
+  min-height: 72px;
+  padding: 0 24px;
+  border-radius: 16px;
+  border: 2px solid #c9b8e8;
+  background: #f4effc;
+  color: #2d3a8c;
+  font-size: 24px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
 /* K.O. général : écran doux */
 .soft-fade {
   position: absolute;
@@ -844,4 +862,133 @@ body {
   stroke: #5a3c10;
   stroke-width: 1.5;
   stroke-linejoin: round;
+}
+
+/* ---------- Cinématiques ---------- */
+
+.cinematic {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: auto;
+}
+
+/* Bandes noires façon cinéma. */
+.cine-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 7vh;
+  background: #05060c;
+  animation: cine-bar-in 0.6s ease-out both;
+}
+
+.cine-bar-top {
+  top: 0;
+}
+
+.cine-bar-bottom {
+  bottom: 0;
+}
+
+@keyframes cine-bar-in {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+.cine-caption {
+  position: absolute;
+  left: 50%;
+  bottom: calc(7vh + 18px + var(--safe-b));
+  transform: translateX(-50%);
+  width: min(1040px, calc(100% - 48px - var(--safe-l) - var(--safe-r)));
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px 18px 30px;
+  border-radius: 22px;
+  background: rgba(10, 14, 34, 0.78);
+  border: 2px solid rgba(240, 196, 60, 0.55);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.cine-caption.appear {
+  animation: cine-caption-in 0.45s ease-out both;
+}
+
+@keyframes cine-caption-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+.cine-caption-text {
+  flex: 1;
+  margin: 0;
+  font-size: 27px;
+  line-height: 1.5;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.45);
+}
+
+.cine-next {
+  flex: none;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  background: rgba(240, 196, 60, 0.22);
+  color: var(--gold);
+  font-size: 34px;
+  cursor: pointer;
+  animation: cine-next-pulse 1.6s ease-in-out infinite;
+}
+
+.cine-next.hidden {
+  visibility: hidden;
+}
+
+.cine-next:active {
+  background: rgba(240, 196, 60, 0.45);
+}
+
+/* Halo qui pulse (sans changer la taille : le bouton reste immobile sous le doigt). */
+@keyframes cine-next-pulse {
+  50% {
+    box-shadow: 0 0 0 10px rgba(240, 196, 60, 0.25);
+  }
+}
+
+.cine-skip {
+  position: absolute;
+  top: calc(7vh + 14px);
+  right: calc(20px + var(--safe-r));
+  min-width: 120px;
+  min-height: 72px;
+  padding: 0 22px;
+  border-radius: 36px;
+  border: 2px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-size: 22px;
+}
+
+.cine-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 29;
+  background: #fffbe0;
+  pointer-events: none;
+  animation: cine-flash 0.5s ease-out both;
+}
+
+@keyframes cine-flash {
+  from {
+    opacity: 0.95;
+  }
+  to {
+    opacity: 0;
+  }
 }

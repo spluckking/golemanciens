@@ -158,6 +158,8 @@ export interface VillagePlan {
   wheat: { x0: number; z0: number; x1: number; z1: number };
   well: { x: number; z: number };
   pen: { x0: number; z0: number; x1: number; z1: number };
+  /** Maison du joueur (SPEC.md § 18) : porte au nord, face à la place. */
+  home: { x0: number; z0: number; x1: number; z1: number; door: { x: number; z: number } };
 }
 
 /**
@@ -171,6 +173,13 @@ export function buildVillage(world: VoxelWorld, cx: number, cz: number, floorY: 
 
   buildHouse(world, cx - 11, cz - 10, 7, 6, floorY, Block.Plank, Block.Roof, true);
   buildHouse(world, cx + 5, cz - 10, 6, 5, floorY, Block.Brick, Block.Roof, true);
+
+  // Maison du joueur, au sud de la place : murs de planches, cheminée de pierre.
+  const home = { x0: cx - 3, z0: cz + 7, x1: cx + 3, z1: cz + 12, door: { x: cx + 0.5, z: cz + 6.5 } };
+  buildHouse(world, home.x0, home.z0, 7, 6, floorY, Block.Plank, Block.Roof, false);
+  world.fill(home.x1 - 1, floorY + 4, home.z1 - 1, home.x1 - 1, floorY + 8, home.z1 - 1, Block.Stone);
+  world.set(home.x0, floorY + 1, home.z0 + 2, Block.Window);
+  world.set(home.x1, floorY + 1, home.z0 + 2, Block.Window);
 
   // Moulin : tour de pierre et ailes de planches (face nord).
   const mx = cx + 7;
@@ -225,5 +234,6 @@ export function buildVillage(world: VoxelWorld, cx: number, cz: number, floorY: 
     wheat,
     well: { x: cx + 0.5, z: cz + 0.5 },
     pen,
+    home,
   };
 }
