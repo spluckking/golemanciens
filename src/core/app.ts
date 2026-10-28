@@ -27,7 +27,8 @@ export class App {
   async start(): Promise<void> {
     this.game.setMode('title');
     this.screen = 'title';
-    await showTitle(this.layer);
+    // Partie déjà commencée : « Continuer » (on ne peut effacer la partie que depuis le menu parent).
+    await showTitle(this.layer, this.state.playerName ? 'Continuer' : 'Jouer');
     if (!this.state.playerName) {
       this.screen = 'name';
       this.state.playerName = await askPlayerName(this.layer);
@@ -78,6 +79,7 @@ export class App {
         confetti(this.layer);
         await showMessage(this.layer, 'Bravo, {prenom} !', 'Continuer', name, 'reading-success');
         this.state.storiesRead.push(id);
+        this.game.save();
         return;
       }
       await showMessage(this.layer, RETRY_MESSAGE, 'Relire le texte', name, 'reading-retry');

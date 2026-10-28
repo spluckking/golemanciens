@@ -32,6 +32,8 @@ export interface QuestHooks {
   labels: WorldLabels;
   burst: (x: number, y: number, z: number, color: number, count?: number) => void;
   gainFood: (amount: number, x: number, y: number, z: number) => void;
+  /** Un progrès de quête à enregistrer. */
+  onProgress: () => void;
 }
 
 type ChickenMode = 'loose' | 'following' | 'home';
@@ -186,6 +188,7 @@ export class QuestLife {
         this.state.bossQuest = 'active';
         line(P1_REQUEST);
       } else line(P1_REMINDER);
+      this.hooks.onProgress();
       return true;
     }
     if (res.kind === 'thanks') {
@@ -199,6 +202,7 @@ export class QuestLife {
       if (res.kind === 'request' && res.quest.id === 'R3') this.countSlimes();
     }
     this.syncInteractions();
+    this.hooks.onProgress();
     return true;
   }
 
@@ -219,6 +223,7 @@ export class QuestLife {
     const st = this.book.state('O2');
     this.hooks.toast(TEXT_FLOWER_PICKED.replace('{n}', String(st.progress)).replace('{goal}', '5'));
     this.syncInteractions();
+    this.hooks.onProgress();
   }
 
   /** La caisse de la clé peut être cassée d'un coup de baguette pendant la quête. */
@@ -231,6 +236,7 @@ export class QuestLife {
     this.book.setProgress('O1', 1);
     this.hooks.toast(TEXT_KEY_FOUND);
     this.syncInteractions();
+    this.hooks.onProgress();
     return true;
   }
 
@@ -311,6 +317,7 @@ export class QuestLife {
           const st = this.book.state('R1');
           this.hooks.burst(c.x, ground(c.x, c.z) + 0.6, c.z, 0xffe27a, 12);
           this.hooks.toast(TEXT_CHICKEN_HOME.replace('{n}', String(st.progress)).replace('{goal}', '3'));
+          this.hooks.onProgress();
         }
       } else {
         // En liberté ou dans l'enclos : petits pas autour de sa place.

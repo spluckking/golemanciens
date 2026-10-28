@@ -26,6 +26,7 @@ import { generatePrairie, type BiomeLayout } from '../world/prairie';
 import { createAtlasTexture } from '../world/voxelMaterial';
 import { ArenaFight } from './arenaFight';
 import { BiomeLife } from './biomeLife';
+import { saveGame } from '../save/store';
 import { CameraRig } from './cameraRig';
 import { compassRotation } from './compass';
 import type { GameState } from './gameState';
@@ -52,6 +53,9 @@ const TEXT_UNSTUCK = 'Me débloquer';
 const TEXT_SLEPT = 'Tu as bien dormi !';
 const TEXT_SLEPT_GOLEMS = 'Tu as bien dormi ! Tes golems sont en pleine forme.';
 const SLEEP_FADE_MS = 1800;
+const TEXT_SAVED = 'Bonne nuit ! Partie enregistrée.';
+/** Enregistrement automatique hors combat (SPEC.md § 13). */
+const AUTOSAVE_EVERY_S = 60;
 
 export type GameMode = 'title' | 'play' | 'cinematic' | 'combat';
 
@@ -59,6 +63,8 @@ export interface GameOptions {
   debug: boolean;
   /** Mode test : raccourcit les attentes (1 = temps normal). */
   timeScale?: number;
+  /** Enregistrer la partie dans IndexedDB (désactivé par défaut en mode test). */
+  persist?: boolean;
 }
 
 /** Boucle de jeu : rendu, héros, caméra, commandes, vie du biome. */
@@ -97,6 +103,11 @@ export class Game {
   /** Combat d'arène en cours. */
   fight: ArenaFight | null = null;
   private readonly timeScale: number;
+  private readonly persist: boolean;
+  /** Temps depuis le dernier enregistrement automatique. */
+  private sinceSave = 0;
+  private saving = false;
+  private saveAgain = false;
   /** Menu ouvert (journal) ou transition : le monde ne bouge plus. */
   private paused = false;
   private readonly tipWorld = new THREE.Vector3();
@@ -115,6 +126,7 @@ export class Game {
     options: GameOptions,
   ) {
     this.timeScale = options.timeScale ?? 1;
+    this.persist = options.persist ?? false;
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -167,6 +179,7 @@ export class Game {
       sparks: this.sparks,
       onAllKO: () => this.recoverFromKO(),
       onSleep: () => this.sleep(),
+      onProgress: () => void this.save(),
       onFight: () => void this.startFight('arena'),
       onBossFight: () => void this.startFight('boss'),
       sanctuary: {
@@ -177,6 +190,7 @@ export class Game {
         askNickname: (species) => askNickname(this.uiLayer, species),
         lock: (locked) => this.lock(locked),
         placeHero: (x, z, facing) => this.teleport(x, z, facing),
+        onProgress: () => void this.save(),
       },
     });
     this.scene.add(this.life.group);
@@ -193,6 +207,11 @@ export class Game {
     });
 
     window.addEventListener('resize', () => this.resize());
+    // Appli fermée ou mise en arrière-plan : on enregistre tout de suite.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') void this.save();
+    });
+    window.addEventListener('pagehide', () => void this.save());
   }
 
   get fps(): number {
@@ -217,9 +236,10 @@ export class Game {
     const playing = mode === 'play';
     for (const node of [this.controls.root, this.hud.root, this.labels.root]) node.classList.toggle('hidden', !playing);
     if (playing && !this.entered) {
+      // Première entrée en jeu : à la maison, ou au dernier point de retour d'une partie enregistrée.
       this.entered = true;
-      const { spawn, spawnYaw } = this.layout;
-      this.teleport(spawn.x, spawn.z, spawnYaw);
+      const p = this.life.respawnPoint();
+      this.teleport(p.x, p.z, this.layout.spawnYaw);
     }
     const inWorld = mode !== 'cinematic' && mode !== 'combat';
     // Le compteur de FPS (mode test) ne doit pas cacher les sous-titres.
@@ -231,6 +251,28 @@ export class Game {
   }
 
   /** Combat d'arène : la caméra passe de côté dans l'arène, puis on revient devant le gong. */
+  /**
+   * Enregistre la partie (SPEC.md § 13). Les demandes rapprochées sont regroupées : une seule
+   * écriture à la fois, et une dernière si l'état a encore changé entre-temps.
+   */
+  save(): Promise<boolean> {
+    this.sinceSave = 0;
+    if (!this.persist) return Promise.resolve(false);
+    if (this.saving) {
+      this.saveAgain = true;
+      return Promise.resolve(true);
+    }
+    this.saving = true;
+    return saveGame(this.state).then((ok) => {
+      this.saving = false;
+      if (this.saveAgain) {
+        this.saveAgain = false;
+        void this.save();
+      }
+      return ok;
+    });
+  }
+
   /**
    * Combat au tour par tour, à l'arène (gong) ou contre le Roi Slime (marais). Contre le boss,
    * on peut réessayer tout de suite ; la victoire lance l'outro O1 et pose le trophée.
@@ -257,6 +299,7 @@ export class Game {
       this.fight.dispose();
       this.fight = null;
     } while (result === 'retry');
+    void this.save();
 
     if (kind === 'boss' && result === 'won') {
       await this.playOutro('O1');
@@ -395,7 +438,8 @@ export class Game {
       this.state.lastLantern = 'home';
       this.sleepFade.classList.add('hidden');
       this.paused = false;
-      this.hud.showToast(this.state.golems.length ? TEXT_SLEPT_GOLEMS : TEXT_SLEPT, 3);
+      // Dormir enregistre la partie (SPEC.md § 18).
+      void this.save().then((ok) => this.hud.showToast(ok ? TEXT_SAVED : this.state.golems.length ? TEXT_SLEPT_GOLEMS : TEXT_SLEPT, 3));
     }, SLEEP_FADE_MS);
   }
 
@@ -434,6 +478,11 @@ export class Game {
 
   private update(dt: number): void {
     const playing = this.mode === 'play' && !this.paused && !this.locked;
+    if (this.mode === 'play' && dt > 0) {
+      this.state.playTimeS += dt;
+      this.sinceSave += dt;
+      if (this.sinceSave >= AUTOSAVE_EVERY_S && !this.fight) void this.save();
+    }
     const look = this.input.consumeLook();
     if (playing) this.rig.rotate(-look.dx * LOOK_YAW_PER_PX, look.dy * LOOK_PITCH_PER_PX);
     else if (this.mode === 'title') this.rig.rotate(dt * TITLE_ORBIT_SPEED, 0);

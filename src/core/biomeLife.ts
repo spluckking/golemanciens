@@ -44,6 +44,8 @@ export interface LifeHooks {
   onFight: () => void;
   /** Le héros affronte le boss du biome. */
   onBossFight: () => void;
+  /** Un progrès à enregistrer (quête, sanctuaire, lanterne, coffre…). */
+  onProgress: () => void;
   /** Interface et monde pour le sanctuaire (énigmes, éclosion, portes). */
   sanctuary: Omit<SanctuaryHooks, 'dialog' | 'toast' | 'burst'>;
 }
@@ -154,6 +156,7 @@ export class BiomeLife {
       dialog: hooks.dialog,
       toast: hooks.toast,
       burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
+      onProgress: hooks.onProgress,
     });
 
     // Quêtes du village : poules, panier, camp des slimes, clé, fleurs.
@@ -163,6 +166,7 @@ export class BiomeLife {
       labels: hooks.labels,
       burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
       gainFood: (amount, x, y, z) => this.gainFood(amount, x, y, z),
+      onProgress: hooks.onProgress,
     });
 
     // Arène : ouverte quand les 3 quêtes obligatoires sont faites.
@@ -327,6 +331,7 @@ export class BiomeLife {
     c.model.swing('lid', -1.9);
     interactions.remove(`chest-${c.campId}`);
     this.gainFood(FOOD_CHEST, c.x, c.y + 1.2, c.z);
+    this.hooks.onProgress();
   }
 
   // ---------- Mise à jour ----------
@@ -379,6 +384,7 @@ export class BiomeLife {
         this.state.litLanterns.push(l.id);
         this.state.lastLantern = l.id;
         this.refreshLanterns();
+        this.hooks.onProgress();
         this.hooks.sparks.burst(l.x, l.y + 1.9, l.z, 0xffe27a, 16);
         this.hooks.toast(TEXT_LANTERN_LIT);
       }

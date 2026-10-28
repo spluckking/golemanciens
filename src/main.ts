@@ -10,6 +10,7 @@ import { CINEMATICS, OUTRO_CINEMATICS, outroCaptions, storyCaptions } from './st
 import { SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
 import { applyBlockTheme } from './ui/theme';
+import { loadGame } from './save/store';
 import type { ArenaFight } from './core/arenaFight';
 
 declare global {
@@ -45,9 +46,11 @@ applyBlockTheme();
 // Pas de menu contextuel ni de zoom au double appui sur tablette.
 window.addEventListener('contextmenu', (e) => e.preventDefault());
 
-function boot(root: HTMLElement, layer: HTMLElement): void {
+async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   const isTest = params.has('test');
-  const state = createGameState();
+  // La partie est enregistrée dans la tablette ; en mode test, seulement avec « &save ».
+  const persist = !isTest || params.has('save');
+  const state = (persist ? await loadGame() : null) ?? createGameState();
   // Mode test : « ?test&sanctuary=tiles|open|hatched » avance la quête de l'œuf (avant la construction du monde).
   const step = params.get('sanctuary');
   if (isTest && step && SANCTUARY_STEPS.includes(step as SanctuaryStep)) state.sanctuary.step = step as SanctuaryStep;
@@ -67,7 +70,7 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
     state.arena.wins = 3;
     state.bossQuest = 'active';
   }
-  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale });
+  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale, persist });
   const app = new App(game, layer, state, rng, timeScale);
   game.start();
   loading?.remove();
@@ -120,7 +123,7 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
 }
 
 // Laisse le navigateur afficher « Chargement… » avant de générer le monde.
-requestAnimationFrame(() => setTimeout(() => boot(container, ui), 0));
+requestAnimationFrame(() => setTimeout(() => void boot(container, ui), 0));
 
 if (import.meta.env.PROD && !params.has('test')) {
   void import('virtual:pwa-register').then(({ registerSW }) => registerSW({ immediate: true }));

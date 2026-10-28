@@ -18,9 +18,9 @@ function bigButton(label: string, testId: string, className = 'btn-big'): HTMLBu
 }
 
 /** Écran titre : logo en blocs et bouton Jouer. */
-export function showTitle(layer: HTMLElement): Promise<void> {
+export function showTitle(layer: HTMLElement, label = 'Jouer'): Promise<void> {
   return new Promise((resolve) => {
-    const play = bigButton('Jouer', 'btn-play');
+    const play = bigButton(label, 'btn-play');
     const root = screen('screen-title', 'screen-title', [el('div', { className: 'logo-wrap' }, [createLogo()]), play]);
     play.addEventListener('click', () => {
       root.remove();

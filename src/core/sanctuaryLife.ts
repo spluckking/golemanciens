@@ -56,6 +56,8 @@ export interface SanctuaryHooks {
   lock: (locked: boolean) => void;
   /** Place le héros (pour bien voir l'éclosion). */
   placeHero: (x: number, z: number, facing: number) => void;
+  /** Un progrès à enregistrer (porte ouverte, golem éclos). */
+  onProgress: () => void;
 }
 
 interface Tile {
@@ -88,6 +90,8 @@ export class SanctuaryLife {
   private wobble = 0;
   private hintShownAt = 0;
   private busy = false;
+  /** Étape déjà accordée au monde (pour enregistrer à chaque changement). */
+  private synced: string | undefined;
   private time = 0;
 
   constructor(
@@ -138,6 +142,8 @@ export class SanctuaryLife {
   /** Accorde les portes, les dalles et les interactions avec l'avancement enregistré. */
   private syncWorld(): void {
     const s = this.step;
+    if (this.synced !== undefined && this.synced !== s) this.hooks.onProgress();
+    this.synced = s;
     const open = (cells: Cell[]): void => {
       if (cells.every((c) => this.world.get(c.x, c.y, c.z) === Block.Air)) return;
       for (const c of cells) this.world.set(c.x, c.y, c.z, Block.Air);
