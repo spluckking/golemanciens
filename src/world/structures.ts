@@ -151,6 +151,28 @@ function buildHouse(
   }
 }
 
+interface Spot {
+  x: number;
+  z: number;
+  facing: number;
+}
+
+/** Maison du joueur (SPEC.md § 18) : porte au nord, face à la place. */
+export interface HomePlan {
+  x0: number;
+  z0: number;
+  x1: number;
+  z1: number;
+  /** Devant la porte, dehors. */
+  door: { x: number; z: number };
+  /** Où l'on se réveille (départ du jeu, retour après un K.O. si l'on a dormi). */
+  wake: Spot;
+  bed: Spot;
+  shelf: Spot;
+  /** Trajet du golem de maison, en boucle. */
+  golemPath: [number, number][];
+}
+
 export interface VillagePlan {
   npcs: { id: string; x: number; z: number; facing: number }[];
   guardians: { x: number; z: number; facing: number }[];
@@ -158,8 +180,7 @@ export interface VillagePlan {
   wheat: { x0: number; z0: number; x1: number; z1: number };
   well: { x: number; z: number };
   pen: { x0: number; z0: number; x1: number; z1: number };
-  /** Maison du joueur (SPEC.md § 18) : porte au nord, face à la place. */
-  home: { x0: number; z0: number; x1: number; z1: number; door: { x: number; z: number } };
+  home: HomePlan;
 }
 
 /**
@@ -175,10 +196,29 @@ export function buildVillage(world: VoxelWorld, cx: number, cz: number, floorY: 
   buildHouse(world, cx + 5, cz - 10, 6, 5, floorY, Block.Brick, Block.Roof, true);
 
   // Maison du joueur, au sud de la place : murs de planches, cheminée de pierre.
-  const home = { x0: cx - 3, z0: cz + 7, x1: cx + 3, z1: cz + 12, door: { x: cx + 0.5, z: cz + 6.5 } };
-  buildHouse(world, home.x0, home.z0, 7, 6, floorY, Block.Plank, Block.Roof, false);
-  world.fill(home.x1 - 1, floorY + 4, home.z1 - 1, home.x1 - 1, floorY + 8, home.z1 - 1, Block.Stone);
+  // Intérieur de 7 × 5 : lit contre le mur ouest, étagère à trophées contre le mur est.
+  const hx0 = cx - 4;
+  const hz0 = cz + 7;
+  const home: HomePlan = {
+    x0: hx0,
+    z0: hz0,
+    x1: hx0 + 8,
+    z1: hz0 + 6,
+    door: { x: cx + 0.5, z: hz0 - 0.5 },
+    wake: { x: cx + 0.5, z: hz0 + 2.6, facing: 0 },
+    bed: { x: hx0 + 1.9, z: hz0 + 4.1, facing: 0 },
+    shelf: { x: hx0 + 7.78, z: hz0 + 3.5, facing: Math.PI / 2 },
+    golemPath: [
+      [cx + 1.5, hz0 + 2.5],
+      [cx + 2.5, hz0 + 4.6],
+      [cx - 0.5, hz0 + 5],
+      [cx - 0.8, hz0 + 3],
+    ],
+  };
+  buildHouse(world, home.x0, home.z0, 9, 7, floorY, Block.Plank, Block.Roof, false);
+  world.fill(home.x1 - 1, floorY + 4, home.z1 - 1, home.x1 - 1, floorY + 9, home.z1 - 1, Block.Stone);
   world.set(home.x0, floorY + 1, home.z0 + 2, Block.Window);
+  world.set(home.x0, floorY + 1, home.z0 + 4, Block.Window);
   world.set(home.x1, floorY + 1, home.z0 + 2, Block.Window);
 
   // Moulin : tour de pierre et ailes de planches (face nord).
@@ -228,7 +268,7 @@ export function buildVillage(world: VoxelWorld, cx: number, cz: number, floorY: 
     ],
     guardians: [
       { x: cx + 13.5, z: cz - 2.5, facing: -Math.PI / 2 },
-      { x: cx - 2.5, z: cz + 13.5, facing: Math.PI },
+      { x: cx - 6.5, z: cz + 15.5, facing: Math.PI },
     ],
     lantern: { x: cx + 3.5, z: cz + 3.5 },
     wheat,

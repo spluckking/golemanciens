@@ -41,6 +41,10 @@ const STUCK_HELP_S = 3;
 const UNSTUCK_OFFER_S = 6;
 const SAFE_SPOT_EVERY_S = 0.5;
 const TEXT_UNSTUCK = 'Me débloquer';
+/** Textes nouveaux (à valider par le parent). */
+const TEXT_SLEPT = 'Tu as bien dormi !';
+const TEXT_SLEPT_GOLEMS = 'Tu as bien dormi ! Tes golems sont en pleine forme.';
+const SLEEP_FADE_MS = 1800;
 
 export type GameMode = 'title' | 'play' | 'cinematic';
 
@@ -68,6 +72,7 @@ export class Game {
   private readonly labels: WorldLabels;
   private readonly dialog: DialogBubble;
   private readonly fade = el('div', { className: 'soft-fade hidden', testId: 'ko-fade' });
+  private readonly sleepFade = el('div', { className: 'sleep-fade hidden', testId: 'sleep-fade' }, [el('span', { className: 'sleep-zzz', text: 'Zzz…' })]);
   private readonly debug: DebugOverlay | null;
   private readonly solid: SolidFn;
   private readonly hemi: THREE.HemisphereLight;
@@ -76,6 +81,8 @@ export class Game {
   private lastTime = 0;
   private attackCooldown = 0;
   private mode: GameMode = 'play';
+  /** Le héros a été placé dans sa maison (première entrée en jeu). */
+  private entered = false;
   /** Menu ouvert (journal) ou transition : le monde ne bouge plus. */
   private paused = false;
   private readonly tipWorld = new THREE.Vector3();
@@ -114,8 +121,9 @@ export class Game {
     this.biome = new BiomeScene(this.layout, atlas);
     this.scene.add(this.biome.group);
 
-    const { spawn, spawnYaw } = this.layout;
-    this.hero = createHero(spawn.x, spawn.y, spawn.z, spawnYaw);
+    // Le héros attend devant l'Académie (écran titre), puis se réveille chez lui au début de la partie.
+    const { titleSpot, spawnYaw } = this.layout;
+    this.hero = createHero(titleSpot.x, titleSpot.y, titleSpot.z, spawnYaw);
     this.scene.add(this.heroModel.root);
     this.shadow = new THREE.Mesh(
       new THREE.CircleGeometry(0.42, 16).rotateX(-Math.PI / 2),
@@ -132,7 +140,7 @@ export class Game {
     this.controls = new TouchControls(this.input);
     this.hud = new Hud(() => void this.showJournal());
     this.dialog = new DialogBubble(() => this.state.playerName);
-    uiLayer.append(this.labels.root, this.controls.root, this.hud.root, this.dialog.root, this.fade);
+    uiLayer.append(this.labels.root, this.controls.root, this.hud.root, this.dialog.root, this.fade, this.sleepFade);
     this.debug = options.debug ? new DebugOverlay() : null;
     if (this.debug) uiLayer.appendChild(this.debug.root);
     attachKeyboard(this.input, window);
@@ -143,6 +151,7 @@ export class Game {
       labels: this.labels,
       sparks: this.sparks,
       onAllKO: () => this.recoverFromKO(),
+      onSleep: () => this.sleep(),
     });
     this.scene.add(this.life.group);
 
@@ -181,6 +190,11 @@ export class Game {
     this.mode = mode;
     const playing = mode === 'play';
     for (const node of [this.controls.root, this.hud.root, this.labels.root]) node.classList.toggle('hidden', !playing);
+    if (playing && !this.entered) {
+      this.entered = true;
+      const { spawn, spawnYaw } = this.layout;
+      this.teleport(spawn.x, spawn.z, spawnYaw);
+    }
     const inWorld = mode !== 'cinematic';
     for (const obj of [this.heroModel.root, this.shadow, this.life.group]) obj.visible = inWorld;
     if (!playing) this.dialog.close();
@@ -200,7 +214,7 @@ export class Game {
   teleport(x: number, z: number, facing?: number): void {
     this.hero.x = x;
     this.hero.z = z;
-    this.hero.y = this.layout.world.surfaceY(Math.floor(x), Math.floor(z));
+    this.hero.y = this.layout.world.standY(Math.floor(x), Math.floor(z));
     this.hero.vy = 0;
     if (facing !== undefined) {
       this.hero.facing = facing;
@@ -221,6 +235,23 @@ export class Game {
       await this.playCinematic(script, storyCaptions(story, script), { skippable: true, timeScale: 1 });
     }
     this.paused = false;
+  }
+
+  /** Le héros dort : écran de nuit, golems soignés, la maison devient le point de retour. */
+  private sleep(): void {
+    if (this.paused) return;
+    this.paused = true;
+    this.input.stickX = this.input.stickY = 0;
+    this.sleepFade.classList.remove('hidden');
+    setTimeout(() => {
+      const p = this.life.home.wakePoint();
+      this.teleport(p.x, p.z, this.layout.spawnYaw);
+      this.life.sim.recoverAt(p.x, p.y, p.z);
+      this.state.lastLantern = 'home';
+      this.sleepFade.classList.add('hidden');
+      this.paused = false;
+      this.hud.showToast(this.state.golems.length ? TEXT_SLEPT_GOLEMS : TEXT_SLEPT, 3);
+    }, SLEEP_FADE_MS);
   }
 
   /** Tous les golems sont K.O. : écran doux, retour à la dernière lanterne, golems soignés. */

@@ -37,6 +37,8 @@ export interface GameState {
   lastLantern: string | null;
   /** Bulles de tutoriel déjà vues. */
   tutorialsSeen: string[];
+  /** Boss vaincus : leurs statuettes sont sur l'étagère de la maison. */
+  trophies: string[];
 }
 
 export function createGameState(): GameState {
@@ -56,6 +58,7 @@ export function createGameState(): GameState {
     litLanterns: [],
     lastLantern: null,
     tutorialsSeen: [],
+    trophies: [],
   };
 }
 

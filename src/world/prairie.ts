@@ -26,15 +26,18 @@ export type LandmarkId = 'academy' | 'village' | 'arena' | 'sanctuary' | 'bossLa
 
 export interface BiomeLayout {
   world: VoxelWorld;
+  /** Départ de la partie : dans la maison du joueur, près du lit (SPEC.md § 18). */
   spawn: { x: number; y: number; z: number };
   /** Angle de départ de la caméra (radians, 0 = regarde vers -Z). */
   spawnYaw: number;
+  /** Point autour duquel tourne la caméra de l'écran titre : devant l'Académie. */
+  titleSpot: { x: number; y: number; z: number };
   /** Emplacements réservés : les structures seront construites aux sous-étapes 1.3 et 1.4. */
   landmarks: Record<LandmarkId, Point2>;
   decorations: Decoration[];
   academyDoor: { x: number; y: number; z: number };
   village: VillagePlan;
-  /** Position de Lumibloc, devant l'Académie. */
+  /** Position de Lumibloc au chapitre 1 : devant la maison du joueur. */
   lumibloc: { x: number; z: number; facing: number };
   camps: Camp[];
   crates: { id: string; x: number; y: number; z: number }[];
@@ -246,12 +249,13 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
       for (const [ox, oz] of [[0.3, 0.3], [0.7, 0.7]]) decorations.push({ x: x + ox, y, z: z + oz, tile: Tile.Wheat });
     }
 
-  const spawnX = ACADEMY.x;
-  const spawnZ = door.doorZ + 5;
+  const titleX = ACADEMY.x;
+  const titleZ = door.doorZ + 5;
+  const { home } = village;
 
-  // Caisses : la première près du point de départ (tutoriel), les autres dispersées.
+  // Caisses : la première juste devant la maison (tutoriel), les autres dispersées.
   const crates: BiomeLayout['crates'] = [];
-  const crateSpots: Point2[] = [{ x: spawnX + 3, z: spawnZ + 3 }];
+  const crateSpots: Point2[] = [{ x: Math.floor(home.door.x) - 3, z: Math.floor(home.door.z) - 2 }];
   for (let attempt = 0; attempt < 2000 && crateSpots.length < CRATE_COUNT; attempt++) {
     const x = randInt(rng, 6, size - 7);
     const z = randInt(rng, 6, size - 7);
@@ -273,8 +277,9 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
 
   return {
     world,
-    spawn: { x: spawnX + 0.5, y: world.surfaceY(spawnX, spawnZ), z: spawnZ + 0.5 },
-    spawnYaw: 0,
+    spawn: { x: home.wake.x, y: villageFloor, z: home.wake.z },
+    spawnYaw: home.wake.facing,
+    titleSpot: { x: titleX + 0.5, y: world.surfaceY(titleX, titleZ), z: titleZ + 0.5 },
     landmarks: {
       academy: { x: ACADEMY.x, z: ACADEMY.z },
       village: { x: PADS.village.x, z: PADS.village.z },
@@ -285,7 +290,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     decorations,
     academyDoor: { x: door.doorX + 0.5, y: ACADEMY_FLOOR, z: door.doorZ + 0.5 },
     village,
-    lumibloc: { x: door.doorX + 3.5, z: door.doorZ + 1.5, facing: Math.PI },
+    lumibloc: { x: home.door.x + 2, z: home.door.z - 1.2, facing: Math.PI * 0.8 },
     camps,
     crates,
     lanterns,

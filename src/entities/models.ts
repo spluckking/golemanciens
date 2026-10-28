@@ -594,6 +594,131 @@ function eggModel(spot: number): ModelDef {
   ];
 }
 
+// ---------- Maison du joueur ----------
+
+/** Lit d'une place : tête (oreiller) vers +Z. Origine au centre, au sol. */
+function bedModel(): ModelDef {
+  const wood = 0x8a5a32;
+  const dark = 0x5a3a20;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [1.1, 0.35, 2.0, 0, 0.3, 0, wood],
+        ...[-0.48, 0.48].flatMap((x): Cube[] => [[0.12, 0.15, 0.12, x, 0.07, -0.92, dark], [0.12, 0.15, 0.12, x, 0.07, 0.92, dark]]),
+        [1.14, 0.9, 0.12, 0, 0.45, 0.98, wood],
+        [0.9, 0.08, 0.06, 0, 0.82, 1.02, 0xf0c43c],
+        [1.14, 0.55, 0.12, 0, 0.3, -0.98, wood],
+        [1.0, 0.16, 1.85, 0, 0.55, 0, 0xf4f0e6],
+        [0.7, 0.14, 0.45, 0, 0.68, 0.62, 0xffffff],
+        // Couverture violette brodée d'étoiles dorées.
+        [1.04, 0.1, 1.25, 0, 0.66, -0.32, 0x7b2d8b],
+        [0.12, 0.02, 0.12, -0.25, 0.72, -0.5, 0xf0c43c],
+        [0.12, 0.02, 0.12, 0.22, 0.72, -0.15, 0xf0c43c],
+        [0.12, 0.02, 0.12, 0.05, 0.72, -0.75, 0xf0c43c],
+      ],
+    },
+  ];
+}
+
+/** Places des trophés sur l'étagère (repère de l'étagère) : 3 en bas, 2 en haut. */
+export const SHELF_SLOTS: [number, number, number][] = [
+  [-0.62, 0.86, -0.02],
+  [0, 0.86, -0.02],
+  [0.62, 0.86, -0.02],
+  [-0.32, 1.56, -0.02],
+  [0.32, 1.56, -0.02],
+];
+
+/** Étagère à trophées : façade vers -Z. Origine au centre, au sol. */
+function trophyShelfModel(): ModelDef {
+  const wood = 0xa8703c;
+  const dark = 0x6a4424;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.12, 2.2, 0.42, -0.98, 1.1, 0, dark],
+        [0.12, 2.2, 0.42, 0.98, 1.1, 0, dark],
+        [2.08, 0.1, 0.44, 0, 2.2, 0, dark],
+        [1.84, 2.1, 0.04, 0, 1.1, 0.19, wood],
+        ...[0.1, 0.8, 1.5].map((y): Cube => [1.84, 0.08, 0.4, 0, y, 0, wood]),
+        [0.9, 0.16, 0.04, 0, 2.05, -0.22, 0xf0c43c],
+      ],
+    },
+  ];
+}
+
+/** Trophée du Roi Slime : statuette dorée sur socle. */
+function trophyRoiSlimeModel(): ModelDef {
+  const gold = 0xf0c43c;
+  const light = 0xffe27a;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.4, 0.08, 0.32, 0, 0.04, 0, 0x6a4424],
+        [0.32, 0.26, 0.28, 0, 0.21, 0, gold],
+        [0.2, 0.04, 0.2, 0, 0.36, 0, light],
+        ...[-0.09, 0, 0.09].map((x): Cube => [0.05, 0.08, 0.05, x, 0.42, 0, light]),
+        [0.05, 0.06, 0.02, -0.07, 0.25, -0.145, 0x6a4424],
+        [0.05, 0.06, 0.02, 0.07, 0.25, -0.145, 0x6a4424],
+      ],
+    },
+  ];
+}
+
+/**
+ * Rivet, le golem de maison : petit, rond, couleur cuivre avec des taches de vert-de-gris,
+ * un tuyau de poêle sur la tête et un balai. Il ne combat pas.
+ */
+function houseGolemModel(): ModelDef {
+  const copper = 0xc8743c;
+  const dark = 0x8a4a24;
+  const patina = 0x6fb8a0;
+  return [
+    { name: 'legL', pivot: [-0.14, 0.28, 0], cubes: [[0.18, 0.28, 0.2, 0, -0.14, 0, dark]] },
+    { name: 'legR', pivot: [0.14, 0.28, 0], cubes: [[0.18, 0.28, 0.2, 0, -0.14, 0, dark]] },
+    {
+      name: 'body',
+      pivot: [0, 0.28, 0],
+      cubes: [
+        [0.62, 0.5, 0.5, 0, 0.25, 0, copper],
+        [0.5, 0.42, 0.46, 0, 0.7, -0.02, copper],
+        [0.16, 0.1, 0.02, 0.12, 0.4, -0.26, patina],
+        [0.1, 0.12, 0.02, -0.18, 0.15, -0.26, patina],
+        [0.02, 0.12, 0.14, 0.32, 0.3, 0.05, patina],
+        // Rivets dorés.
+        ...[-0.22, 0.22].map((x): Cube => [0.05, 0.05, 0.02, x, 0.42, -0.26, 0xf0c43c]),
+        // Grands yeux ronds et lumineux.
+        [0.12, 0.12, 0.02, -0.11, 0.74, -0.255, 0xfff3c0],
+        [0.12, 0.12, 0.02, 0.11, 0.74, -0.255, 0xfff3c0],
+        [0.05, 0.05, 0.02, -0.1, 0.73, -0.265, EYE_DARK],
+        [0.05, 0.05, 0.02, 0.12, 0.73, -0.265, EYE_DARK],
+        // Tuyau de poêle sur la tête.
+        [0.14, 0.26, 0.14, 0.08, 1.03, 0, 0x5a5a66],
+        [0.18, 0.04, 0.18, 0.08, 1.17, 0, 0x3a3a44],
+      ],
+    },
+    { name: 'armL', pivot: [-0.37, 0.75, 0], cubes: [[0.12, 0.38, 0.14, 0, -0.17, 0, copper], [0.14, 0.1, 0.16, 0, -0.38, 0, dark]] },
+    {
+      name: 'armR',
+      pivot: [0.37, 0.75, 0],
+      rest: [-0.5, 0, 0],
+      cubes: [
+        [0.12, 0.38, 0.14, 0, -0.17, 0, copper],
+        [0.14, 0.12, 0.2, 0, -0.38, -0.03, dark],
+        // Balai tenu dans la pince.
+        [0.05, 0.9, 0.05, 0, -0.5, -0.1, 0x8a5a32],
+        [0.24, 0.2, 0.08, 0, -1.0, -0.1, 0xe8cf7a],
+      ],
+    },
+  ];
+}
+
 /** Couleurs du portrait de dialogue (visage en pixels). */
 export interface PortraitColors {
   skin: number;
@@ -608,6 +733,7 @@ export const PORTRAITS: Record<string, PortraitColors> = {
   mereBrique: { skin: 0xe8b890, hair: 0x6a3e22, eye: EYE_DARK },
   paquerette: { skin: 0xf6d2b0, hair: 0xf2d060, hat: 0xffffff, eye: EYE_DARK },
   gaston: { skin: 0xdcae88, hair: 0x8a8a8a, hat: 0x3e64a0, eye: EYE_DARK },
+  rivet: { skin: 0xc8743c, hair: 0x8a4a24, hat: 0x5a5a66, eye: 0xfff3c0 },
 };
 
 /** Définitions construites une seule fois : la géométrie de chaque pièce est partagée entre instances. */
@@ -639,5 +765,9 @@ export const MODELS = {
   apprenticeRed: villagerModel(VILLAGER_LOOKS.apprenticeRed),
   apprenticeGreen: villagerModel(VILLAGER_LOOKS.apprenticeGreen),
   apprenticeTeal: villagerModel(VILLAGER_LOOKS.apprenticeTeal),
+  bed: bedModel(),
+  trophyShelf: trophyShelfModel(),
+  trophyRoiSlime: trophyRoiSlimeModel(),
+  rivet: houseGolemModel(),
 } as const satisfies Record<string, ModelDef>;
 export type ModelId = keyof typeof MODELS;

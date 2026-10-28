@@ -101,4 +101,22 @@ describe('Prairie de Cubeterre', () => {
     const decoTriangles = layout.decorations.length * 4;
     expect(triangles + decoTriangles).toBeLessThan(300_000);
   });
+
+  it('la maison du joueur : on se réveille dedans, la porte est ouverte, les meubles sont à l’intérieur', () => {
+    const { home } = layout.village;
+    const { world } = layout;
+    const inside = (p: { x: number; z: number }): boolean => p.x > home.x0 + 1 && p.x < home.x1 && p.z > home.z0 + 1 && p.z < home.z1;
+    for (const p of [home.wake, home.bed, home.shelf]) expect(inside(p)).toBe(true);
+    for (const [x, z] of home.golemPath) expect(inside({ x, z })).toBe(true);
+    expect(layout.spawn.x).toBe(home.wake.x);
+    expect(layout.spawn.z).toBe(home.wake.z);
+    const y = layout.spawn.y;
+    expect(world.solidAt(Math.floor(home.wake.x), y - 1, Math.floor(home.wake.z))).toBe(true);
+    // Porte de 2 blocs de haut dans le mur nord, et un toit au-dessus de la pièce.
+    const doorX = Math.floor(home.door.x);
+    expect(world.solidAt(doorX, y, home.z0)).toBe(false);
+    expect(world.solidAt(doorX, y + 1, home.z0)).toBe(false);
+    expect(world.standY(doorX, home.z0 - 1)).toBe(y);
+    expect(world.surfaceY(Math.floor(home.wake.x), Math.floor(home.wake.z))).toBeGreaterThan(y + 3);
+  });
 });

@@ -49,6 +49,8 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
     for (const id of (params.get('golems') ?? '').split(',')) {
       if (id in GOLEMS) state.golems.push(createGolem(id as GolemSpecies));
     }
+    // « ?test&trophies=roiSlime » pose des trophées sur l'étagère de la maison.
+    for (const id of (params.get('trophies') ?? '').split(',')) if (id) state.trophies.push(id);
     // « ?test&start=play » saute l'introduction (prénom fictif, tutoriel de déplacement déjà vu).
     // « ?test&cine=T1&shot=4 » joue une cinématique (à partir d'un plan), puis lance la partie.
     const cine = params.get('cine');

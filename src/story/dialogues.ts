@@ -12,6 +12,7 @@ export const NPC_NAMES: Record<string, string> = {
   mereBrique: 'Mère Brique',
   paquerette: 'Pâquerette',
   gaston: 'Gaston',
+  rivet: 'Rivet',
 };
 
 const GREETINGS: Record<string, string> = {
@@ -19,6 +20,7 @@ const GREETINGS: Record<string, string> = {
   mereBrique: 'Bienvenue à Ferme-des-Blocs ! Ici, les monstres n’entrent jamais.',
   paquerette: 'Bonjour ! Mon pain sort tout juste du four.',
   gaston: 'Mon moulin tourne grâce au vent de la Prairie.',
+  rivet: 'Bonjour, {prenom} ! J’ai balayé toute la maison.',
 };
 
 export function greeting(npcId: string): DialogLine {

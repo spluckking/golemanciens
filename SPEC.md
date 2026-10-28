@@ -417,4 +417,4 @@ Pas de construction ni de minage (on ne fait que casser des caisses), pas de mul
 - **Le lit** (« Dormir ») : soigne les golems, devient le point de retour (comme une lanterne) et **enregistre la partie**. La sauvegarde automatique (§ 13) continue à côté.
 - **L'étagère à trophées** : après chaque phase, une statuette dorée du boss vaincu y apparaît. En s'approchant, on lit son nom.
 - **Elle évolue à chaque phase** : une extension dans le style du biome terminé (balcon de bois, terrasse de sable, cheminée et tapis de laine, fenêtre-nuage…). Chaque jalon construit la version de sa phase.
-- **Le golem de maison** : un petit golem original, couleur cuivre, qui reste dans la maison, fait le ménage et salue le joueur. Il ne combat pas et ne suit pas le héros. Son nom et son modèle sont à valider par le parent.
+- **Le golem de maison** : **Rivet** (nom à valider par le parent), un petit golem original couleur cuivre, avec des taches de vert-de-gris, un tuyau de poêle sur la tête et un balai. Il reste dans la maison, fait le ménage et salue le joueur. Il ne combat pas et ne suit pas le héros.

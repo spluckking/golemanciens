@@ -992,3 +992,28 @@ body {
     opacity: 0;
   }
 }
+
+/* Sommeil : la nuit tombe un instant sur la maison. */
+.sleep-fade {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 16, 40, 0.92);
+  animation: fade-in 0.6s ease-out;
+  pointer-events: auto;
+}
+
+.sleep-zzz {
+  font-size: 56px;
+  color: #c8d4ff;
+  animation: sleep-zzz 1.6s ease-in-out infinite;
+}
+
+@keyframes sleep-zzz {
+  50% {
+    transform: translateY(-14px);
+    opacity: 0.6;
+  }
+}

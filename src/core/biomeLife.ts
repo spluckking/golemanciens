@@ -11,6 +11,7 @@ import type { WorldLabels } from '../ui/worldLabels';
 import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { BiomeLayout } from '../world/prairie';
 import type { GameState } from './gameState';
+import { HomeLife } from './home';
 import type { Interactions } from './interactions';
 import type { SolidFn } from './physics';
 import type { Rng } from './rng';
@@ -33,6 +34,8 @@ export interface LifeHooks {
   labels: WorldLabels;
   sparks: Sparks;
   onAllKO: () => void;
+  /** Le héros se couche dans son lit. */
+  onSleep: () => void;
 }
 
 interface CreatureView {
@@ -80,6 +83,7 @@ interface Lantern {
 export class BiomeLife {
   readonly group = new THREE.Group();
   readonly sim: WorldSim;
+  readonly home: HomeLife;
   private readonly golemViews = new Map<GolemAgent, CreatureView>();
   private readonly monsterViews = new Map<MonsterAgent, CreatureView>();
   private readonly npcs: Npc[] = [];
@@ -106,7 +110,7 @@ export class BiomeLife {
   ) {
     const v = layout.landmarks.village;
     this.sim = new WorldSim(solid, rng, [{ x: v.x, z: v.z, r: 14 }]);
-    const surface = (x: number, z: number): number => layout.world.surfaceY(Math.floor(x), Math.floor(z));
+    const surface = (x: number, z: number): number => layout.world.standY(Math.floor(x), Math.floor(z));
 
     // Monstres des camps.
     for (const camp of layout.camps) {
@@ -123,7 +127,14 @@ export class BiomeLife {
       this.chests.push({ campId: camp.id, model: chest, x: camp.chest.x, y: surface(camp.chest.x, camp.chest.z), z: camp.chest.z, opened });
     }
 
-    // PNJ : Lumibloc devant l'Académie et les villageois.
+    // Maison du joueur : lit, étagère à trophées, golem de maison.
+    this.home = new HomeLife(layout.village.home, layout.world, this.group, state, interactions, {
+      dialog: hooks.dialog,
+      toast: hooks.toast,
+      onSleep: hooks.onSleep,
+    });
+
+    // PNJ : Lumibloc devant la maison du joueur et les villageois.
     const npcSpots = [{ id: 'lumibloc', ...layout.lumibloc }, ...layout.village.npcs];
     for (const n of npcSpots) {
       const model = this.spawnStatic(n.id as ModelId, n.x, n.z, n.facing);
@@ -281,6 +292,7 @@ export class BiomeLife {
       for (const e of events) this.handle(e);
       this.updateLanterns(hero);
       this.updateTutorials(hero);
+      this.home.update(dt, hero);
       if (this.dialogNpc && Math.hypot(this.dialogNpc.x - hero.x, this.dialogNpc.z - hero.z) > 6) this.hooks.dialog.close();
     }
     this.render(dt, hero, camera);
@@ -322,8 +334,9 @@ export class BiomeLife {
     }
   }
 
-  /** Point de retour après un K.O. général : dernière lanterne allumée, sinon devant l'Académie. */
+  /** Point de retour après un K.O. général : la maison si l'on y a dormi en dernier, sinon la dernière lanterne, sinon la maison. */
   respawnPoint(): { x: number; y: number; z: number } {
+    if (this.state.lastLantern === 'home') return this.home.wakePoint();
     const l = this.lanterns.find((x) => x.id === this.state.lastLantern);
     if (l) return { x: l.x + 1.5, y: l.y, z: l.z + 1.5 };
     return { ...this.layout.spawn };
@@ -416,7 +429,7 @@ export class BiomeLife {
 
   private spawnStatic(id: ModelId, x: number, z: number, facing: number, scale = 1): CubeModel {
     const model = new CubeModel(MODELS[id], scale);
-    model.root.position.set(x, this.layout.world.surfaceY(Math.floor(x), Math.floor(z)), z);
+    model.root.position.set(x, this.layout.world.standY(Math.floor(x), Math.floor(z)), z);
     model.root.rotation.y = facing;
     this.group.add(model.root);
     this.statics.push(model);
@@ -451,6 +464,7 @@ export class BiomeLife {
     crates: { id: string; broken: boolean; x: number; z: number }[];
     chests: { campId: string; opened: boolean; x: number; z: number }[];
     npcs: { id: string; x: number; z: number }[];
+    home: ReturnType<HomeLife['snapshot']>;
   } {
     return {
       monsters: this.sim.monsters.map((m) => ({ id: m.id, species: m.species, mode: m.mode, hp: m.hp, x: m.body.x, z: m.body.z })),
@@ -458,6 +472,7 @@ export class BiomeLife {
       crates: this.crates.map((c) => ({ id: c.id, broken: c.broken, x: c.x, z: c.z })),
       chests: this.chests.map((c) => ({ campId: c.campId, opened: c.opened, x: c.x, z: c.z })),
       npcs: this.npcs.map((n) => ({ id: n.id, x: n.x, z: n.z })),
+      home: this.home.snapshot(),
     };
   }
 }

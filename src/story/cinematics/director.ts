@@ -234,11 +234,7 @@ export class CinematicDirector implements ShotContext {
 
   /** Sol où l'on peut se tenir : le premier vide de 2 blocs en partant du bas (ignore les avancées de toit). */
   ground(x: number, z: number): number {
-    const xi = Math.floor(x);
-    const zi = Math.floor(z);
-    const solid = (y: number): boolean => this.host.solid(xi, y, zi);
-    for (let y = 1; y < this.world.sizeY - 1; y++) if (solid(y - 1) && !solid(y) && !solid(y + 1)) return y;
-    return this.world.surfaceY(xi, zi);
+    return this.world.standY(Math.floor(x), Math.floor(z));
   }
 
   actor(id: string, model: ModelId, x: number, z: number, facing: number, opts: { y?: number; scale?: number } = {}): Actor {

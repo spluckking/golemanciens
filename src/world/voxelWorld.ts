@@ -55,6 +55,17 @@ export class VoxelWorld {
     return 0;
   }
 
+  /**
+   * Sol où l'on peut se tenir debout : la première place libre de 2 blocs (hors de l'eau) en partant du bas.
+   * Contrairement à surfaceY, elle ignore ce qui couvre le sol (toits, avancées, feuillages).
+   */
+  standY(x: number, z: number): number {
+    for (let y = 1; y < this.sizeY - 1; y++) {
+      if (this.solidAt(x, y - 1, z) && !this.solidAt(x, y, z) && !this.solidAt(x, y + 1, z) && this.get(x, y, z) !== Block.Water) return y;
+    }
+    return this.surfaceY(x, z);
+  }
+
   get chunksX(): number {
     return Math.ceil(this.sizeX / CHUNK_SIZE);
   }
