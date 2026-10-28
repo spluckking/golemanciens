@@ -2,12 +2,16 @@ import * as THREE from 'three';
 import { animateWalk, CubeModel } from './cubeModel';
 import { HERO_STAFF_TIP, MODELS } from './models';
 
-/** Cape en deux pans : elle se soulève avec la vitesse et ondule doucement. */
+/**
+ * Cape en deux pans : elle se soulève vers l'arrière avec la vitesse et ondule doucement.
+ * Les angles restent toujours négatifs (vers +Z, le dos) : la cape ne passe jamais dans le corps
+ * ni devant, et s'écarte assez pour laisser passer les jambes en marchant.
+ */
 export function animateCape(model: CubeModel, speed: number, airborne: boolean, time: number): void {
-  const lift = Math.min(speed / 5.5, 1) * 0.35 + (airborne ? 0.3 : 0);
-  const flutter = Math.sin(time * (3 + speed)) * (0.04 + lift * 0.15);
-  model.swing('cape', lift + flutter * 0.5);
-  model.swing('capeLow', lift * 0.6 + flutter);
+  const lift = 0.06 + Math.min(speed / 5.5, 1) * 0.5 + (airborne ? 0.3 : 0);
+  const flutter = Math.abs(Math.sin(time * (2.5 + speed * 0.8))) * (0.03 + lift * 0.12);
+  model.swing('cape', -(lift + flutter * 0.4));
+  model.swing('capeLow', -(lift * 0.35 + flutter));
 }
 
 /**

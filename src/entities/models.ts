@@ -17,7 +17,8 @@ function eyes(y: number, z: number, spacing: number, color: number, size = 0.07)
 
 // ---------- Héros ----------
 
-export const HERO_STAFF_TIP: [number, number, number] = [0, 0.4, -0.13];
+/** Gemme du bâton, dans le repère du bras droit (le bâton est tenu dans la main, devant le bras). */
+export const HERO_STAFF_TIP: [number, number, number] = [0, 0.4, -0.29];
 
 export function heroModel(): ModelDef {
   const skin = 0xf2c6a0;
@@ -67,13 +68,12 @@ export function heroModel(): ModelDef {
         [0.4, 0.16, 0.12, 0, 1.2, 0.2, cape],
       ],
     },
-    // Cape en deux pans : elle ondule quand le héros court.
-    { name: 'cape', parent: 'body', pivot: [0, 1.17, 0.18], rest: [0.08, 0, 0], cubes: [[0.6, 0.5, 0.05, 0, -0.25, 0, cape], [0.56, 0.48, 0.02, 0, -0.25, -0.03, capeLining]] },
+    // Cape en deux pans, accrochée dans le dos : elle ne flotte que vers l'arrière (voir animateCape).
+    { name: 'cape', parent: 'body', pivot: [0, 1.17, 0.19], cubes: [[0.6, 0.5, 0.05, 0, -0.25, 0, cape], [0.56, 0.48, 0.02, 0, -0.25, -0.03, capeLining]] },
     {
       name: 'capeLow',
       parent: 'cape',
       pivot: [0, -0.5, 0],
-      rest: [0.05, 0, 0],
       cubes: [[0.64, 0.42, 0.05, 0, -0.21, 0, cape], [0.6, 0.4, 0.02, 0, -0.21, -0.03, capeLining], [0.66, 0.05, 0.06, 0, -0.42, 0, trim]],
     },
     { name: 'armL', pivot: [-0.34, 1.12, 0], cubes: [[0.16, 0.5, 0.2, 0, -0.22, 0, robe], [0.18, 0.06, 0.22, 0, -0.42, 0, trim], [0.16, 0.1, 0.18, 0, -0.5, 0, skin]] },
@@ -84,16 +84,17 @@ export function heroModel(): ModelDef {
       cubes: [
         [0.16, 0.5, 0.2, 0, -0.22, 0, robe],
         [0.18, 0.06, 0.22, 0, -0.42, 0, trim],
-        [0.16, 0.1, 0.18, 0, -0.5, 0, skin],
-        // Bâton : manche, bague dorée, crosse recourbée qui tient la gemme.
-        [0.07, 1.3, 0.07, 0, -0.38, -0.06, wood],
-        [0.09, 0.06, 0.09, 0, -0.02, -0.06, trim],
-        [0.07, 0.07, 0.2, 0, 0.3, -0.16, wood],
-        [0.07, 0.22, 0.07, 0, 0.4, -0.26, wood],
-        [0.07, 0.07, 0.14, 0, 0.53, -0.16, wood],
+        // Main fermée sur le manche.
+        [0.17, 0.13, 0.27, 0, -0.5, -0.06, skin],
+        // Bâton tenu dans le poing, devant le bras : manche, bague dorée, crosse qui tient la gemme.
+        [0.07, 1.3, 0.07, 0, -0.45, -0.19, wood],
+        [0.09, 0.06, 0.09, 0, -0.05, -0.19, trim],
+        [0.07, 0.07, 0.2, 0, 0.23, -0.29, wood],
+        [0.07, 0.24, 0.07, 0, 0.36, -0.39, wood],
+        [0.07, 0.07, 0.14, 0, 0.5, -0.32, wood],
       ],
     },
-    { name: 'gem', parent: 'armR', pivot: [0, 0, 0], glow: true, cubes: [[0.15, 0.15, 0.15, ...HERO_STAFF_TIP, 0x6ff0ff], [0.06, 0.06, 0.04, 0.04, 0.44, -0.21, 0xe8ffff]] },
+    { name: 'gem', parent: 'armR', pivot: [0, 0, 0], glow: true, cubes: [[0.15, 0.15, 0.15, ...HERO_STAFF_TIP, 0x6ff0ff], [0.06, 0.06, 0.04, 0.04, 0.44, -0.37, 0xe8ffff]] },
   ];
 }
 
