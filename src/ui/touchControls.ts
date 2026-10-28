@@ -3,6 +3,23 @@ import { el } from './dom';
 import { pixelIcon, type PixelIconId } from './pixelIcons';
 
 const STICK_RADIUS = 64;
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Flèche de saut lisse : pointe arrondie, tige, et un trait au sol en dessous. */
+function jumpArrow(): HTMLElement {
+  const box = el('span', { className: 'jump-arrow' });
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 48 48');
+  svg.setAttribute('aria-hidden', 'true');
+  const arrow = document.createElementNS(SVG_NS, 'path');
+  arrow.setAttribute('d', 'M24 5 L42 24 L31 24 L31 34 L17 34 L17 24 L6 24 Z');
+  arrow.setAttribute('stroke-linejoin', 'round');
+  const ground = document.createElementNS(SVG_NS, 'rect');
+  for (const [k, v] of Object.entries({ x: '15', y: '39', width: '18', height: '3', rx: '1.5' })) ground.setAttribute(k, v);
+  svg.append(arrow, ground);
+  box.appendChild(svg);
+  return box;
+}
 const LOOK_SPEED = 1;
 
 /**
@@ -27,7 +44,7 @@ export class TouchControls {
     this.stickBase = el('div', { className: 'stick-base', testId: 'stick' }, [this.stickKnob]);
     stickZone.appendChild(this.stickBase);
 
-    const jump = this.button('btn-action btn-jump', 'jump', 'Saut', 'btn-jump');
+    const jump = el('button', { className: 'btn-action btn-jump', aria: 'Saut', testId: 'btn-jump' }, [jumpArrow()]);
     const attack = this.button('btn-action btn-attack', 'wand', 'Baguette', 'btn-attack');
     this.interactLabel = el('span', { className: 'btn-label', text: 'Parler' });
     this.interactBtn = el('button', { className: 'btn-action btn-interact hidden', aria: 'Interagir', testId: 'btn-interact' }, [

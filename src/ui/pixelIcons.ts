@@ -3,7 +3,7 @@
  * Chaque icône a un contour sombre, pour rester lisible sur la pierre comme sur l'ardoise.
  */
 
-export type PixelIconId = 'wand' | 'jump' | 'journal' | 'golems' | 'encyclopedia' | 'pause';
+export type PixelIconId = 'wand' | 'journal' | 'golems' | 'encyclopedia' | 'pause';
 
 const K = '#15161c';
 
@@ -28,20 +28,6 @@ const DRAW: Record<PixelIconId, (px: Px) => void> = {
     px(14, 4, 1, 1, '#ffe27a');
     px(15, 2, 1, 1, '#ffffff');
     px(9, 1, 1, 1, '#6ff0ff');
-  },
-  // Grosse flèche vers le haut.
-  jump(px) {
-    const rows: [number, number][] = [
-      [7, 2],
-      [6, 4],
-      [5, 6],
-      [4, 8],
-      [3, 10],
-    ];
-    rows.forEach(([x, w], i) => px(x - 1, 1 + i, w + 2, 2, K));
-    rows.forEach(([x, w], i) => px(x, 2 + i, w, 1, '#ffffff'));
-    boxed(px, 6, 7, 4, 7, '#ffffff');
-    px(6, 13, 4, 1, '#c9c6c0');
   },
   // Parchemin roulé, avec des lignes d'écriture.
   journal(px) {

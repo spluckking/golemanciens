@@ -558,11 +558,6 @@
   pointer-events: none;
 }
 
-.btn-jump .pixel-icon {
-  width: 64px;
-  height: 64px;
-}
-
 .btn-attack .pixel-icon {
   width: 60px;
   height: 60px;
@@ -600,4 +595,81 @@
 .btn-top:disabled {
   opacity: 1;
   filter: grayscale(1) brightness(0.65);
+}
+
+/* ---------- Boutons à fond transparent (révision) : seul le fond laisse voir le monde ---------- */
+
+.btn-action,
+.btn-top {
+  opacity: 1;
+  border-color: rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.45);
+  background: rgba(70, 72, 82, 0.42);
+  box-shadow: 0 0 0 2px rgba(21, 22, 28, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.btn-action.pressed,
+.btn-top.pressed,
+.btn-top:active:not(:disabled) {
+  background: rgba(40, 42, 50, 0.6);
+  border-color: rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.45) rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.35);
+  filter: none;
+}
+
+.btn-attack {
+  background: rgba(60, 110, 180, 0.42);
+}
+
+.btn-interact {
+  border-color: rgba(255, 240, 176, 0.8) rgba(138, 100, 16, 0.6) rgba(138, 100, 16, 0.6) rgba(255, 240, 176, 0.8);
+  background: rgba(240, 196, 60, 0.5);
+}
+
+.top-bar {
+  background: rgba(38, 42, 54, 0.4);
+  border-color: rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 0 2px rgba(21, 22, 28, 0.5);
+}
+
+.btn-top {
+  background: rgba(90, 92, 104, 0.45);
+}
+
+.btn-top:disabled {
+  filter: none;
+}
+
+.btn-top:disabled .pixel-icon {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+/* Saut : carré arrondi gris translucide, grosse flèche blanche lisse. */
+.btn-jump {
+  border-radius: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  background: rgba(150, 150, 156, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.btn-jump.pressed {
+  background: rgba(110, 110, 118, 0.65);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.jump-arrow {
+  display: block;
+  width: 70px;
+  height: 70px;
+  pointer-events: none;
+}
+
+.jump-arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 3;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
 }
