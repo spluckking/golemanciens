@@ -668,3 +668,334 @@
   stroke-width: 3;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
 }
+
+/* ---------- Combat au tour par tour (SPEC § 7.2) ---------- */
+
+.combat-screen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.combat-card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 6px;
+  border: 3px solid;
+  border-color: #4c5266 #101219 #101219 #4c5266;
+  background: rgba(38, 42, 54, 0.82);
+  box-shadow: 0 0 0 3px var(--outline);
+  text-shadow: var(--text-shadow-block);
+}
+
+.combat-monster {
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 60vw);
+}
+
+.combat-golem {
+  left: calc(16px + var(--safe-l));
+  bottom: calc(16px + var(--safe-b));
+  width: min(360px, 34vw);
+}
+
+.combat-card-head,
+.combat-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.combat-name {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.combat-weak {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(240, 196, 60, 0.25);
+  border: 2px solid rgba(240, 196, 60, 0.8);
+}
+
+.combat-weak-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffe27a;
+}
+
+.combat-weak-icon {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.combat-hp {
+  height: 16px;
+}
+
+.combat-hp-text {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.combat-pips {
+  display: flex;
+  gap: 6px;
+}
+
+.combat-pip {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid var(--outline);
+  background: #5ec44a;
+}
+
+.combat-pip.pip-monster {
+  background: #e0503e;
+}
+
+.combat-pip.out {
+  background: #555a66;
+}
+
+/* Attaques : gros boutons en bas à droite. */
+.combat-actions {
+  position: absolute;
+  right: calc(16px + var(--safe-r));
+  bottom: calc(16px + var(--safe-b));
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 14px;
+  width: min(560px, 52vw);
+  pointer-events: auto;
+}
+
+.combat-attack,
+.combat-switch {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 92px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 4px solid;
+  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  background: #f4f2ec;
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+  box-shadow: 0 0 0 3px var(--outline);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.combat-attack:active,
+.combat-switch:active {
+  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+  transform: translateY(3px);
+}
+
+.combat-attack.type-rock {
+  background: linear-gradient(#ecedf2, #d4d6df);
+}
+
+.combat-attack.type-plant {
+  background: linear-gradient(#e8f5df, #cbe7bb);
+}
+
+.combat-attack.type-sun {
+  background: linear-gradient(#fff4d0, #ffe08a);
+}
+
+.combat-switch {
+  background: linear-gradient(#e6ecff, #cdd8ff);
+}
+
+.combat-attack-type {
+  font-size: 38px;
+  line-height: 1;
+}
+
+.combat-attack-name {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.combat-attack-badge {
+  font-size: 30px;
+}
+
+/* Annonce au centre, chiffres de dégâts. */
+.combat-banner {
+  position: absolute;
+  top: 34%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  padding: 12px 26px;
+  border-radius: 6px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  background: rgba(21, 22, 28, 0.78);
+  font-size: 30px;
+  font-weight: 800;
+  text-shadow: var(--text-shadow-block);
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  white-space: nowrap;
+}
+
+.combat-banner.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.combat-banner.super {
+  color: #ffe27a;
+  border-color: #f0c43c;
+}
+
+.combat-float {
+  position: absolute;
+  font-size: 40px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow:
+    3px 3px 0 rgba(0, 0, 0, 0.6),
+    0 0 8px rgba(0, 0, 0, 0.4);
+  animation: combat-float 1.1s ease-out forwards;
+}
+
+.combat-float.monster {
+  left: 62%;
+  top: 30%;
+}
+
+.combat-float.golem {
+  left: 30%;
+  top: 40%;
+  color: #ff9a8a;
+}
+
+.combat-float.super {
+  color: #ffe27a;
+  font-size: 50px;
+}
+
+@keyframes combat-float {
+  to {
+    transform: translateY(-70px);
+    opacity: 0;
+  }
+}
+
+/* Bulle de Lumibloc pendant le combat. */
+.screen-lumibloc {
+  background: rgba(16, 18, 26, 0.45);
+}
+
+.combat-lumibloc {
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  width: min(860px, 92vw);
+}
+
+.combat-lumibloc .portrait {
+  width: 84px;
+  height: 84px;
+  image-rendering: pixelated;
+}
+
+.combat-lumibloc-text {
+  flex: 1;
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.4;
+}
+
+.combat-lumibloc .btn-big {
+  min-width: 120px;
+}
+
+/* Bouton 📒 et fiche des faiblesses. */
+.combat-sheet-btn {
+  position: absolute;
+  top: 14px;
+  right: calc(16px + var(--safe-r));
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  border: 4px solid;
+  border-color: #fff0b0 #8a6410 #8a6410 #fff0b0;
+  background: rgba(240, 196, 60, 0.35);
+  box-shadow: 0 0 0 3px var(--outline);
+  font-size: 40px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.sheet-card {
+  align-items: stretch;
+}
+
+.sheet-card .card-title,
+.sheet-card .btn-big {
+  align-self: center;
+}
+
+.sheet-weak {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.sheet-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sheet-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.sheet-good {
+  background: #bfeeb2;
+}
+
+.sheet-mark {
+  color: #2f7a2a;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.sheet-hint {
+  margin: 0;
+  font-size: 20px;
+  color: #4e4a58;
+  text-align: center;
+}

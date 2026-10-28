@@ -101,8 +101,15 @@ export function showStory(layer: HTMLElement, story: StoryText, playerName: stri
 
 const BADGES: Record<QuestionView['badge'], string> = { calc: '🔢', riddle: '🧩', reading: '📖' };
 
+/** Question affichée en ce moment (accès réservé aux tests de bout en bout). */
+let shown: QuestionView | null = null;
+export function shownQuestion(): QuestionView | null {
+  return shown;
+}
+
 /** Carte de question : retourne l'index du choix touché (dans l'ordre affiché). */
 export function askQuestion(layer: HTMLElement, view: QuestionView, playerName: string, progress?: string): Promise<number> {
+  shown = view;
   return new Promise((resolve) => {
     const choices = view.choices.map((c, i) => {
       const b = el('button', { className: 'choice', text: formatText(c, playerName), testId: `choice-${i}` });
@@ -123,6 +130,7 @@ export function askQuestion(layer: HTMLElement, view: QuestionView, playerName: 
         b.classList.add('chosen');
         setTimeout(() => {
           root.remove();
+          shown = null;
           resolve(i);
         }, 250);
       }),

@@ -11,6 +11,7 @@ import type { WorldLabels } from '../ui/worldLabels';
 import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { BiomeLayout } from '../world/prairie';
 import type { GameState } from './gameState';
+import { ArenaLife } from './arenaLife';
 import { HomeLife } from './home';
 import { QuestLife } from './questLife';
 import { SanctuaryLife, type SanctuaryHooks } from './sanctuaryLife';
@@ -38,6 +39,8 @@ export interface LifeHooks {
   onAllKO: () => void;
   /** Le héros se couche dans son lit. */
   onSleep: () => void;
+  /** Le gong de l'arène a sonné. */
+  onFight: () => void;
   /** Interface et monde pour le sanctuaire (énigmes, éclosion, portes). */
   sanctuary: Omit<SanctuaryHooks, 'dialog' | 'toast' | 'burst'>;
 }
@@ -90,6 +93,7 @@ export class BiomeLife {
   readonly home: HomeLife;
   readonly sanctuary: SanctuaryLife;
   readonly quests: QuestLife;
+  readonly arena: ArenaLife;
   private readonly golemViews = new Map<GolemAgent, CreatureView>();
   private readonly monsterViews = new Map<MonsterAgent, CreatureView>();
   private readonly npcs: Npc[] = [];
@@ -155,6 +159,14 @@ export class BiomeLife {
       labels: hooks.labels,
       burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
       gainFood: (amount, x, y, z) => this.gainFood(amount, x, y, z),
+    });
+
+    // Arène : ouverte quand les 3 quêtes obligatoires sont faites.
+    this.arena = new ArenaLife(layout.arena, layout.world, this.group, state, interactions, () => this.quests.book.mandatoryDone, {
+      rebuild: hooks.sanctuary.rebuild,
+      burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
+      toast: hooks.toast,
+      onFight: hooks.onFight,
     });
 
     // PNJ : Lumibloc devant la maison du joueur et les villageois.
@@ -323,6 +335,7 @@ export class BiomeLife {
       this.updateTutorials(hero);
       this.home.update(dt, hero);
       this.quests.update(dt, hero, controllable);
+      this.arena.update(dt);
       if (this.dialogNpc && Math.hypot(this.dialogNpc.x - hero.x, this.dialogNpc.z - hero.z) > 6) this.hooks.dialog.close();
     }
     this.render(dt, hero, camera);

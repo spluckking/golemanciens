@@ -8,7 +8,9 @@ import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
 import { CINEMATICS, storyCaptions } from './story/cinematics';
 import { SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
+import { shownQuestion } from './ui/screens';
 import { applyBlockTheme } from './ui/theme';
+import type { ArenaFight } from './core/arenaFight';
 
 declare global {
   interface Window {
@@ -25,6 +27,8 @@ declare global {
       sanctuary: () => ReturnType<Game['life']['sanctuary']['snapshot']>;
       quests: () => ReturnType<Game['life']['quests']['snapshot']>;
       interactables: () => string[];
+      answer: () => number;
+      fight: () => ReturnType<ArenaFight['snapshot']> | null;
     };
   }
 }
@@ -49,9 +53,16 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
   if (isTest && step && SANCTUARY_STEPS.includes(step as SanctuaryStep)) state.sanctuary.step = step as SanctuaryStep;
   // Mode test : graine fixe, pour des tirages reproductibles.
   const rng = createRng(isTest ? 12345 : (Date.now() ^ 0x9e3779b9) >>> 0);
-  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest });
-  // Mode test : « ?test&fast » divise les attentes de lecture par 2,5.
+  // Mode test : « ?test&fast » divise les attentes par 2,5.
   const timeScale = isTest && params.has('fast') ? 0.4 : 1;
+  // Mode test : « ?test&arena=open » termine l'œuf et les 3 quêtes obligatoires ; « &arenaWins=2 », « &lesson=done ».
+  if (isTest && params.get('arena') === 'open') {
+    state.sanctuary.step = 'hatched';
+    for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) state.quests[id].status = id.startsWith('R') ? 'done' : 'available';
+  }
+  if (isTest) state.arena.wins = Number(params.get('arenaWins') ?? 0);
+  if (isTest && params.get('lesson') === 'done') state.arena.lessonDone = true;
+  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale });
   const app = new App(game, layer, state, rng, timeScale);
   game.start();
   loading?.remove();
@@ -95,6 +106,8 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
       sanctuary: () => game.life.sanctuary.snapshot(),
       quests: () => game.life.quests.snapshot(),
       interactables: () => game.interactions.ids(),
+      answer: () => shownQuestion()?.correctIndex ?? -1,
+      fight: () => game.fight?.snapshot() ?? null,
     };
   } else {
     void app.start();

@@ -23,6 +23,7 @@ import { BiomeScene } from '../world/biomeScene';
 import { Block } from '../world/blocks';
 import { generatePrairie, type BiomeLayout } from '../world/prairie';
 import { createAtlasTexture } from '../world/voxelMaterial';
+import { ArenaFight } from './arenaFight';
 import { BiomeLife } from './biomeLife';
 import { CameraRig } from './cameraRig';
 import { compassRotation } from './compass';
@@ -51,10 +52,12 @@ const TEXT_SLEPT = 'Tu as bien dormi !';
 const TEXT_SLEPT_GOLEMS = 'Tu as bien dormi ! Tes golems sont en pleine forme.';
 const SLEEP_FADE_MS = 1800;
 
-export type GameMode = 'title' | 'play' | 'cinematic';
+export type GameMode = 'title' | 'play' | 'cinematic' | 'combat';
 
 export interface GameOptions {
   debug: boolean;
+  /** Mode test : raccourcit les attentes (1 = temps normal). */
+  timeScale?: number;
 }
 
 /** Boucle de jeu : rendu, héros, caméra, commandes, vie du biome. */
@@ -90,6 +93,9 @@ export class Game {
   private entered = false;
   /** Énigme ou éclosion en cours : le héros ne bouge plus. */
   private locked = false;
+  /** Combat d'arène en cours. */
+  fight: ArenaFight | null = null;
+  private readonly timeScale: number;
   /** Menu ouvert (journal) ou transition : le monde ne bouge plus. */
   private paused = false;
   private readonly tipWorld = new THREE.Vector3();
@@ -104,9 +110,10 @@ export class Game {
     container: HTMLElement,
     private readonly uiLayer: HTMLElement,
     readonly state: GameState,
-    rng: Rng,
+    private readonly rng: Rng,
     options: GameOptions,
   ) {
+    this.timeScale = options.timeScale ?? 1;
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -159,6 +166,7 @@ export class Game {
       sparks: this.sparks,
       onAllKO: () => this.recoverFromKO(),
       onSleep: () => this.sleep(),
+      onFight: () => void this.startFight(),
       sanctuary: {
         rebuild: (cells) => this.biome.rebuildCells(cells),
         ask: (view) => askQuestion(this.uiLayer, view, this.state.playerName),
@@ -211,13 +219,37 @@ export class Game {
       const { spawn, spawnYaw } = this.layout;
       this.teleport(spawn.x, spawn.z, spawnYaw);
     }
-    const inWorld = mode !== 'cinematic';
+    const inWorld = mode !== 'cinematic' && mode !== 'combat';
     // Le compteur de FPS (mode test) ne doit pas cacher les sous-titres.
     this.debug?.root.classList.toggle('hidden', !inWorld);
     for (const obj of [this.heroModel.root, this.shadow, this.life.group]) obj.visible = inWorld;
     if (!playing) this.dialog.close();
     this.input.stickX = this.input.stickY = 0;
     this.input.jumpHeld = false;
+  }
+
+  /** Combat d'arène : la caméra passe de côté dans l'arène, puis on revient devant le gong. */
+  private async startFight(): Promise<void> {
+    if (this.fight || this.paused) return;
+    this.dialog.close();
+    this.setMode('combat');
+    this.fight = new ArenaFight({
+      scene: this.scene,
+      camera: this.camera,
+      uiLayer: this.uiLayer,
+      state: this.state,
+      rng: this.rng,
+      sparks: this.sparks,
+      plan: this.layout.arena,
+      timeScale: this.timeScale,
+    });
+    await this.fight.run();
+    this.fight.dispose();
+    this.fight = null;
+    const g = this.layout.arena.gong;
+    this.teleport(g.x, g.z + 2.5, 0);
+    this.life.sim.recoverAt(this.hero.x, this.hero.y, this.hero.z);
+    this.setMode('play');
   }
 
   /** Joue une cinématique, puis revient au mode précédent. */
@@ -342,6 +374,7 @@ export class Game {
     this.lastTime = time;
     this.labels.begin();
     if (this.director.active) this.director.update(dt);
+    else if (this.fight) this.fight.update(dt);
     else this.update(this.paused ? 0 : dt);
     this.renderer.render(this.scene, this.camera);
     this.labels.end(dt);

@@ -378,3 +378,58 @@ export function buildSanctuary(world: VoxelWorld, cx: number, cz: number, floorY
     floorY,
   };
 }
+
+export interface ArenaPlan {
+  /** Barrière de l'entrée (est), ouverte quand les quêtes obligatoires sont faites. */
+  gate: Cell[];
+  /** Gong : on le frappe pour lancer un combat. */
+  gong: { x: number; z: number; facing: number };
+  /** Places des combattants : golem à gauche (ouest), monstre à droite (est), vus depuis le sud. */
+  golemSpot: { x: number; z: number };
+  monsterSpot: { x: number; z: number };
+  center: { x: number; z: number };
+  floorY: number;
+}
+
+/**
+ * Arène de la Prairie : sol de pierre en cercle, muret de 2 blocs avec des bannières dorées,
+ * entrée à l'est (côté chemin) fermée par une barrière tant que l'arène n'est pas ouverte,
+ * gong au nord. (cx, cz) = centre, floorY = sol.
+ */
+export function buildArena(world: VoxelWorld, cx: number, cz: number, floorY: number): ArenaPlan {
+  const R = 7;
+  for (let dz = -R - 1; dz <= R + 1; dz++)
+    for (let dx = -R - 1; dx <= R + 1; dx++) {
+      const d = Math.hypot(dx, dz);
+      if (d > R + 0.6) continue;
+      const x = cx + dx;
+      const z = cz + dz;
+      world.set(x, floorY - 1, z, d < R - 0.4 ? (Math.abs(dx) + Math.abs(dz)) % 4 === 0 ? Block.Path : Block.Stone : Block.Brick);
+      for (let y = floorY; y < floorY + 6; y++) world.set(x, y, z, Block.Air);
+      if (d >= R - 0.4) {
+        world.set(x, floorY, z, Block.Brick);
+        world.set(x, floorY + 1, z, Block.Brick);
+        // Bannières dorées tous les quelques blocs.
+        if ((dx + dz) % 5 === 0) world.set(x, floorY + 2, z, Block.Gold);
+      }
+    }
+  // Entrée à l'est, fermée par une barrière de rondins.
+  const gate: Cell[] = [];
+  for (let z = cz - 1; z <= cz + 1; z++)
+    for (let x = cx + R - 1; x <= cx + R + 1; x++) {
+      if (world.get(x, floorY, z) !== Block.Brick) continue;
+      world.set(x, floorY + 2, z, Block.Air);
+      for (let y = floorY; y <= floorY + 1; y++) {
+        world.set(x, y, z, Block.Log);
+        gate.push({ x, y, z });
+      }
+    }
+  return {
+    gate,
+    gong: { x: cx + 0.5, z: cz - R + 2.2, facing: Math.PI },
+    golemSpot: { x: cx - 2.5, z: cz + 0.5 },
+    monsterSpot: { x: cx + 3.5, z: cz + 0.5 },
+    center: { x: cx + 0.5, z: cz + 0.5 },
+    floorY,
+  };
+}

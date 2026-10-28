@@ -2,7 +2,7 @@ import { createRng, randInt } from '../core/rng';
 import type { MonsterSpecies } from '../data/creatures';
 import { Block, Tile, type TileId } from './blocks';
 import { Noise2D } from './noise';
-import { buildAcademy, buildSanctuary, buildTree, buildVillage, type SanctuaryPlan, type VillagePlan } from './structures';
+import { buildAcademy, buildArena, buildSanctuary, buildTree, buildVillage, type ArenaPlan, type SanctuaryPlan, type VillagePlan } from './structures';
 import { VoxelWorld, WORLD_HEIGHT } from './voxelWorld';
 
 export const PRAIRIE_SIZE = 128;
@@ -38,6 +38,7 @@ export interface BiomeLayout {
   academyDoor: { x: number; y: number; z: number };
   village: VillagePlan;
   sanctuary: SanctuaryPlan;
+  arena: ArenaPlan;
   /** Position de Lumibloc au chapitre 1 : devant la maison du joueur. */
   lumibloc: { x: number; z: number; facing: number };
   camps: Camp[];
@@ -186,6 +187,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
   const village = buildVillage(world, PADS.village.x, PADS.village.z, villageFloor);
   const sanctuaryFloor = world.surfaceY(PADS.sanctuary.x - 4, PADS.sanctuary.z);
   const sanctuary = buildSanctuary(world, PADS.sanctuary.x, PADS.sanctuary.z, sanctuaryFloor);
+  const arena = buildArena(world, PADS.arena.x, PADS.arena.z, world.surfaceY(PADS.arena.x, PADS.arena.z));
 
   // Camps : sol piétiné, coffre au bord du camp.
   const camps: Camp[] = CAMPS.map((c) => {
@@ -321,6 +323,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     academyDoor: { x: door.doorX + 0.5, y: ACADEMY_FLOOR, z: door.doorZ + 0.5 },
     village,
     sanctuary,
+    arena,
     lumibloc: { x: home.door.x + 2, z: home.door.z - 1.2, facing: Math.PI * 0.8 },
     camps,
     crates,

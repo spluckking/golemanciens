@@ -45,6 +45,8 @@ export interface GameState {
   sanctuary: SanctuaryProgress;
   /** Quêtes du village du biome en cours. */
   quests: QuestLog;
+  /** Arène du biome : victoires (3 pour la terminer) et leçon des faiblesses déjà vue. */
+  arena: { wins: number; lessonDone: boolean };
 }
 
 export function createGameState(): GameState {
@@ -67,6 +69,7 @@ export function createGameState(): GameState {
     trophies: [],
     sanctuary: createSanctuaryProgress(),
     quests: createQuestLog(),
+    arena: { wins: 0, lessonDone: false },
   };
 }
 

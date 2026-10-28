@@ -52,6 +52,11 @@ export const MONSTER_RESPAWN_S = 180;
 export const FOOD_CRATE_CHANCE = 0.5;
 export const FOOD_CRATE = 1;
 export const FOOD_CHEST = 3;
+/** Victoire d'arène (§ 4.4) ; combats pour terminer l'arène (§ 1.2). */
+export const FOOD_ARENA_WIN = 4;
+export const ARENA_WINS_TO_FINISH = 3;
+/** Pause avant l'attaque du monstre, pour qu'on la voie venir (§ 7.1). */
+export const MONSTER_TURN_DELAY_S = 0.8;
 
 /** Faiblesses (révision 1.4) : bonus quand le type de l'attaque est la faiblesse de la cible. */
 export const WEAKNESS_MULTIPLIER = 1.5;

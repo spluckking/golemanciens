@@ -778,6 +778,39 @@ function goldFlowerModel(): ModelDef {
   ];
 }
 
+// ---------- Arène ----------
+
+/** Gong de l'arène : deux poteaux, une traverse, un grand disque doré. Face vers -Z. */
+function gongModel(): ModelDef {
+  const wood = 0x6a4424;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.24, 2.4, 0.24, -1.0, 1.2, 0, wood],
+        [0.24, 2.4, 0.24, 1.0, 1.2, 0, wood],
+        [2.5, 0.24, 0.3, 0, 2.4, 0, wood],
+        [0.5, 0.12, 0.5, -1.0, 0.06, 0, 0x4a3018],
+        [0.5, 0.12, 0.5, 1.0, 0.06, 0, 0x4a3018],
+        [0.04, 0.3, 0.04, -0.3, 2.15, 0, 0x2a2a33],
+        [0.04, 0.3, 0.04, 0.3, 2.15, 0, 0x2a2a33],
+      ],
+    },
+    {
+      name: 'disc',
+      parent: 'body',
+      pivot: [0, 2.0, 0],
+      cubes: [
+        [1.2, 1.2, 0.1, 0, -0.65, 0, 0xd8a830],
+        [0.9, 0.9, 0.12, 0, -0.65, 0, 0xf0c43c],
+        [0.4, 0.4, 0.14, 0, -0.65, 0, 0xffe27a],
+        [1.0, 0.08, 0.12, 0, -1.24, 0, 0xb08020],
+      ],
+    },
+  ];
+}
+
 // ---------- Maison du joueur ----------
 
 /** Lit d'une place : tête (oreiller) vers +Z. Origine au centre, au sol. */
@@ -969,6 +1002,7 @@ export const MODELS = {
   trophyShelf: trophyShelfModel(),
   trophyRoiSlime: trophyRoiSlimeModel(),
   rivet: houseGolemModel(),
+  gong: gongModel(),
   chicken: chickenModel(),
   basket: basketModel(),
   keyCrate: keyCrateModel(),

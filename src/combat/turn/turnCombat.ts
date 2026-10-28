@@ -59,6 +59,8 @@ export interface CombatGolem {
 export interface CombatMonster {
   id: string;
   name: string;
+  /** Espèce ou boss : sert à choisir le modèle 3D. */
+  model: string;
   /** PV max d'une étape : chaque étape repart à ce total. */
   maxHp: number;
   hp: number;
@@ -134,6 +136,7 @@ export function arenaMonster(species: MonsterSpecies, id: string): CombatMonster
   return {
     id,
     name: info.name,
+    model: species,
     maxHp: hp,
     hp,
     atk,
@@ -148,7 +151,7 @@ export function arenaMonster(species: MonsterSpecies, id: string): CombatMonster
 export function bossMonster(boss: BossId): CombatMonster {
   const info = BOSSES[boss];
   const { hp, atk } = bossStats(info.phase);
-  return { id: boss, name: info.name, maxHp: hp, hp, atk, stages: info.stages, stage: 0, stunned: 0, asleep: 0, blind: false };
+  return { id: boss, name: info.name, model: boss, maxHp: hp, hp, atk, stages: info.stages, stage: 0, stunned: 0, asleep: 0, blind: false };
 }
 
 /** N adversaires tirés au hasard parmi les monstres de la phase de l'arène (§ 7.1). */
