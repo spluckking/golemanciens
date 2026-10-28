@@ -72,3 +72,19 @@ describe('outros', () => {
     for (const o of CONTENT.outros) expect(o.text.length, o.id).toBeGreaterThan(40);
   });
 });
+
+describe('encyclopédie (CONTENU.md § H)', () => {
+  it('11 golems, 15 monstres, 6 boss, noms uniques ; descriptions de 15 mots au plus', async () => {
+    const { ENCYCLOPEDIA } = await import('../../src/data/encyclopedia');
+    const count = (k: string): number => ENCYCLOPEDIA.filter((e) => e.kind === k).length;
+    expect([count('golem'), count('monster'), count('boss')]).toEqual([11, 15, 6]);
+    expect(new Set(ENCYCLOPEDIA.map((e) => e.id)).size).toBe(ENCYCLOPEDIA.length);
+    for (const e of ENCYCLOPEDIA) {
+      if (!e.description) continue;
+      const words = e.description.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+      expect(words, e.name).toBeLessThanOrEqual(15);
+    }
+    // Tout ce qui apparaît au chapitre 1 a sa description.
+    for (const id of ['pierre', 'mousse', 'slime', 'zombie', 'spider', 'roiSlime']) expect(ENCYCLOPEDIA.find((e) => e.id === id)!.description).toBeTruthy();
+  });
+});

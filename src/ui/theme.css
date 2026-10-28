@@ -999,3 +999,315 @@
   color: #4e4a58;
   text-align: center;
 }
+
+/* ---------- Écran Golems ---------- */
+
+.golems-card,
+.encyclopedia-card {
+  width: min(1100px, 96vw);
+  align-items: stretch;
+  gap: 16px;
+}
+
+.golems-card > .btn-big,
+.encyclopedia-card > .btn-big,
+.encyclopedia-card > .card-title {
+  align-self: center;
+}
+
+.gs-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gs-food {
+  padding: 6px 16px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.gs-tip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  background: #fff6d8;
+  border: 3px solid #f0c43c;
+  font-size: 22px;
+}
+
+.gs-tip p {
+  margin: 0;
+}
+
+.gs-tip .portrait {
+  width: 56px;
+  height: 56px;
+  image-rendering: pixelated;
+}
+
+.gs-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+  max-height: 52vh;
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+.gs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 6px;
+  border: 4px solid;
+  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  background: #f4f2ec;
+  box-shadow: 0 0 0 3px var(--outline);
+}
+
+.gs-card.dot-pierre {
+  background: linear-gradient(#f0f1f5, #dcdee6);
+}
+
+.gs-card.dot-mousse {
+  background: linear-gradient(#eef7e8, #d6ecc8);
+}
+
+.gs-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.gs-icon {
+  font-size: 48px;
+}
+
+.gs-name {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.gs-species {
+  font-size: 18px;
+  color: #4e4a58;
+  font-weight: 700;
+}
+
+.gs-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.gs-stat {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 22px;
+}
+
+.gs-attacks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gs-attack {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.gs-attack.locked {
+  opacity: 0.45;
+}
+
+.gs-attack-badge {
+  font-size: 18px;
+}
+
+.gs-meals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 2px dashed rgba(0, 0, 0, 0.15);
+}
+
+.gs-meals-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.gs-meal-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-meal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 72px;
+  padding: 0 16px;
+  border-radius: 6px;
+  border: 4px solid;
+  border-color: #a8e88a #2b5a1d #2b5a1d #a8e88a;
+  background: var(--tex-grass) 0 0 / var(--tex-size), #5a9e3c;
+  image-rendering: pixelated;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow: var(--text-shadow-block);
+  box-shadow: 0 0 0 3px var(--outline);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn-meal:active:not(:disabled) {
+  border-color: #2b5a1d #a8e88a #a8e88a #2b5a1d;
+  transform: translateY(3px);
+}
+
+.btn-meal:disabled {
+  border-color: #b8b8b8 #4a4a4a #4a4a4a #b8b8b8;
+  background: var(--tex-stone) 0 0 / var(--tex-size), #7d7d7d;
+  opacity: 0.7;
+  cursor: default;
+}
+
+.meal-cost {
+  font-size: 18px;
+}
+
+.gs-note {
+  margin: 0;
+  font-size: 19px;
+  color: #4e4a58;
+}
+
+/* ---------- Encyclopédie ---------- */
+
+.enc-scroll {
+  max-height: 60vh;
+  overflow-y: auto;
+  touch-action: pan-y;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.enc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.enc-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 6px;
+  border: 3px solid;
+  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  background: #f4f2ec;
+  box-shadow: 0 0 0 2px var(--outline);
+  text-align: center;
+}
+
+.enc-card.unknown {
+  background: #bdb9b1;
+  color: #6e6b66;
+}
+
+.enc-thumb {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 4px;
+  border: 3px solid var(--outline);
+  background: #6e6b66;
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 900;
+}
+
+.enc-name {
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.enc-info {
+  font-size: 17px;
+  color: #4e4a58;
+}
+
+.enc-desc {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+/* Carte d'un golem sur deux colonnes : tout tient sans faire défiler. */
+.gs-list {
+  grid-template-columns: 1fr;
+  max-height: 58vh;
+}
+
+.gs-card {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  grid-template-areas:
+    'head meals'
+    'stats meals'
+    'attacks meals';
+  column-gap: 22px;
+  row-gap: 10px;
+}
+
+.gs-head {
+  grid-area: head;
+}
+
+.gs-stats {
+  grid-area: stats;
+}
+
+.gs-attacks {
+  grid-area: attacks;
+}
+
+.gs-meals {
+  grid-area: meals;
+  padding-top: 0;
+  padding-left: 18px;
+  border-top: none;
+  border-left: 2px dashed rgba(0, 0, 0, 0.15);
+  justify-content: center;
+}
+
+.gs-meal-buttons {
+  grid-template-columns: 1fr;
+}

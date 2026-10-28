@@ -15,7 +15,7 @@ import { drawRiddle } from '../questions/riddleBank';
 import { CombatHud } from '../ui/combatHud';
 import { askChoice, askQuestion, revealAnswer, showMessage } from '../ui/screens';
 import type { FightStage } from '../world/structures';
-import type { GameState } from './gameState';
+import { markSeen, type GameState } from './gameState';
 import type { Rng } from './rng';
 
 /** Textes nouveaux (à valider par le parent). */
@@ -97,6 +97,7 @@ export class ArenaFight {
       this.group.add(m.root);
     }
     host.scene.add(this.group);
+    for (const mon of this.combat.monsters) markSeen(state, mon.model);
     this.hud = new CombatHud(host.uiLayer, state.playerName, state.arena.lessonDone);
     this.placeActive();
   }

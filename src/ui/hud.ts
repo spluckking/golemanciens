@@ -21,7 +21,7 @@ function compassArrow(): HTMLElement {
 
 /**
  * HUD : 🍎, éclats, portraits des golems avec leurs PV, boussole, boutons du haut
- * (Journal ; Golems, Encyclopédie et Pause arrivent à la sous-étape 1.5), bulle d'information.
+ * (Journal, Golems, Encyclopédie ; Pause arrive avec le rappel de pause), bulle d'information.
  */
 export class Hud {
   readonly root: HTMLDivElement;
@@ -34,7 +34,7 @@ export class Hud {
   private toastTimer = 0;
   private lastFood = -1;
 
-  constructor(onJournal: () => void) {
+  constructor(actions: { journal: () => void; golems: () => void; encyclopedia: () => void }) {
     const buttons = (
       [
         ['journal', 'Journal', 'btn-journal'],
@@ -47,11 +47,14 @@ export class Hud {
       const b = el('button', { className: 'btn-top', aria: label, testId: id }, [pixelIcon(icon)]);
       b.title = label;
       b.type = 'button';
-      b.disabled = id !== 'btn-journal';
+      // Pause : branché avec le rappel de pause (sous-étape 1.5c).
+      b.disabled = id === 'btn-pause';
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       return b;
     });
-    buttons[0].addEventListener('click', onJournal);
+    buttons[0].addEventListener('click', actions.journal);
+    buttons[1].addEventListener('click', actions.golems);
+    buttons[2].addEventListener('click', actions.encyclopedia);
     this.toast = el('div', { className: 'toast hidden', testId: 'toast' });
     const stats = el('div', { className: 'stats' }, [
       el('div', { className: 'stat' }, [el('span', { text: '🍎' }), this.food]),

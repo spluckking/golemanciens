@@ -75,7 +75,7 @@ export const GOLEMS: Record<GolemSpecies, GolemInfo> = {
 };
 
 /** Attaques débloquées par stade (§ 4.3, révision 1.4) : A1 et A2 au stade 1, A3 au stade 2, Ultime au stade 3. */
-const UNLOCK_STAGE: Record<AttackSlot, number> = { a1: 1, a2: 1, a3: 2, ultimate: 3 };
+export const UNLOCK_STAGE: Record<AttackSlot, number> = { a1: 1, a2: 1, a3: 2, ultimate: 3 };
 
 export function unlockedAttacks(species: GolemSpecies, stage: number): AttackInfo[] {
   return GOLEMS[species].attacks.filter((a) => stage >= UNLOCK_STAGE[a.slot]);

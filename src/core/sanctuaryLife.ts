@@ -22,7 +22,7 @@ import type { DialogBubble } from '../ui/dialog';
 import type { Cell, SanctuaryPlan } from '../world/structures';
 import type { VoxelWorld } from '../world/voxelWorld';
 import { Block } from '../world/blocks';
-import { createGolem, type GameState } from './gameState';
+import { createGolem, markSeen, type GameState } from './gameState';
 import type { Interactable, Interactions } from './interactions';
 import type { Rng } from './rng';
 
@@ -250,6 +250,7 @@ export class SanctuaryLife {
       this.hooks.burst(m.root.position.x, y + 1, m.root.position.z, 0x9a8ad0, 14);
       return { species, model: m };
     });
+    for (const s of S1_EGG_CHOICES) markSeen(this.state, s);
     await wait(1400);
     this.hooks.dialog.close();
     const species = await this.hooks.chooseGolem(S1_EGG_CHOICES);

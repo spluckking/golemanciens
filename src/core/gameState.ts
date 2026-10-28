@@ -87,6 +87,13 @@ export interface GameState {
   settings: Settings;
   /** Temps de jeu total, en secondes. */
   playTimeS: number;
+  /** Golems, monstres et boss déjà rencontrés (encyclopédie). */
+  seen: string[];
+}
+
+/** Note une rencontre pour l'encyclopédie. */
+export function markSeen(state: GameState, id: string): void {
+  if (!state.seen.includes(id)) state.seen.push(id);
 }
 
 export function createSettings(): Settings {
@@ -122,6 +129,7 @@ export function createGameState(): GameState {
     stats: createStats(),
     settings: createSettings(),
     playTimeS: 0,
+    seen: [],
   };
 }
 

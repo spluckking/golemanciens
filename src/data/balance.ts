@@ -88,3 +88,9 @@ export function bossStats(phase: number): { hp: number; atk: number } {
   const hpFactor = phase >= 6 ? DRAGON_HP_FACTOR : BOSS_HP_FACTOR;
   return { hp: Math.round(m.hp * hpFactor), atk: m.atk * BOSS_ATK_FACTOR };
 }
+
+/** Repas (§ 4.4) : 3 🍎 pour +4 PV max ou +1 ATQ, 4 repas au plus par stade. */
+export const MEAL_COST = 3;
+export const MEAL_HP = 4;
+export const MEAL_ATK = 1;
+export const MEALS_PER_STAGE = 4;

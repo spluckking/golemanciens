@@ -10,7 +10,7 @@ import type { DialogBubble } from '../ui/dialog';
 import type { WorldLabels } from '../ui/worldLabels';
 import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { BiomeLayout } from '../world/prairie';
-import type { GameState } from './gameState';
+import { markSeen, type GameState } from './gameState';
 import { ArenaLife } from './arenaLife';
 import { BossLife } from './bossLife';
 import { HomeLife } from './home';
@@ -25,6 +25,8 @@ const TEXT_LANTERN_LIT = 'Lanterne allumée';
 const TEXT_CHEST_GUARDED = 'Des monstres gardent ce coffre.';
 
 const VIEW_DISTANCE = 50;
+/** Distance à laquelle un monstre compte comme rencontré (encyclopédie). */
+const SEEN_RADIUS = 12;
 const NPC_TALK_RADIUS = 2.6;
 const CHEST_RADIUS = 2.2;
 const LANTERN_RADIUS = 3;
@@ -346,6 +348,9 @@ export class BiomeLife {
       this.updateLanterns(hero);
       this.updateTutorials(hero);
       this.home.update(dt, hero);
+      // Encyclopédie : les monstres croisés de près sont « rencontrés ».
+      for (const m of this.sim.monsters) if (m.mode !== 'dead' && Math.hypot(m.body.x - hero.x, m.body.z - hero.z) < SEEN_RADIUS) markSeen(this.state, m.species);
+      if (this.state.bossQuest !== 'locked' && Math.hypot(this.layout.marsh.boss.x - hero.x, this.layout.marsh.boss.z - hero.z) < SEEN_RADIUS + 6) markSeen(this.state, 'roiSlime');
       this.quests.update(dt, hero, controllable);
       this.arena.update(dt);
       this.boss.update(dt);

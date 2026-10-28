@@ -16,6 +16,8 @@ import { DebugOverlay } from '../ui/debugOverlay';
 import { DialogBubble } from '../ui/dialog';
 import { el } from '../ui/dom';
 import { Hud } from '../ui/hud';
+import { openEncyclopedia } from '../ui/encyclopediaScreen';
+import { openGolems } from '../ui/golemsScreen';
 import { openJournal } from '../ui/journal';
 import { TouchControls } from '../ui/touchControls';
 import { WorldLabels } from '../ui/worldLabels';
@@ -165,7 +167,11 @@ export class Game {
     // Interface : étiquettes du monde, commandes, HUD, dialogues.
     this.labels = new WorldLabels(this.camera);
     this.controls = new TouchControls(this.input);
-    this.hud = new Hud(() => void this.showJournal());
+    this.hud = new Hud({
+      journal: () => void this.showJournal(),
+      golems: () => void this.showGolems(),
+      encyclopedia: () => void this.showEncyclopedia(),
+    });
     this.dialog = new DialogBubble(() => this.state.playerName);
     uiLayer.append(this.labels.root, this.controls.root, this.hud.root, this.dialog.root, this.fade, this.sleepFade);
     this.debug = options.debug ? new DebugOverlay() : null;
@@ -403,6 +409,26 @@ export class Game {
     const done = [OBJECTIVE_FIND_EGG, ...book.defs.filter((d) => book.state(d.id).status === 'done').map((d) => d.title)];
     if (this.state.bossQuest === 'defeated') done.push(P1_TITLE);
     return { text, target, current, done };
+  }
+
+  /** Écran Golems : stats, attaques, repas. La réplique « Repas » de Lumibloc s'affiche la première fois. */
+  private async showGolems(): Promise<void> {
+    if (this.paused) return;
+    this.paused = true;
+    this.input.stickX = this.input.stickY = 0;
+    const seen = this.state.tutorialsSeen;
+    const tip = seen.includes('meal') || !this.state.golems.length ? undefined : CONTENT.lumibloc.meal;
+    if (tip) seen.push('meal');
+    await openGolems(this.uiLayer, this.state, () => void this.save(), tip);
+    this.paused = false;
+  }
+
+  private async showEncyclopedia(): Promise<void> {
+    if (this.paused) return;
+    this.paused = true;
+    this.input.stickX = this.input.stickY = 0;
+    await openEncyclopedia(this.uiLayer, this.state);
+    this.paused = false;
   }
 
   private async showJournal(): Promise<void> {
