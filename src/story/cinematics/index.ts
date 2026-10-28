@@ -4,10 +4,12 @@ import type { CinematicScript } from './director';
 import { O1_CINEMATIC } from './o1';
 import { O6_CINEMATIC } from './o6';
 import { T1_CINEMATIC } from './t1';
+import { T2_CINEMATIC } from './t2';
 
 /** Cinématiques des textes d'histoire, par identifiant (les autres arrivent avec leur jalon). */
 export const CINEMATICS: Record<string, CinematicScript> = {
   T1: T1_CINEMATIC,
+  T2: T2_CINEMATIC,
 };
 
 /** Cinématiques des outros (fin de phase, sans questions). */

@@ -147,7 +147,7 @@ export class PrairieLife extends WorldLife {
         target = this.boss.trailTarget(hero);
       } else {
         text = OBJECTIVE_CHAPTER_DONE;
-        target = landmarks.academy;
+        target = this.layout.arch;
       }
     }
     // Journal : l'objectif mis en avant, puis les autres quêtes en cours ; les quêtes terminées.

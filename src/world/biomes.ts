@@ -23,6 +23,17 @@ const OPENING_STORY: Record<BiomeId, string | null> = {
   foret: 'T2',
 };
 
+/**
+ * Prochain texte d'histoire à lire pour ouvrir un nouveau biome : celui du chapitre en cours
+ * (« T2 » quand le chapitre 2 commence), s'il n'est pas encore lu et qu'un biome l'attend.
+ */
+export function pendingStory(state: Pick<GameState, 'storiesRead' | 'chapter'>): { story: string; biome: BiomeId } | null {
+  const story = `T${state.chapter}`;
+  const biome = (Object.keys(OPENING_STORY) as BiomeId[]).find((id) => OPENING_STORY[id] === story);
+  if (!biome || state.storiesRead.includes(story)) return null;
+  return { story, biome };
+}
+
 /** Biomes où l'on peut aller : la Prairie, puis chaque biome dont le texte d'ouverture est lu. */
 export function unlockedBiomes(state: Pick<GameState, 'storiesRead'>): BiomeId[] {
   return (Object.keys(OPENING_STORY) as BiomeId[]).filter((id) => {

@@ -9,6 +9,7 @@ import { GOLEMS, type GolemSpecies } from './data/creatures';
 import { CINEMATICS, OUTRO_CINEMATICS, storyCaptions } from './story/cinematics';
 import { SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
+import { checkpointState } from './core/checkpoints';
 import { applyBlockTheme } from './ui/theme';
 import { loadGame } from './save/store';
 import { audio } from './audio/audio';
@@ -79,6 +80,8 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     progress(state).arena.wins = 3;
     progress(state).bossQuest = 'active';
   }
+  // « ?test&chapter=2 » : le Roi Slime est vaincu, l'Arche des éclats attend la lecture de T2.
+  if (isTest && params.get('chapter') === '2') Object.assign(state, checkpointState(state, 'chapter2'));
   // « ?test&unlock=foret » débloque la Forêt (comme si T2 était lu) ; « &biome=foret » y commence la partie.
   const unlock = params.get('unlock') ?? params.get('biome');
   if (isTest && unlock === 'foret' && !state.storiesRead.includes('T2')) state.storiesRead.push('T2');
@@ -104,7 +107,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     const script = cine ? (CINEMATICS[cine] ?? OUTRO_CINEMATICS[cine]) : undefined;
     if (cine && script && (story || outro)) {
       state.playerName = 'Testeur';
-      state.storiesRead.push('T1');
+      if (!state.storiesRead.includes('T1')) state.storiesRead.push('T1');
       state.tutorialsSeen.push('move');
       const startShot = Number(params.get('shot') ?? 0);
       // Les outros passent par le jeu (le générique suit O6).
@@ -112,7 +115,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       void played.then(() => app.play());
     } else if (params.get('start') === 'play') {
       state.playerName = 'Testeur';
-      state.storiesRead.push('T1');
+      if (!state.storiesRead.includes('T1')) state.storiesRead.push('T1');
       if (!params.has('tutorial')) state.tutorialsSeen.push('move');
       app.play();
     } else {

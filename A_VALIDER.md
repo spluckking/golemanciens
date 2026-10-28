@@ -39,3 +39,15 @@ Textes nouveaux (salutations) :
 - Sage Noisette : « Bienvenue aux Cabanes des Cimes. Ici, les feuilles écoutent et le vent répond. »
 - Pip : « Tu as vu nos passerelles ? Je cours dessus plus vite que les écureuils ! »
 - Tilleul : « Bonjour ! Je suis charpentier. Les ponts de la forêt, c'est moi. »
+
+## Sous-étape 2.3 (début du chapitre 2)
+
+Décisions :
+- Après le Roi Slime, l'Arche des éclats brille. La toucher lance la cinématique de T2 (7 plans), puis les questions de lecture ; une fois réussies, l'arche emmène directement dans la Forêt.
+- La cinématique commence à l'Académie (Prairie), puis montre la Forêt : les arbres immenses, le village perché, les loups et un squelette, la toile d'argent et la Reine Araignée, enfin le sanctuaire couvert de mousse.
+- Nouveaux modèles : squelette archer, loup d'ombre, champignon sauteur, Reine Araignée, toile géante, toiles du sentier, champignons de quête bleus et rouges.
+- Menu parent → Mode test : nouveau point de reprise « Début du chapitre 2 (Roi Slime vaincu) ».
+
+Texte modifié (objectif de fin du chapitre 1) :
+- avant : « Premier éclat retrouvé ! La suite de l'aventure arrive bientôt. »
+- maintenant : « Va à l'Arche des éclats, à côté de l'Académie »

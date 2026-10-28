@@ -5,13 +5,14 @@ import { createGameState, createGolem, progress, type GameState } from './gameSt
  * cohérent (golems, quêtes, arène). Le prénom, les réglages et les statistiques sont gardés.
  */
 
-export type CheckpointId = 'start' | 'hatched' | 'arena' | 'boss';
+export type CheckpointId = 'start' | 'hatched' | 'arena' | 'boss' | 'chapter2';
 
 export const CHECKPOINTS: { id: CheckpointId; label: string }[] = [
   { id: 'start', label: 'Début (après la lecture de T1)' },
   { id: 'hatched', label: 'Après l’éclosion' },
   { id: 'arena', label: 'Arène ouverte' },
   { id: 'boss', label: 'Avant le Roi Slime' },
+  { id: 'chapter2', label: 'Début du chapitre 2 (Roi Slime vaincu)' },
 ];
 
 export function checkpointState(current: GameState, id: CheckpointId): GameState {
@@ -41,5 +42,15 @@ export function checkpointState(current: GameState, id: CheckpointId): GameState
   progress(s).bossQuest = 'active';
   s.food = 32;
   s.seen.push('slime', 'zombie', 'spider');
+  if (id === 'boss') return s;
+
+  // Roi Slime vaincu : premier éclat, trophée, outro lue ; l'Arche des éclats attend T2.
+  progress(s).bossQuest = 'defeated';
+  s.chapter = 2;
+  s.shards = 1;
+  s.trophies = ['roiSlime'];
+  s.storiesRead = ['T1', 'O1'];
+  s.food = 38;
+  s.seen.push('roiSlime');
   return s;
 }

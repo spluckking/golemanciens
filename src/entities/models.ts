@@ -1,4 +1,5 @@
 import type { Cube, ModelDef, PartDef } from './cubeModel';
+import { giantWebModel, hopperModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, wolfModel } from './forestModels';
 
 /**
  * Modèles en cubes, définis dans le code (aucun fichier externe).
@@ -1085,6 +1086,14 @@ export const MODELS = {
   slime: slimeModel(),
   zombie: zombieModel(),
   spider: spiderModel(),
+  skeleton: skeletonModel(),
+  wolf: wolfModel(),
+  hopper: hopperModel(),
+  spiderQueen: spiderQueenModel(),
+  giantWeb: giantWebModel(),
+  pathWeb: pathWebModel(),
+  mushroomBlue: questMushroomModel(0x4a7ae8),
+  mushroomRed: questMushroomModel(0xd83a3a),
   lumibloc: lumiblocModel(),
   mereBrique: mereBriqueModel(),
   paquerette: paqueretteModel(),

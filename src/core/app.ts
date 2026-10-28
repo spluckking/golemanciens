@@ -31,6 +31,7 @@ export class App {
   ) {}
 
   async start(): Promise<void> {
+    this.game.onStory = (id) => this.readStory(id);
     this.game.setMode('title');
     this.screen = 'title';
     // Partie déjà commencée : « Continuer » (on ne peut effacer la partie que depuis le menu parent).
@@ -95,6 +96,7 @@ export class App {
   }
 
   play(): void {
+    this.game.onStory = (id) => this.readStory(id);
     this.screen = 'play';
     this.game.setMode('play');
   }

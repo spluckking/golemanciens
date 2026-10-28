@@ -15,7 +15,7 @@ export const TEXT_RETRY_QUESTION = 'On réessaie tout de suite ?';
 export const TEXT_RETRY = 'Réessayer';
 export const TEXT_LATER = 'Plus tard';
 export const TEXT_TROPHY = 'Un trophée t’attend sur l’étagère de ta maison !';
-export const OBJECTIVE_CHAPTER_DONE = 'Premier éclat retrouvé ! La suite de l’aventure arrive bientôt.';
+export const OBJECTIVE_CHAPTER_DONE = 'Va à l’Arche des éclats, à côté de l’Académie';
 
 /** Récompense du boss (SPEC.md § 4.4). */
 export const FOOD_BOSS = 6;

@@ -23,7 +23,7 @@ import { WorldLabels } from '../ui/worldLabels';
 import { paintAtlas } from '../world/atlas';
 import { BiomeScene } from '../world/biomeScene';
 import { Block } from '../world/blocks';
-import { BIOME_MUSIC, BIOME_NAMES, buildLayout, unlockedBiomes } from '../world/biomes';
+import { BIOME_MUSIC, BIOME_NAMES, buildLayout, pendingStory, unlockedBiomes } from '../world/biomes';
 import type { WorldLayout } from '../world/layout';
 import type { PrairieLayout } from '../world/prairie';
 import { buildVolcanoSet } from '../world/volcanoSet';
@@ -126,6 +126,8 @@ export class Game {
   private locked = false;
   /** Le monde est à l'écran (ni cinématique, ni combat). */
   private inWorld = true;
+  /** Lecture d'un texte d'histoire (cinématique et questions), fournie par l'application. */
+  onStory: ((id: string) => Promise<void>) | null = null;
   /** Combat d'arène en cours. */
   fight: ArenaFight | null = null;
   private readonly timeScale: number;
@@ -224,11 +226,11 @@ export class Game {
       sparks: this.sparks,
       solid: this.solid,
       uiLayer,
-      buildSet: () => {
-        // Un seul décor pour l'instant : le Volcan d'Ombre (outro O6).
-        const { world } = buildVolcanoSet();
-        const scene = new BiomeScene({ world, decorations: [] }, this.atlas);
-        return { world, group: scene.group, dispose: () => scene.dispose() };
+      buildSet: (id) => {
+        // Décors de cinématique : le Volcan d'Ombre (O6), ou un autre biome le temps d'un plan (T2…).
+        const layout = id === 'volcano' ? { world: buildVolcanoSet().world, decorations: [] } : buildLayout(id);
+        const scene = new BiomeScene(layout, this.atlas);
+        return { world: layout.world, group: scene.group, dispose: () => scene.dispose() };
       },
       showWorld: (visible) => {
         this.biome.group.visible = visible;
@@ -272,7 +274,7 @@ export class Game {
     }
     if (mode === 'title') audio.music('storyDay');
     else if (playing) audio.music(BIOME_MUSIC[this.layout.id]);
-    this.life.setArchOpen(this.travelChoices().length > 0);
+    this.life.setArchOpen(this.travelChoices().length > 0 || pendingStory(this.state) !== null);
     const inWorld = mode !== 'cinematic' && mode !== 'combat';
     // Le compteur de FPS (mode test) ne doit pas cacher les sous-titres.
     this.inWorld = inWorld;
@@ -447,6 +449,16 @@ export class Game {
   /** L'arche : choisir une destination parmi les biomes débloqués. */
   private async useArch(): Promise<void> {
     if (this.paused) return;
+    // Nouveau chapitre : l'arche s'éveille en racontant l'histoire du biome (lecture et questions), puis y mène.
+    const next = pendingStory(this.state);
+    if (next && this.onStory) {
+      this.paused = true;
+      this.input.stickX = this.input.stickY = 0;
+      await this.onStory(next.story);
+      this.paused = false;
+      if (this.state.storiesRead.includes(next.story)) await this.travel(next.biome);
+      return;
+    }
     const choices = this.travelChoices();
     if (!choices.length) {
       this.hud.showToast(TEXT_ARCH_ASLEEP, 3);
