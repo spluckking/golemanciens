@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONTENT } from '../../src/data/content';
-import { CINEMATICS, storyCaptions } from '../../src/story/cinematics';
+import { CINEMATICS, OUTRO_CINEMATICS, outroCaptions, storyCaptions } from '../../src/story/cinematics';
 import { groupCaptions, readingSeconds, splitSentences } from '../../src/story/cinematics/captions';
 
 const normalize = (s: string): string => s.replace(/\s+/g, ' ').trim();
@@ -55,4 +55,15 @@ describe('cinématiques des textes d’histoire', () => {
   it('T1 est raconté en 11 plans', () => {
     expect(CINEMATICS.T1.shots).toHaveLength(11);
   });
+});
+
+describe('cinématiques des outros', () => {
+  for (const [id, script] of Object.entries(OUTRO_CINEMATICS)) {
+    const outro = CONTENT.outros.find((o) => o.id === id)!;
+    it(`${id} : les sous-titres reprennent l'outro mot pour mot`, () => {
+      const captions = outroCaptions(outro, script);
+      expect(captions).toHaveLength(script.shots.length);
+      expect(normalize(captions.join(' '))).toBe(normalize(outro.text));
+    });
+  }
 });

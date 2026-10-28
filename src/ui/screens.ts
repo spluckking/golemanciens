@@ -181,6 +181,22 @@ export function showMessage(layer: HTMLElement, text: string, button: string, pl
   });
 }
 
+/** Message avec plusieurs boutons : retourne l'index du bouton touché. */
+export function askChoice(layer: HTMLElement, text: string, labels: string[], playerName: string, testId: string): Promise<number> {
+  return new Promise((resolve) => {
+    const buttons = labels.map((l, i) => bigButton(formatText(l, playerName), `${testId}-${i}`, i === 0 ? 'btn-big' : 'btn-big btn-secondary'));
+    const card = el('div', { className: 'card message-card' }, [el('p', { className: 'message-text', text: formatText(text, playerName) }), el('div', { className: 'choice-row' }, buttons)]);
+    const root = screen('screen-message', testId, [card]);
+    buttons.forEach((b, i) =>
+      b.addEventListener('click', () => {
+        root.remove();
+        resolve(i);
+      }),
+    );
+    layer.appendChild(root);
+  });
+}
+
 /** Confettis en cubes colorés (DOM + CSS). */
 export function confetti(layer: HTMLElement): void {
   const colors = ['#f0c43c', '#6ff0ff', '#e64646', '#6ebe50', '#a06ee6', '#ffffff'];

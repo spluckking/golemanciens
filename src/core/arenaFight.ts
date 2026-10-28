@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { LESSON_LINES, LessonQuiz, lessonQuiz } from '../combat/turn/lesson';
-import { TurnCombat, arenaOpponents, healAfterCombat, questionCategory, type CombatEvent } from '../combat/turn/turnCombat';
+import { TurnCombat, arenaOpponents, bossMonster, healAfterCombat, questionCategory, type CombatEvent } from '../combat/turn/turnCombat';
 import { ARENA_WINS_TO_FINISH, FOOD_ARENA_WIN, MONSTER_TURN_DELAY_S } from '../data/balance';
 import { CONTENT } from '../data/content';
-import type { AttackInfo, AttackType } from '../data/creatures';
+import { FOOD_BOSS, TEXT_BOSS_SPLITS, TEXT_BOSS_VICTORY, TEXT_LATER, TEXT_RETRY, TEXT_RETRY_QUESTION } from '../data/bossQuest';
+import type { AttackInfo, AttackType, BossId } from '../data/creatures';
 import { animateWalk, CubeModel } from '../entities/cubeModel';
 import { MODELS, type ModelId } from '../entities/models';
 import type { Sparks } from '../entities/sparks';
@@ -12,8 +13,8 @@ import { levelForAttack, recordAnswer } from '../questions/difficulty';
 import { presentCalc, presentRiddle, type QuestionView } from '../questions/present';
 import { drawRiddle } from '../questions/riddleBank';
 import { CombatHud } from '../ui/combatHud';
-import { askQuestion, revealAnswer, showMessage } from '../ui/screens';
-import type { ArenaPlan } from '../world/structures';
+import { askChoice, askQuestion, revealAnswer, showMessage } from '../ui/screens';
+import type { FightStage } from '../world/structures';
 import type { GameState } from './gameState';
 import type { Rng } from './rng';
 
@@ -38,7 +39,11 @@ export interface FightHost {
   state: GameState;
   rng: Rng;
   sparks: Sparks;
-  plan: ArenaPlan;
+  /** Lieu du combat : l'arène, ou le repaire du boss. */
+  plan: FightStage;
+  kind: 'arena' | 'boss';
+  /** Boss affronté (combat de boss). */
+  boss?: BossId;
   /** Mode test : raccourcit les attentes. */
   timeScale: number;
 }
@@ -53,8 +58,8 @@ interface Tween {
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Un combat d'arène au tour par tour (SPEC.md § 7) : décor de l'arène, caméra de côté,
- * golem actif à gauche, monstre actif à droite ; chaque attaque passe par une question.
+ * Un combat au tour par tour (SPEC.md § 7), à l'arène ou contre un boss : caméra de côté,
+ * golem actif à gauche, adversaire à droite ; chaque attaque passe par une question.
  */
 export class ArenaFight {
   private readonly group = new THREE.Group();
@@ -64,13 +69,21 @@ export class ArenaFight {
   private readonly combat: TurnCombat;
   private readonly hud: CombatHud;
   private readonly floorY: number;
+  /** Sens golem → adversaire sur l'axe X (+1 : l'adversaire est à l'est). */
+  private readonly dir: number;
+  private readonly monsterScale: number;
+  /** Petits slimes qui apparaissent quand le Roi Slime se divise. */
+  private readonly minis: CubeModel[] = [];
   private time = 0;
 
   constructor(private readonly host: FightHost) {
     const { state, plan, rng } = host;
     this.floorY = plan.floorY;
+    this.dir = Math.sign(plan.monsterSpot.x - plan.golemSpot.x) || 1;
+    this.monsterScale = host.kind === 'boss' ? 1 : 1.25;
     const fighters = state.golems.filter((g) => g.hp > 0).length > 0 ? state.golems : state.golems.map((g) => ({ ...g, hp: g.maxHp }));
-    this.combat = new TurnCombat({ kind: 'arena', golems: fighters, monsters: arenaOpponents(1, state.golems.length, rng) }, rng);
+    const monsters = host.kind === 'boss' && host.boss ? [bossMonster(host.boss)] : arenaOpponents(1, state.golems.length, rng);
+    this.combat = new TurnCombat({ kind: host.kind, golems: fighters, monsters }, rng);
     for (const g of state.golems) {
       const m = new CubeModel(MODELS[g.species]);
       m.root.visible = false;
@@ -78,7 +91,7 @@ export class ArenaFight {
       this.group.add(m.root);
     }
     for (const mon of this.combat.monsters) {
-      const m = new CubeModel(MODELS[mon.model as ModelId], 1.25);
+      const m = new CubeModel(MODELS[mon.model as ModelId], this.monsterScale);
       m.root.visible = false;
       this.monsterModels.set(mon.id, m);
       this.group.add(m.root);
@@ -99,17 +112,19 @@ export class ArenaFight {
   /** Seuls le golem actif et le monstre actif sont dans l'arène. */
   private placeActive(): void {
     const { golemSpot, monsterSpot } = this.host.plan;
+    // Les deux combattants se font face.
+    const toMonster = Math.atan2(-(monsterSpot.x - golemSpot.x), -(monsterSpot.z - golemSpot.z));
     for (const [id, m] of this.golemModels) {
       m.root.visible = id === this.combat.golem.id;
       m.root.scale.setScalar(1);
       m.root.position.set(golemSpot.x, this.floorY, golemSpot.z);
-      m.root.rotation.set(0, -Math.PI / 2, 0);
+      m.root.rotation.set(0, toMonster, 0);
     }
     for (const [id, m] of this.monsterModels) {
       m.root.visible = id === this.combat.monster.id;
-      m.root.scale.setScalar(1.25);
+      m.root.scale.setScalar(this.monsterScale);
       m.root.position.set(monsterSpot.x, this.floorY, monsterSpot.z);
-      m.root.rotation.set(0, Math.PI / 2, 0);
+      m.root.rotation.set(0, toMonster + Math.PI, 0);
     }
     this.refreshHud();
   }
@@ -179,7 +194,7 @@ export class ArenaFight {
   // ---------- Déroulé ----------
 
   /** Joue le combat jusqu'au bout, puis la victoire ou la défaite (et la leçon la première fois). */
-  async run(): Promise<'won' | 'lost'> {
+  async run(): Promise<'won' | 'lost' | 'retry'> {
     const c = this.combat;
     const name = this.host.state.playerName;
     await wait(this.ms(0.6));
@@ -211,22 +226,40 @@ export class ArenaFight {
     this.refreshHud();
     const won = c.phase === 'won';
     await wait(this.ms(0.6));
-    await this.finish(won);
-    return won ? 'won' : 'lost';
+    return this.finish(won);
   }
 
-  private async finish(won: boolean): Promise<void> {
+  private async finish(won: boolean): Promise<'won' | 'lost' | 'retry'> {
     const { state, uiLayer } = this.host;
     healAfterCombat(state.golems);
+    if (this.host.kind === 'boss') return this.finishBoss(won);
     if (won) {
       state.food += FOOD_ARENA_WIN;
       state.arena.wins = Math.min(ARENA_WINS_TO_FINISH, state.arena.wins + 1);
       await showMessage(uiLayer, `${TEXT_VICTORY} +${FOOD_ARENA_WIN} 🍎`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
       if (state.arena.wins === ARENA_WINS_TO_FINISH) await showMessage(uiLayer, TEXT_ARENA_DONE, TEXT_VICTORY_BUTTON, state.playerName, 'arena-done');
-      return;
+      return 'won';
     }
     await showMessage(uiLayer, CONTENT.lumibloc.defeat, TEXT_DEFEAT_BUTTON, state.playerName, 'combat-defeat');
     if (!state.arena.lessonDone) await this.lesson();
+    return 'lost';
+  }
+
+  /** Boss vaincu : éclat, 🍎, trophée. Défaite : on peut réessayer tout de suite (SPEC § 7.1). */
+  private async finishBoss(won: boolean): Promise<'won' | 'lost' | 'retry'> {
+    const { state, uiLayer } = this.host;
+    if (won) {
+      state.bossQuest = 'defeated';
+      state.food += FOOD_BOSS;
+      state.shards = Math.max(state.shards, 1);
+      if (this.host.boss && !state.trophies.includes(this.host.boss)) state.trophies.push(this.host.boss);
+      await showMessage(uiLayer, `${TEXT_BOSS_VICTORY} +${FOOD_BOSS} 🍎`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
+      return 'won';
+    }
+    await showMessage(uiLayer, CONTENT.lumibloc.defeat, TEXT_DEFEAT_BUTTON, state.playerName, 'combat-defeat');
+    if (!state.arena.lessonDone) await this.lesson();
+    const again = await askChoice(uiLayer, TEXT_RETRY_QUESTION, [TEXT_RETRY, TEXT_LATER], state.playerName, 'boss-retry');
+    return again === 0 ? 'retry' : 'lost';
   }
 
   /** Première défaite : Lumibloc explique les faiblesses, puis un quiz à réussir entièrement. */
@@ -250,7 +283,7 @@ export class ArenaFight {
     for (const e of events) {
       switch (e.type) {
         case 'attack': {
-          await this.lunge(this.golemModel, 1);
+          await this.lunge(this.golemModel, this.dir);
           if (e.hit) {
             const p = this.monsterModel.root.position;
             this.host.sparks.burst(p.x, p.y + 0.8, p.z, TYPE_COLORS[e.attack.type], 18, 1);
@@ -274,7 +307,7 @@ export class ArenaFight {
           break;
         case 'monsterAttack':
           this.hud.announce(TEXT_MONSTER_ATTACKS.replace('{monstre}', c.monster.name).replace('{attaque}', e.attack));
-          await this.lunge(this.monsterModel, -1);
+          await this.lunge(this.monsterModel, -this.dir);
           if (!e.hit) this.hud.announce(fill(TEXT_DODGE));
           break;
         case 'skip':
@@ -285,9 +318,14 @@ export class ArenaFight {
           if (e.target === 'monster') await this.vanish(this.monsterModels.get(e.id)!, 0x9a8ad0);
           else await this.vanish(this.golemModels.get(e.id)!, 0xdddddd);
           break;
+        case 'stage':
+          this.placeActive();
+          this.split();
+          this.hud.announce(TEXT_BOSS_SPLITS, 1.8, 'super');
+          await wait(this.ms(0.9));
+          break;
         case 'nextMonster':
         case 'switch':
-        case 'stage':
           this.placeActive();
           await wait(this.ms(0.4));
           break;
@@ -298,14 +336,32 @@ export class ArenaFight {
     this.refreshHud();
   }
 
+  /** Étape 2 du Roi Slime : il rapetisse un peu et deux petits slimes jaillissent à ses côtés. */
+  private split(): void {
+    const model = this.monsterModel;
+    const p = model.root.position;
+    this.host.sparks.burst(p.x, p.y + 1, p.z, 0x5ec45e, 30, 1.4);
+    model.root.scale.setScalar(this.monsterScale * 0.8);
+    for (const side of [-1, 1]) {
+      const mini = new CubeModel(MODELS.slime, 0.8);
+      mini.root.position.set(p.x - this.dir * 0.6, this.floorY, p.z + side * 1.7);
+      mini.root.rotation.y = model.root.rotation.y;
+      this.group.add(mini.root);
+      this.minis.push(mini);
+    }
+  }
+
   /** Appelée à chaque image : caméra de côté, petites animations d'attente. */
   update(dt: number): void {
     this.time += dt;
     const { center } = this.host.plan;
     const cam = this.host.camera;
     // De côté, à l'intérieur du muret : le golem à gauche, le monstre à droite.
-    cam.position.set(center.x + 0.5, this.floorY + 2.6, center.z + 5.6);
-    cam.lookAt(center.x + 0.5, this.floorY + 1.4, center.z - 0.5);
+    const view = this.host.plan.view;
+    // Le boss est grand : la caméra recule et monte un peu.
+    const far = this.host.kind === 'boss' ? 1.45 : 1;
+    cam.position.set(center.x + 0.5, this.floorY + 2.6 * far, center.z + 5.6 * view * far);
+    cam.lookAt(center.x + 0.5, this.floorY + 1.4, center.z - 0.5 * view);
     for (let i = this.tweens.length - 1; i >= 0; i--) {
       const tw = this.tweens[i];
       tw.t += dt;
@@ -319,7 +375,8 @@ export class ArenaFight {
     if (this.combat.phase !== 'won' && this.combat.phase !== 'lost') {
       animateWalk(this.golemModel, this.time * 2, 0.15);
       const body = this.monsterModel.part('body');
-      if (this.combat.monster.model === 'slime' && body) body.position.y = Math.abs(Math.sin(this.time * 3)) * 0.12;
+      if ((this.combat.monster.model === 'slime' || this.combat.monster.model === 'roiSlime') && body) body.position.y = Math.abs(Math.sin(this.time * 3)) * 0.12;
+      this.minis.forEach((m, i) => (m.root.position.y = this.floorY + Math.abs(Math.sin(this.time * 4 + i)) * 0.3));
     }
     this.host.sparks.update(dt, () => false, () => false);
     this.hud.update(dt);

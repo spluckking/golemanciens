@@ -12,6 +12,7 @@ import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { BiomeLayout } from '../world/prairie';
 import type { GameState } from './gameState';
 import { ArenaLife } from './arenaLife';
+import { BossLife } from './bossLife';
 import { HomeLife } from './home';
 import { QuestLife } from './questLife';
 import { SanctuaryLife, type SanctuaryHooks } from './sanctuaryLife';
@@ -41,6 +42,8 @@ export interface LifeHooks {
   onSleep: () => void;
   /** Le gong de l'arène a sonné. */
   onFight: () => void;
+  /** Le héros affronte le boss du biome. */
+  onBossFight: () => void;
   /** Interface et monde pour le sanctuaire (énigmes, éclosion, portes). */
   sanctuary: Omit<SanctuaryHooks, 'dialog' | 'toast' | 'burst'>;
 }
@@ -94,6 +97,7 @@ export class BiomeLife {
   readonly sanctuary: SanctuaryLife;
   readonly quests: QuestLife;
   readonly arena: ArenaLife;
+  readonly boss: BossLife;
   private readonly golemViews = new Map<GolemAgent, CreatureView>();
   private readonly monsterViews = new Map<MonsterAgent, CreatureView>();
   private readonly npcs: Npc[] = [];
@@ -153,7 +157,7 @@ export class BiomeLife {
     });
 
     // Quêtes du village : poules, panier, camp des slimes, clé, fleurs.
-    this.quests = new QuestLife(layout, this.group, state, interactions, () => this.sim.monsters.filter((m) => m.campId === 'slimes'), {
+    this.quests = new QuestLife(layout, this.group, state, interactions, () => this.sim.monsters.filter((m) => m.campId === 'slimes'), () => this.arena.finished, {
       dialog: hooks.dialog,
       toast: hooks.toast,
       labels: hooks.labels,
@@ -168,6 +172,9 @@ export class BiomeLife {
       toast: hooks.toast,
       onFight: hooks.onFight,
     });
+
+    // Marais du Roi Slime : piste gluante et boss (quête P1).
+    this.boss = new BossLife(layout, this.group, state, interactions, { onBossFight: hooks.onBossFight });
 
     // PNJ : Lumibloc devant la maison du joueur et les villageois.
     const npcSpots = [{ id: 'lumibloc', ...layout.lumibloc }, ...layout.village.npcs];
@@ -336,6 +343,7 @@ export class BiomeLife {
       this.home.update(dt, hero);
       this.quests.update(dt, hero, controllable);
       this.arena.update(dt);
+      this.boss.update(dt);
       if (this.dialogNpc && Math.hypot(this.dialogNpc.x - hero.x, this.dialogNpc.z - hero.z) > 6) this.hooks.dialog.close();
     }
     this.render(dt, hero, camera);

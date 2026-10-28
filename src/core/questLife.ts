@@ -10,6 +10,7 @@ import {
   TEXT_QUEST_DONE_TOAST,
   type QuestNpc,
 } from '../data/quests';
+import { P1_REMINDER, P1_REQUEST } from '../data/bossQuest';
 import { animateWalk, CubeModel } from '../entities/cubeModel';
 import { MODELS, PORTRAITS, type ModelId } from '../entities/models';
 import { QuestBook } from '../quests/villageQuests';
@@ -78,6 +79,8 @@ export class QuestLife {
     private readonly state: GameState,
     private readonly interactions: Interactions,
     private readonly slimes: () => MonsterAgent[],
+    /** L'arène est terminée : Mère Brique propose la quête du boss. */
+    private readonly arenaDone: () => boolean,
     private readonly hooks: QuestHooks,
   ) {
     parent.add(this.group);
@@ -175,8 +178,16 @@ export class QuestLife {
   talk(npc: string): boolean {
     if (npc !== 'mereBrique' && npc !== 'paquerette' && npc !== 'gaston') return false;
     const res = this.book.talk(npc);
-    if (res.kind === 'none') return false;
     const line = (text: string): void => this.hooks.dialog.show({ speaker: NPC_NAMES[npc], portrait: PORTRAITS[npc], text });
+    if (res.kind === 'none') {
+      // Quête du boss (P1) : Mère Brique la donne une fois l'arène terminée.
+      if (npc !== 'mereBrique' || !this.arenaDone() || this.state.bossQuest === 'defeated') return false;
+      if (this.state.bossQuest === 'locked') {
+        this.state.bossQuest = 'active';
+        line(P1_REQUEST);
+      } else line(P1_REMINDER);
+      return true;
+    }
     if (res.kind === 'thanks') {
       line(res.quest.thanks);
       const p = this.npcSpots[npc];
@@ -266,7 +277,8 @@ export class QuestLife {
 
     // Marqueurs « ! » au-dessus des villageois.
     for (const npc of ['mereBrique', 'paquerette', 'gaston'] as const) {
-      const mark = this.book.marker(npc);
+      const bossOffer = npc === 'mereBrique' && this.arenaDone() && this.state.bossQuest === 'locked';
+      const mark = this.book.marker(npc) ?? (bossOffer ? 'give' : null);
       if (!mark) continue;
       const p = this.npcSpots[npc];
       this.hooks.labels.text(`quest-${npc}`, '!', p.x, p.y + 2.9 + Math.sin(this.time * 3) * 0.05, p.z, mark === 'return' ? 'quest-mark return' : 'quest-mark');

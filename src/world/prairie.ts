@@ -2,7 +2,7 @@ import { createRng, randInt } from '../core/rng';
 import type { MonsterSpecies } from '../data/creatures';
 import { Block, Tile, type TileId } from './blocks';
 import { Noise2D } from './noise';
-import { buildAcademy, buildArena, buildSanctuary, buildTree, buildVillage, type ArenaPlan, type SanctuaryPlan, type VillagePlan } from './structures';
+import { buildAcademy, buildArena, buildMarsh, buildSanctuary, buildTree, buildVillage, type ArenaPlan, type MarshPlan, type SanctuaryPlan, type VillagePlan } from './structures';
 import { VoxelWorld, WORLD_HEIGHT } from './voxelWorld';
 
 export const PRAIRIE_SIZE = 128;
@@ -39,6 +39,9 @@ export interface BiomeLayout {
   village: VillagePlan;
   sanctuary: SanctuaryPlan;
   arena: ArenaPlan;
+  marsh: MarshPlan;
+  /** Flaques vertes de la piste gluante (quête P1), du village au marais. */
+  slimeTrail: Point2[];
   /** Position de Lumibloc au chapitre 1 : devant la maison du joueur. */
   lumibloc: { x: number; z: number; facing: number };
   camps: Camp[];
@@ -188,6 +191,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
   const sanctuaryFloor = world.surfaceY(PADS.sanctuary.x - 4, PADS.sanctuary.z);
   const sanctuary = buildSanctuary(world, PADS.sanctuary.x, PADS.sanctuary.z, sanctuaryFloor);
   const arena = buildArena(world, PADS.arena.x, PADS.arena.z, world.surfaceY(PADS.arena.x, PADS.arena.z));
+  const marsh = buildMarsh(world, PADS.bossLair.x, PADS.bossLair.z, world.surfaceY(PADS.bossLair.x, PADS.bossLair.z));
 
   // Camps : sol piétiné, coffre au bord du camp.
   const camps: Camp[] = CAMPS.map((c) => {
@@ -301,6 +305,20 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     flowers: [clearSpot(40, 66), clearSpot(46, 62), clearSpot(34, 62), clearSpot(52, 69), clearSpot(28, 68)],
   };
 
+  // Piste gluante : des flaques le long du chemin, du village au marais (un peu de côté, en zigzag).
+  const trailLine: Point2[] = [{ x: 31, z: 94 }, { x: 24, z: 104 }, { x: 20.5, z: 109.5 }];
+  const slimeTrail: Point2[] = [];
+  for (let k = 0; k < trailLine.length - 1; k++) {
+    const a = trailLine[k];
+    const b = trailLine[k + 1];
+    const steps = Math.max(1, Math.round(Math.hypot(b.x - a.x, b.z - a.z) / 3.2));
+    for (let s = 0; s < steps; s++) {
+      const t = s / steps;
+      const side = (slimeTrail.length % 2 === 0 ? 1 : -1) * 0.8;
+      slimeTrail.push({ x: a.x + (b.x - a.x) * t + side, z: a.z + (b.z - a.z) * t + side * 0.5 });
+    }
+  }
+
   const at = (p: Point2): { x: number; y: number; z: number } => ({ x: p.x, y: world.surfaceY(Math.floor(p.x), Math.floor(p.z)), z: p.z });
   const lanterns = [
     { id: 'village', ...at(village.lantern) },
@@ -324,6 +342,8 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     village,
     sanctuary,
     arena,
+    marsh,
+    slimeTrail,
     lumibloc: { x: home.door.x + 2, z: home.door.z - 1.2, facing: Math.PI * 0.8 },
     camps,
     crates,

@@ -6,7 +6,7 @@ import { createGameState, createGolem, type GameState } from './core/gameState';
 import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
-import { CINEMATICS, storyCaptions } from './story/cinematics';
+import { CINEMATICS, OUTRO_CINEMATICS, outroCaptions, storyCaptions } from './story/cinematics';
 import { SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
 import { applyBlockTheme } from './ui/theme';
@@ -62,6 +62,11 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
   }
   if (isTest) state.arena.wins = Number(params.get('arenaWins') ?? 0);
   if (isTest && params.get('lesson') === 'done') state.arena.lessonDone = true;
+  // « ?test&arena=open&boss=active » : arène terminée et quête du boss acceptée.
+  if (isTest && params.get('boss') === 'active') {
+    state.arena.wins = 3;
+    state.bossQuest = 'active';
+  }
   const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale });
   const app = new App(game, layer, state, rng, timeScale);
   game.start();
@@ -78,14 +83,14 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
     // « ?test&cine=T1&shot=4 » joue une cinématique (à partir d'un plan), puis lance la partie.
     const cine = params.get('cine');
     const story = CONTENT.stories.find((s) => s.id === cine);
-    if (cine && story && CINEMATICS[cine]) {
+    const outro = CONTENT.outros.find((o) => o.id === cine);
+    const script = cine ? (CINEMATICS[cine] ?? OUTRO_CINEMATICS[cine]) : undefined;
+    if (cine && script && (story || outro)) {
       state.playerName = 'Testeur';
       state.storiesRead.push('T1');
       state.tutorialsSeen.push('move');
-      const script = CINEMATICS[cine];
-      void game
-        .playCinematic(script, storyCaptions(story, script), { skippable: true, timeScale, startShot: Number(params.get('shot') ?? 0) })
-        .then(() => app.play());
+      const captions = story ? storyCaptions(story, script) : outroCaptions(outro!, script);
+      void game.playCinematic(script, captions, { skippable: true, timeScale, startShot: Number(params.get('shot') ?? 0) }).then(() => app.play());
     } else if (params.get('start') === 'play') {
       state.playerName = 'Testeur';
       state.storiesRead.push('T1');

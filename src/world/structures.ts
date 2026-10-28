@@ -379,16 +379,12 @@ export function buildSanctuary(world: VoxelWorld, cx: number, cz: number, floorY
   };
 }
 
-export interface ArenaPlan {
+/** Arène : golem à gauche (ouest), monstre à droite (est), vus depuis le sud. */
+export interface ArenaPlan extends FightStage {
   /** Barrière de l'entrée (est), ouverte quand les quêtes obligatoires sont faites. */
   gate: Cell[];
   /** Gong : on le frappe pour lancer un combat. */
   gong: { x: number; z: number; facing: number };
-  /** Places des combattants : golem à gauche (ouest), monstre à droite (est), vus depuis le sud. */
-  golemSpot: { x: number; z: number };
-  monsterSpot: { x: number; z: number };
-  center: { x: number; z: number };
-  floorY: number;
 }
 
 /**
@@ -431,5 +427,49 @@ export function buildArena(world: VoxelWorld, cx: number, cz: number, floorY: nu
     monsterSpot: { x: cx + 3.5, z: cz + 0.5 },
     center: { x: cx + 0.5, z: cz + 0.5 },
     floorY,
+    view: 1,
+  };
+}
+
+/** Lieu d'un combat au tour par tour : places des combattants, vue de côté. */
+export interface FightStage {
+  golemSpot: { x: number; z: number };
+  monsterSpot: { x: number; z: number };
+  center: { x: number; z: number };
+  floorY: number;
+  /** Côté d'où regarde la caméra : +1 = depuis le sud (+Z), −1 = depuis le nord. */
+  view: 1 | -1;
+}
+
+export interface MarshPlan extends FightStage {
+  /** Où attend le Roi Slime avant le combat. */
+  boss: { x: number; z: number };
+}
+
+/**
+ * Marais du Roi Slime (CONTENU.md, P1) : clairière de terre boueuse au centre, mares peu profondes
+ * tout autour (on en ressort d'un pas), passage libre au nord-est, d'où arrive la piste gluante.
+ * La caméra du combat regarde depuis le nord (le sud touche le bord du monde).
+ */
+export function buildMarsh(world: VoxelWorld, cx: number, cz: number, floorY: number): MarshPlan {
+  for (let dz = -9; dz <= 9; dz++)
+    for (let dx = -9; dx <= 9; dx++) {
+      const d = Math.hypot(dx, dz);
+      if (d > 9) continue;
+      const x = cx + dx;
+      const z = cz + dz;
+      for (let y = floorY; y < floorY + 6; y++) if (world.get(x, y, z) !== Block.Log && world.get(x, y, z) !== Block.Leaves) world.set(x, y, z, Block.Air);
+      world.set(x, floorY - 1, z, d < 4.6 ? Block.Dirt : Block.Grass);
+      // Mares : un bloc de profondeur, hors de la clairière et du passage nord-est.
+      const entry = dx > 0 && dz < 0 && Math.abs(Math.atan2(-dz, dx) - Math.PI / 3.2) < 0.55;
+      if (d > 4.6 && !entry && (Math.abs(dx * 7 + dz * 13) % 5 < 2 || d > 7.6)) world.set(x, floorY - 1, z, Block.Water);
+    }
+  return {
+    boss: { x: cx + 0.5, z: cz + 0.5 },
+    golemSpot: { x: cx + 3.5, z: cz + 0.5 },
+    monsterSpot: { x: cx - 2.5, z: cz + 0.5 },
+    center: { x: cx + 0.5, z: cz + 0.5 },
+    floorY,
+    view: -1,
   };
 }

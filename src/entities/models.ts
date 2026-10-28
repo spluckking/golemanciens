@@ -778,6 +778,63 @@ function goldFlowerModel(): ModelDef {
   ];
 }
 
+// ---------- Roi Slime (boss de la phase 1) ----------
+
+/** Grand slime à couronne dorée. Origine au sol, regarde vers -Z. */
+function roiSlimeModel(): ModelDef {
+  const g = 0x5ec45e;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [2.2, 1.7, 2.2, 0, 0.85, 0, g],
+        [1.6, 0.2, 1.6, 0, 1.78, 0, 0x8ae88a],
+        [1.9, 0.3, 1.9, 0, 0.15, 0, 0x4aa84a],
+        // Yeux, sourcils froncés, grande bouche.
+        [0.34, 0.4, 0.04, -0.45, 1.05, -1.11, EYE_DARK],
+        [0.34, 0.4, 0.04, 0.45, 1.05, -1.11, EYE_DARK],
+        [0.12, 0.12, 0.04, -0.4, 1.15, -1.13, 0xffffff],
+        [0.12, 0.12, 0.04, 0.5, 1.15, -1.13, 0xffffff],
+        [0.44, 0.08, 0.04, -0.45, 1.33, -1.11, 0x2f7a3a],
+        [0.44, 0.08, 0.04, 0.45, 1.33, -1.11, 0x2f7a3a],
+        [0.9, 0.16, 0.04, 0, 0.6, -1.11, 0x2f7a3a],
+        // Petites bulles à l'intérieur.
+        [0.2, 0.2, 0.2, 0.7, 0.5, 0.3, 0x9af09a],
+        [0.16, 0.16, 0.16, -0.6, 0.9, 0.5, 0x9af09a],
+      ],
+    },
+    {
+      name: 'crown',
+      parent: 'body',
+      pivot: [0, 1.75, 0],
+      glow: true,
+      cubes: [
+        [1.0, 0.24, 1.0, 0, 0.12, 0, 0xf0c43c],
+        ...[-0.38, 0, 0.38].map((x): Cube => [0.18, 0.3, 0.18, x, 0.38, -0.4, 0xf0c43c]),
+        ...[-0.38, 0, 0.38].map((x): Cube => [0.18, 0.3, 0.18, x, 0.38, 0.4, 0xf0c43c]),
+        [0.14, 0.14, 0.04, 0, 0.14, -0.52, 0xe0453a],
+      ],
+    },
+  ];
+}
+
+/** Flaque verte de la piste gluante. */
+function puddleModel(): ModelDef {
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.9, 0.04, 0.6, 0, 0.02, 0, 0x5ec45e],
+        [0.5, 0.05, 0.9, 0.1, 0.025, 0.05, 0x5ec45e],
+        [0.25, 0.06, 0.25, -0.15, 0.03, -0.1, 0x9af09a],
+        [0.18, 0.12, 0.18, 0.55, 0.06, 0.35, 0x5ec45e],
+      ],
+    },
+  ];
+}
+
 // ---------- Arène ----------
 
 /** Gong de l'arène : deux poteaux, une traverse, un grand disque doré. Face vers -Z. */
@@ -1003,6 +1060,8 @@ export const MODELS = {
   trophyRoiSlime: trophyRoiSlimeModel(),
   rivet: houseGolemModel(),
   gong: gongModel(),
+  roiSlime: roiSlimeModel(),
+  puddle: puddleModel(),
   chicken: chickenModel(),
   basket: basketModel(),
   keyCrate: keyCrateModel(),

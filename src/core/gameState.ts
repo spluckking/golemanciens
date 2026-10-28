@@ -1,4 +1,5 @@
 import { golemBaseStats } from '../data/balance';
+import type { BossQuestStep } from '../data/bossQuest';
 import { GOLEMS, type GolemSpecies } from '../data/creatures';
 import { createAdaptiveLevel, type AdaptiveLevel } from '../questions/difficulty';
 import type { ReadingStats } from '../questions/readingLoop';
@@ -47,6 +48,8 @@ export interface GameState {
   quests: QuestLog;
   /** Arène du biome : victoires (3 pour la terminer) et leçon des faiblesses déjà vue. */
   arena: { wins: number; lessonDone: boolean };
+  /** Quête du boss du biome (P1) : proposée après l'arène, puis le combat. */
+  bossQuest: BossQuestStep;
 }
 
 export function createGameState(): GameState {
@@ -70,6 +73,7 @@ export function createGameState(): GameState {
     sanctuary: createSanctuaryProgress(),
     quests: createQuestLog(),
     arena: { wins: 0, lessonDone: false },
+    bossQuest: 'locked',
   };
 }
 

@@ -7,17 +7,17 @@ import type { Actor, CameraKey, CinematicScript, Vec3 } from './director';
  */
 
 const ACADEMY = { x: 64.5, z: 26.5 };
-const STONE: Vec3 = [64.5, 32, 26.5];
+export const STONE: Vec3 = [64.5, 32, 26.5];
 const HOME_DOOR = { x: 36.5, z: 92.5 };
 const SANCTUARY = { x: 113, z: 100 };
 
 /** Point d'une courbe de Bézier quadratique. */
-function bezier(a: Vec3, b: Vec3, c: Vec3, t: number): Vec3 {
+export function bezier(a: Vec3, b: Vec3, c: Vec3, t: number): Vec3 {
   const u = 1 - t;
   return [0, 1, 2].map((i) => u * u * a[i] + 2 * u * t * b[i] + t * t * c[i]) as Vec3;
 }
 
-function key(pos: Vec3, look: Vec3): CameraKey {
+export function key(pos: Vec3, look: Vec3): CameraKey {
   return { pos, look };
 }
 
@@ -51,7 +51,7 @@ function turnTowards(from: number, to: number, k: number): number {
 }
 
 /** Bras levé sur le côté (signe de la main). */
-function raiseArm(a: Actor, arm: 'armL' | 'armR', angle: number): void {
+export function raiseArm(a: Actor, arm: 'armL' | 'armR', angle: number): void {
   a.model.swing(arm, arm === 'armR' ? angle : -angle, 'z');
 }
 

@@ -3,7 +3,8 @@ import { createHero, stepHero, type HeroState } from '../entities/heroController
 import { HeroModel } from '../entities/heroModel';
 import { Sparks } from '../entities/sparks';
 import { CONTENT } from '../data/content';
-import { CINEMATICS, storyCaptions } from '../story/cinematics';
+import { CINEMATICS, OUTRO_CINEMATICS, outroCaptions, storyCaptions } from '../story/cinematics';
+import { OBJECTIVE_CHAPTER_DONE, P1_TASK, P1_TITLE, TEXT_TROPHY } from '../data/bossQuest';
 import { CinematicDirector, type CinematicScript } from '../story/cinematics/director';
 import { OBJECTIVE_GO_ARENA, type QuestNpc } from '../data/quests';
 import { OBJECTIVE_BACK_TO_VILLAGE } from '../data/sanctuaries';
@@ -166,7 +167,8 @@ export class Game {
       sparks: this.sparks,
       onAllKO: () => this.recoverFromKO(),
       onSleep: () => this.sleep(),
-      onFight: () => void this.startFight(),
+      onFight: () => void this.startFight('arena'),
+      onBossFight: () => void this.startFight('boss'),
       sanctuary: {
         rebuild: (cells) => this.biome.rebuildCells(cells),
         ask: (view) => askQuestion(this.uiLayer, view, this.state.playerName),
@@ -229,27 +231,56 @@ export class Game {
   }
 
   /** Combat d'arène : la caméra passe de côté dans l'arène, puis on revient devant le gong. */
-  private async startFight(): Promise<void> {
+  /**
+   * Combat au tour par tour, à l'arène (gong) ou contre le Roi Slime (marais). Contre le boss,
+   * on peut réessayer tout de suite ; la victoire lance l'outro O1 et pose le trophée.
+   */
+  private async startFight(kind: 'arena' | 'boss'): Promise<void> {
     if (this.fight || this.paused) return;
     this.dialog.close();
     this.setMode('combat');
-    this.fight = new ArenaFight({
-      scene: this.scene,
-      camera: this.camera,
-      uiLayer: this.uiLayer,
-      state: this.state,
-      rng: this.rng,
-      sparks: this.sparks,
-      plan: this.layout.arena,
-      timeScale: this.timeScale,
-    });
-    await this.fight.run();
-    this.fight.dispose();
-    this.fight = null;
-    const g = this.layout.arena.gong;
-    this.teleport(g.x, g.z + 2.5, 0);
+    let result: 'won' | 'lost' | 'retry';
+    do {
+      this.fight = new ArenaFight({
+        scene: this.scene,
+        camera: this.camera,
+        uiLayer: this.uiLayer,
+        state: this.state,
+        rng: this.rng,
+        sparks: this.sparks,
+        plan: kind === 'boss' ? this.layout.marsh : this.layout.arena,
+        kind,
+        boss: kind === 'boss' ? 'roiSlime' : undefined,
+        timeScale: this.timeScale,
+      });
+      result = await this.fight.run();
+      this.fight.dispose();
+      this.fight = null;
+    } while (result === 'retry');
+
+    if (kind === 'boss' && result === 'won') {
+      await this.playOutro('O1');
+      this.state.chapter = Math.max(this.state.chapter, 2);
+      const home = this.life.home.wakePoint();
+      this.teleport(home.x, home.z, this.layout.spawnYaw);
+      this.life.sim.recoverAt(home.x, home.y, home.z);
+      this.setMode('play');
+      this.hud.showToast(TEXT_TROPHY, 4);
+      return;
+    }
+    const back = kind === 'boss' ? { x: this.layout.marsh.boss.x + 4, z: this.layout.marsh.boss.z - 3 } : { x: this.layout.arena.gong.x, z: this.layout.arena.gong.z + 2.5 };
+    this.teleport(back.x, back.z, 0);
     this.life.sim.recoverAt(this.hero.x, this.hero.y, this.hero.z);
     this.setMode('play');
+  }
+
+  /** Outro de fin de phase (cinématique, sans questions) ; elle rejoint « Revoir l'histoire ». */
+  private async playOutro(id: string): Promise<void> {
+    const outro = CONTENT.outros.find((o) => o.id === id);
+    const script = OUTRO_CINEMATICS[id];
+    if (!outro || !script) return;
+    await this.playCinematic(script, outroCaptions(outro, script), { skippable: true, timeScale: this.timeScale });
+    if (!this.state.storiesRead.includes(id)) this.state.storiesRead.push(id);
   }
 
   /** Joue une cinématique, puis revient au mode précédent. */
@@ -304,6 +335,20 @@ export class Game {
       text = OBJECTIVE_GO_ARENA;
       target = this.layout.landmarks.arena;
     }
+    // Après l'arène : la quête du boss (P1), puis la fin du chapitre.
+    if (goal.kind === 'arena' && this.life.arena.finished) {
+      const step = this.state.bossQuest;
+      if (step === 'locked') {
+        text = `${NPC_NAMES.mereBrique} a besoin d’aide`;
+        target = quests.npcSpot('mereBrique');
+      } else if (step === 'active') {
+        text = `${P1_TITLE} : ${P1_TASK}`;
+        target = this.life.boss.trailTarget(this.hero);
+      } else {
+        text = OBJECTIVE_CHAPTER_DONE;
+        target = this.layout.landmarks.academy;
+      }
+    }
     // Journal : l'objectif mis en avant, puis les autres quêtes en cours ; les quêtes terminées.
     const current = [{ text, active: true }];
     for (const d of book.defs) {
@@ -313,6 +358,7 @@ export class Game {
       if (line !== text && !current.some((c) => c.text === line)) current.push({ text: line, active: false });
     }
     const done = [OBJECTIVE_FIND_EGG, ...book.defs.filter((d) => book.state(d.id).status === 'done').map((d) => d.title)];
+    if (this.state.bossQuest === 'defeated') done.push(P1_TITLE);
     return { text, target, current, done };
   }
 
@@ -320,7 +366,11 @@ export class Game {
     if (this.paused) return;
     this.paused = true;
     this.input.stickX = this.input.stickY = 0;
-    const replays = CONTENT.stories.filter((s) => this.state.storiesRead.includes(s.id) && CINEMATICS[s.id]).map((s) => ({ id: s.id, title: s.title }));
+    const seen = (id: string): boolean => this.state.storiesRead.includes(id);
+    const replays = [
+      ...CONTENT.stories.filter((s) => seen(s.id) && CINEMATICS[s.id]).map((s) => ({ id: s.id, title: s.title })),
+      ...CONTENT.outros.filter((o) => seen(o.id) && OUTRO_CINEMATICS[o.id]).map((o) => ({ id: o.id, title: o.when.charAt(0).toUpperCase() + o.when.slice(1) })),
+    ];
     const goal = this.objective();
     const replay = await openJournal(this.uiLayer, goal.current, goal.done, JOURNAL_NO_DONE, this.state.playerName, replays);
     const story = CONTENT.stories.find((s) => s.id === replay);
@@ -328,7 +378,7 @@ export class Game {
       // Histoire déjà vue : on peut la passer.
       const script = CINEMATICS[story.id];
       await this.playCinematic(script, storyCaptions(story, script), { skippable: true, timeScale: 1 });
-    }
+    } else if (replay) await this.playOutro(replay);
     this.paused = false;
   }
 
