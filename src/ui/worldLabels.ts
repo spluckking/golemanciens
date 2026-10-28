@@ -49,9 +49,11 @@ export class WorldLabels {
     this.place(tag.node, x, y, z);
   }
 
-  /** Petit texte fixe au-dessus d'une entité (« Zzz »). */
-  text(id: string, text: string, x: number, y: number, z: number): void {
-    const tag = this.tag(id, () => ({ node: el('div', { className: 'tag-label', text }), fill: null }));
+  /** Petit texte fixe au-dessus d'une entité (« Zzz », marqueur « ! » des quêtes). */
+  text(id: string, text: string, x: number, y: number, z: number, className = 'tag-label'): void {
+    const tag = this.tag(id, () => ({ node: el('div', { className, text }), fill: null }));
+    if (tag.node.className !== className) tag.node.className = className;
+    if (tag.node.textContent !== text) tag.node.textContent = text;
     this.place(tag.node, x, y, z);
   }
 

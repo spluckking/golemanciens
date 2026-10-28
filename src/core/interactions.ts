@@ -22,6 +22,11 @@ export class Interactions {
     if (i >= 0) this.items.splice(i, 1);
   }
 
+  /** Identifiants des éléments actifs (mode test). */
+  ids(): string[] {
+    return this.items.map((it) => it.id);
+  }
+
   /** L'élément le plus proche à portée, ou null. */
   nearest(x: number, y: number, z: number): Interactable | null {
     let best: Interactable | null = null;

@@ -4,6 +4,7 @@ import { createAdaptiveLevel, type AdaptiveLevel } from '../questions/difficulty
 import type { ReadingStats } from '../questions/readingLoop';
 import { createRiddleMemory, type RiddleMemory } from '../questions/riddleBank';
 import { createSanctuaryProgress, type SanctuaryProgress } from '../quests/sanctuary';
+import { createQuestLog, type QuestLog } from '../quests/villageQuests';
 
 export const SAVE_VERSION = 1;
 
@@ -42,6 +43,8 @@ export interface GameState {
   trophies: string[];
   /** Quête de l'œuf du biome en cours (sanctuaire S1). */
   sanctuary: SanctuaryProgress;
+  /** Quêtes du village du biome en cours. */
+  quests: QuestLog;
 }
 
 export function createGameState(): GameState {
@@ -63,6 +66,7 @@ export function createGameState(): GameState {
     tutorialsSeen: [],
     trophies: [],
     sanctuary: createSanctuaryProgress(),
+    quests: createQuestLog(),
   };
 }
 

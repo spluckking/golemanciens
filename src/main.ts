@@ -23,6 +23,8 @@ declare global {
       teleport: (x: number, z: number, facing?: number) => void;
       drawCalls: () => number;
       sanctuary: () => ReturnType<Game['life']['sanctuary']['snapshot']>;
+      quests: () => ReturnType<Game['life']['quests']['snapshot']>;
+      interactables: () => string[];
     };
   }
 }
@@ -91,6 +93,8 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
       teleport: (x, z, facing) => game.teleport(x, z, facing),
       drawCalls: () => game.drawCalls,
       sanctuary: () => game.life.sanctuary.snapshot(),
+      quests: () => game.life.quests.snapshot(),
+      interactables: () => game.interactions.ids(),
     };
   } else {
     void app.start();

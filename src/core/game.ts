@@ -5,8 +5,10 @@ import { Sparks } from '../entities/sparks';
 import { CONTENT } from '../data/content';
 import { CINEMATICS, storyCaptions } from '../story/cinematics';
 import { CinematicDirector, type CinematicScript } from '../story/cinematics/director';
+import { OBJECTIVE_GO_ARENA, type QuestNpc } from '../data/quests';
 import { OBJECTIVE_BACK_TO_VILLAGE } from '../data/sanctuaries';
-import { JOURNAL_NO_DONE, OBJECTIVE_FIND_EGG } from '../story/dialogues';
+import { questLine } from '../quests/villageQuests';
+import { JOURNAL_NO_DONE, NPC_NAMES, OBJECTIVE_FIND_EGG } from '../story/dialogues';
 import { askNickname, chooseGolem } from '../ui/hatching';
 import { askQuestion, revealAnswer } from '../ui/screens';
 import { DebugOverlay } from '../ui/debugOverlay';
@@ -250,9 +252,36 @@ export class Game {
   }
 
   /** Objectif actif du journal et de la boussole, selon l'avancement du chapitre. */
-  private objective(): { text: string; target: { x: number; z: number }; done: string[] } {
-    if (this.state.sanctuary.step !== 'hatched') return { text: OBJECTIVE_FIND_EGG, target: this.layout.landmarks.sanctuary, done: [] };
-    return { text: OBJECTIVE_BACK_TO_VILLAGE, target: this.layout.landmarks.village, done: [OBJECTIVE_FIND_EGG] };
+  private objective(): { text: string; target: { x: number; z: number }; current: { text: string; active: boolean }[]; done: string[] } {
+    if (this.state.sanctuary.step !== 'hatched') {
+      return { text: OBJECTIVE_FIND_EGG, target: this.layout.landmarks.sanctuary, current: [{ text: OBJECTIVE_FIND_EGG, active: true }], done: [] };
+    }
+    const quests = this.life.quests;
+    const book = quests.book;
+    const name = (id: QuestNpc): string => NPC_NAMES[id];
+    const goal = book.objective();
+    let text = OBJECTIVE_BACK_TO_VILLAGE;
+    let target: { x: number; z: number } = this.layout.landmarks.village;
+    if (goal.kind === 'npc') {
+      text = questLine(goal.quest, book.state(goal.quest.id), name);
+      target = quests.npcSpot(goal.npc);
+    } else if (goal.kind === 'task') {
+      text = questLine(goal.quest, book.state(goal.quest.id), name);
+      target = quests.taskTarget(goal.quest.id, this.hero);
+    } else if (goal.kind === 'arena') {
+      text = OBJECTIVE_GO_ARENA;
+      target = this.layout.landmarks.arena;
+    }
+    // Journal : l'objectif mis en avant, puis les autres quêtes en cours ; les quêtes terminées.
+    const current = [{ text, active: true }];
+    for (const d of book.defs) {
+      const st = book.state(d.id);
+      if (st.status === 'locked' || st.status === 'done') continue;
+      const line = questLine(d, st, name);
+      if (line !== text && !current.some((c) => c.text === line)) current.push({ text: line, active: false });
+    }
+    const done = [OBJECTIVE_FIND_EGG, ...book.defs.filter((d) => book.state(d.id).status === 'done').map((d) => d.title)];
+    return { text, target, current, done };
   }
 
   private async showJournal(): Promise<void> {
@@ -261,7 +290,7 @@ export class Game {
     this.input.stickX = this.input.stickY = 0;
     const replays = CONTENT.stories.filter((s) => this.state.storiesRead.includes(s.id) && CINEMATICS[s.id]).map((s) => ({ id: s.id, title: s.title }));
     const goal = this.objective();
-    const replay = await openJournal(this.uiLayer, [{ text: goal.text, active: true }], goal.done, JOURNAL_NO_DONE, this.state.playerName, replays);
+    const replay = await openJournal(this.uiLayer, goal.current, goal.done, JOURNAL_NO_DONE, this.state.playerName, replays);
     const story = CONTENT.stories.find((s) => s.id === replay);
     if (story) {
       // Histoire déjà vue : on peut la passer.

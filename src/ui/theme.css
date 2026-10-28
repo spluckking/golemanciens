@@ -520,3 +520,32 @@
 .choose-card .golem-choice-name {
   font-size: 34px;
 }
+
+/* Marqueur de quête au-dessus d'un villageois : « ! » doré (quête à prendre) ou vert (quête à rendre). */
+.quest-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 52px;
+  border-radius: 6px;
+  border: 3px solid;
+  border-color: #fff0b0 #8a6410 #8a6410 #fff0b0;
+  background: #f0c43c;
+  box-shadow: 0 0 0 3px var(--outline);
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 900;
+  text-shadow: var(--text-shadow-block);
+  animation: quest-bob 1.2s ease-in-out infinite;
+}
+
+.quest-mark.return {
+  border-color: #c8f5b8 #2f7a2a #2f7a2a #c8f5b8;
+  background: #5ec44a;
+}
+
+@keyframes quest-bob {
+  50% {
+    margin-top: -8px;
+  }
+}

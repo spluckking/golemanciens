@@ -694,6 +694,90 @@ function silhouette(def: ModelDef): ModelDef {
   return def.map((p) => ({ ...p, glow: false, cubes: p.cubes.map((c): Cube => [c[0], c[1], c[2], c[3], c[4], c[5], 0x2a2440]) }));
 }
 
+// ---------- Objets des quêtes du village ----------
+
+/** Poule : corps blanc, crête rouge, bec jaune. Regarde vers -Z. */
+function chickenModel(): ModelDef {
+  return [
+    { name: 'legL', pivot: [-0.08, 0.18, 0], cubes: [[0.05, 0.18, 0.05, 0, -0.09, 0, 0xf0b030]] },
+    { name: 'legR', pivot: [0.08, 0.18, 0], cubes: [[0.05, 0.18, 0.05, 0, -0.09, 0, 0xf0b030]] },
+    {
+      name: 'body',
+      pivot: [0, 0.18, 0],
+      cubes: [
+        [0.36, 0.3, 0.44, 0, 0.17, 0.02, 0xffffff],
+        [0.08, 0.2, 0.16, 0, 0.36, 0.22, 0xf0f0f0],
+        [0.24, 0.26, 0.22, 0, 0.42, -0.2, 0xffffff],
+        [0.1, 0.08, 0.12, 0, 0.42, -0.36, 0xf0b030],
+        [0.06, 0.1, 0.08, 0, 0.32, -0.33, 0xe0453a],
+        [0.06, 0.1, 0.16, 0, 0.6, -0.2, 0xe0453a],
+        [0.05, 0.05, 0.02, -0.08, 0.48, -0.315, EYE_DARK],
+        [0.05, 0.05, 0.02, 0.08, 0.48, -0.315, EYE_DARK],
+      ],
+    },
+    { name: 'armL', pivot: [-0.19, 0.38, 0.02], cubes: [[0.04, 0.2, 0.3, 0, -0.08, 0, 0xeeeeee]] },
+    { name: 'armR', pivot: [0.19, 0.38, 0.02], cubes: [[0.04, 0.2, 0.3, 0, -0.08, 0, 0xeeeeee]] },
+  ];
+}
+
+/** Panier d'osier avec des pains. */
+function basketModel(): ModelDef {
+  const wicker = 0xc8964a;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.4, 0.2, 0.3, 0, 0.1, 0, wicker],
+        [0.42, 0.04, 0.32, 0, 0.18, 0, 0x9a6a30],
+        [0.16, 0.1, 0.12, -0.08, 0.24, 0, 0xe0a860],
+        [0.14, 0.08, 0.1, 0.1, 0.23, 0.03, 0xd09050],
+        [0.04, 0.22, 0.04, -0.17, 0.34, 0, 0x9a6a30],
+        [0.04, 0.22, 0.04, 0.17, 0.34, 0, 0x9a6a30],
+        [0.38, 0.04, 0.04, 0, 0.45, 0, 0x9a6a30],
+      ],
+    },
+  ];
+}
+
+/** Caisse ficelée où se cache la clé du puits (un reflet doré dépasse). */
+function keyCrateModel(): ModelDef {
+  const wood = 0xb07a40;
+  const dark = 0x6a4424;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.82, 0.82, 0.82, 0, 0.41, 0, wood],
+        [0.86, 0.08, 0.86, 0, 0.12, 0, dark],
+        [0.86, 0.08, 0.86, 0, 0.7, 0, dark],
+        [0.08, 0.86, 0.86, 0, 0.41, 0, 0xd8c08a],
+        [0.86, 0.86, 0.08, 0, 0.41, 0, 0xd8c08a],
+      ],
+    },
+    { name: 'glint', parent: 'body', pivot: [0, 0, 0], glow: true, cubes: [[0.16, 0.06, 0.06, 0.2, 0.84, 0.2, 0xffe27a], [0.06, 0.06, 0.12, 0.3, 0.84, 0.24, 0xffe27a]] },
+  ];
+}
+
+/** Grande fleur jaune à cueillir (elle brille un peu pour qu'on la repère). */
+function goldFlowerModel(): ModelDef {
+  return [
+    { name: 'body', pivot: [0, 0, 0], cubes: [[0.06, 0.5, 0.06, 0, 0.25, 0, 0x3d7a34], [0.2, 0.06, 0.08, 0.1, 0.22, 0, 0x5aa04a]] },
+    {
+      name: 'head',
+      parent: 'body',
+      pivot: [0, 0.55, 0],
+      glow: true,
+      cubes: [
+        [0.34, 0.1, 0.12, 0, 0, 0, 0xffd23a],
+        [0.12, 0.1, 0.34, 0, 0, 0, 0xffd23a],
+        [0.14, 0.12, 0.14, 0, 0.02, 0, 0xc07a20],
+      ],
+    },
+  ];
+}
+
 // ---------- Maison du joueur ----------
 
 /** Lit d'une place : tête (oreiller) vers +Z. Origine au centre, au sol. */
@@ -885,5 +969,9 @@ export const MODELS = {
   trophyShelf: trophyShelfModel(),
   trophyRoiSlime: trophyRoiSlimeModel(),
   rivet: houseGolemModel(),
+  chicken: chickenModel(),
+  basket: basketModel(),
+  keyCrate: keyCrateModel(),
+  goldFlower: goldFlowerModel(),
 } as const satisfies Record<string, ModelDef>;
 export type ModelId = keyof typeof MODELS;

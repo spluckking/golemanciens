@@ -12,6 +12,7 @@ import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { BiomeLayout } from '../world/prairie';
 import type { GameState } from './gameState';
 import { HomeLife } from './home';
+import { QuestLife } from './questLife';
 import { SanctuaryLife, type SanctuaryHooks } from './sanctuaryLife';
 import type { Interactions } from './interactions';
 import type { SolidFn } from './physics';
@@ -88,6 +89,7 @@ export class BiomeLife {
   readonly sim: WorldSim;
   readonly home: HomeLife;
   readonly sanctuary: SanctuaryLife;
+  readonly quests: QuestLife;
   private readonly golemViews = new Map<GolemAgent, CreatureView>();
   private readonly monsterViews = new Map<MonsterAgent, CreatureView>();
   private readonly npcs: Npc[] = [];
@@ -146,6 +148,15 @@ export class BiomeLife {
       burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
     });
 
+    // Quêtes du village : poules, panier, camp des slimes, clé, fleurs.
+    this.quests = new QuestLife(layout, this.group, state, interactions, () => this.sim.monsters.filter((m) => m.campId === 'slimes'), {
+      dialog: hooks.dialog,
+      toast: hooks.toast,
+      labels: hooks.labels,
+      burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
+      gainFood: (amount, x, y, z) => this.gainFood(amount, x, y, z),
+    });
+
     // PNJ : Lumibloc devant la maison du joueur et les villageois.
     const npcSpots = [{ id: 'lumibloc', ...layout.lumibloc }, ...layout.village.npcs];
     for (const n of npcSpots) {
@@ -161,6 +172,8 @@ export class BiomeLife {
         label: 'Parler',
         action: () => {
           this.dialogNpc = npc;
+          // Les villageois parlent d'abord de leurs quêtes, sinon ils saluent.
+          if (this.quests.talk(n.id)) return;
           hooks.dialog.show(greeting(n.id), () => (this.dialogNpc = null));
         },
       });
@@ -243,6 +256,8 @@ export class BiomeLife {
     };
     if (this.sim.hasAwakeGolem()) for (const m of this.sim.monsters) if (m.mode !== 'dead') consider(m.body.x, m.body.y + 0.5, m.body.z);
     for (const c of this.crates) if (!c.broken) consider(c.x, c.y + 0.4, c.z);
+    const quest = this.quests.aimTarget();
+    if (quest) consider(quest.x, quest.y, quest.z);
     return best;
   }
 
@@ -257,6 +272,7 @@ export class BiomeLife {
         }
       }
     }
+    if (this.quests.hitTest(x, y, z)) return true;
     for (const c of this.crates) {
       if (c.broken) continue;
       if (Math.hypot(c.x - x, c.z - z) < 0.65 && y > c.y - 0.2 && y < c.y + 1.0) {
@@ -306,6 +322,7 @@ export class BiomeLife {
       this.updateLanterns(hero);
       this.updateTutorials(hero);
       this.home.update(dt, hero);
+      this.quests.update(dt, hero, controllable);
       if (this.dialogNpc && Math.hypot(this.dialogNpc.x - hero.x, this.dialogNpc.z - hero.z) > 6) this.hooks.dialog.close();
     }
     this.render(dt, hero, camera);
@@ -479,6 +496,7 @@ export class BiomeLife {
     npcs: { id: string; x: number; z: number }[];
     home: ReturnType<HomeLife['snapshot']>;
     sanctuary: ReturnType<SanctuaryLife['snapshot']>;
+    quests: ReturnType<QuestLife['snapshot']>;
   } {
     return {
       monsters: this.sim.monsters.map((m) => ({ id: m.id, species: m.species, mode: m.mode, hp: m.hp, x: m.body.x, z: m.body.z })),
@@ -488,6 +506,7 @@ export class BiomeLife {
       npcs: this.npcs.map((n) => ({ id: n.id, x: n.x, z: n.z })),
       home: this.home.snapshot(),
       sanctuary: this.sanctuary.snapshot(),
+      quests: this.quests.snapshot(),
     };
   }
 }

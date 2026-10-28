@@ -79,7 +79,7 @@ test('sanctuaire S1 : pierre-énigme, dalles fleuries, éclosion et choix du gol
 
   // Le journal passe à l'objectif suivant.
   await page.getByTestId('btn-journal').tap();
-  await expect(page.getByTestId('journal')).toContainText('Retourner au village de Ferme-des-Blocs');
+  await expect(page.getByTestId('journal')).toContainText('Mère Brique a besoin d’aide');
   await page.getByTestId('journal-close').tap();
   expect(errors).toEqual([]);
 });

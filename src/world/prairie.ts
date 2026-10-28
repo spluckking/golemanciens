@@ -43,6 +43,8 @@ export interface BiomeLayout {
   camps: Camp[];
   crates: { id: string; x: number; y: number; z: number }[];
   lanterns: { id: string; x: number; y: number; z: number }[];
+  /** Emplacements des objets des quêtes du village (sur l'herbe, dégagés). */
+  questSpots: { chickens: Point2[]; keyCrate: Point2; flowers: Point2[] };
 }
 
 export interface Camp {
@@ -272,6 +274,31 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
   }
   crateSpots.forEach((c, i) => crates.push({ id: `crate-${i}`, x: c.x + 0.5, y: world.surfaceY(c.x, c.z), z: c.z + 0.5 }));
 
+  // Objets de quêtes : la case d'herbe libre la plus proche de chaque point voulu.
+  const taken: Point2[] = [];
+  const clearSpot = (wx: number, wz: number, ground: number[] = [Block.Grass]): Point2 => {
+    for (let r = 0; r < 12; r++)
+      for (let dz = -r; dz <= r; dz++)
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue;
+          const x = wx + dx;
+          const z = wz + dz;
+          const y = world.surfaceY(x, z);
+          if (!ground.includes(world.get(x, y - 1, z)) || world.get(x, y, z) !== Block.Air || world.get(x, y + 1, z) !== Block.Air) continue;
+          if (onPath[z * size + x] || taken.some((t) => Math.abs(t.x - x - 0.5) < 2 && Math.abs(t.z - z - 0.5) < 2)) continue;
+          if (crates.some((c) => Math.abs(c.x - x - 0.5) < 2 && Math.abs(c.z - z - 0.5) < 2)) continue;
+          const p = { x: x + 0.5, z: z + 0.5 };
+          taken.push(p);
+          return p;
+        }
+    throw new Error(`Pas de place libre près de (${wx}, ${wz})`);
+  };
+  const questSpots = {
+    chickens: [clearSpot(47, 74), clearSpot(53, 93), clearSpot(27, 104)],
+    keyCrate: clearSpot(94, 60, [Block.Grass, Block.Sand]),
+    flowers: [clearSpot(40, 66), clearSpot(46, 62), clearSpot(34, 62), clearSpot(52, 69), clearSpot(28, 68)],
+  };
+
   const at = (p: Point2): { x: number; y: number; z: number } => ({ x: p.x, y: world.surfaceY(Math.floor(p.x), Math.floor(p.z)), z: p.z });
   const lanterns = [
     { id: 'village', ...at(village.lantern) },
@@ -298,5 +325,6 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     camps,
     crates,
     lanterns,
+    questSpots,
   };
 }
