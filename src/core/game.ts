@@ -196,6 +196,8 @@ export class Game {
       this.teleport(spawn.x, spawn.z, spawnYaw);
     }
     const inWorld = mode !== 'cinematic';
+    // Le compteur de FPS (mode test) ne doit pas cacher les sous-titres.
+    this.debug?.root.classList.toggle('hidden', !inWorld);
     for (const obj of [this.heroModel.root, this.shadow, this.life.group]) obj.visible = inWorld;
     if (!playing) this.dialog.close();
     this.input.stickX = this.input.stickY = 0;
