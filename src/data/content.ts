@@ -8,9 +8,9 @@ export const CONTENT: Content = {
       "id": "T1",
       "title": "Prairie de Cubeterre",
       "paragraphs": [
-        "C'est la rentrée à l'Académie des Golémanciens, une grande école de magie construite en blocs, tout en haut d'une colline de Cubeterre. {prenom} entre en première année. Son professeur s'appelle Lumibloc. Il a une longue barbe blanche et un chapeau pointu couleur ciel.",
-        "Le premier soir, un bruit terrible réveille toute l'école. Dans le ciel noir, un immense dragon frappe la Pierre-Étoile, le cristal magique qui protège le monde. La pierre se brise en cinq éclats qui s'envolent dans toutes les directions.",
-        "« Sans la Pierre-Étoile, les golems se sont endormis et sont redevenus des œufs, explique Lumibloc. Les monstres vont sortir de partout. Il faut trouver l'œuf caché dans le sanctuaire de la Prairie. Tu es prêt ? »"
+        "C'est la rentrée à l'Académie des Golémanciens, une grande école de magie construite en blocs, tout en haut d'une colline de Cubeterre. {prenom} entre en première année. Son professeur s'appelle Lumibloc. Il a une longue barbe blanche et un chapeau pointu couleur ciel. Chaque soir, {prenom} rentre dormir dans sa petite maison, au village de Ferme-des-Blocs.",
+        "Le premier soir, un bruit terrible le réveille. Dans le ciel noir, un immense dragon frappe la Pierre-Étoile, le cristal magique qui protège le monde. La pierre se brise en cinq éclats qui s'envolent dans toutes les directions.",
+        "Le lendemain matin, Lumibloc frappe à sa porte. « Sans la Pierre-Étoile, les golems se sont endormis et sont redevenus des œufs, explique Lumibloc. Les monstres vont sortir de partout. Il faut trouver l'œuf caché dans le sanctuaire de la Prairie. Tu es prêt ? »"
       ],
       "questions": [
         {
@@ -68,7 +68,7 @@ export const CONTENT: Content = {
           "answer": 0
         },
         {
-          "text": "Quand le bruit terrible réveille-t-il l'école ?",
+          "text": "Quand le bruit terrible réveille-t-il {prenom} ?",
           "choices": [
             "Le premier soir",
             "Le dernier jour",
@@ -1269,7 +1269,7 @@ export const CONTENT: Content = {
     "tutorialCrate": "Une caisse ! Appuie sur le bouton bâton pour la casser. Parfois, il y a des pommes dedans.",
     "hatching": "L'œuf hésite… Il peut devenir deux golems différents. À toi de choisir !",
     "firstArena": "Ici, pour attaquer, il faut réfléchir ! 🔢, c'est un calcul. 🧩, c'est une énigme. Prends ton temps, il n'y a pas de chrono.",
-    "weakness": "Regarde l'icône au-dessus du monstre : c'est sa faiblesse. Une attaque de ce type fait double dégât !",
+    "weakness": "Regarde l'icône au-dessus du monstre : c'est sa faiblesse. Une attaque avec la même icône fait plus de dégâts !",
     "combatMistake": "Pas grave ! Regarde la bonne réponse, tu feras mieux au prochain coup.",
     "defeat": "Tes golems ont besoin de souffler. On réessaie ensemble ?",
     "firstEvolutionItem": "Une Rune d'éveil ! Va dans l'écran Golems pour la donner à l'un de tes golems.",

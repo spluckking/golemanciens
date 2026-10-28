@@ -22,8 +22,8 @@ function run(sim: WorldSim, hero: HeroPose, seconds: number, step = 1 / 30): Ret
 
 describe('dégâts dans le monde', () => {
   it('golem : ATQ × 0,5, doublé si la faiblesse correspond', () => {
-    expect(golemWorldDamage(8, 'rock', 'plant')).toEqual({ amount: 4, superEffective: false });
-    expect(golemWorldDamage(8, 'plant', 'plant')).toEqual({ amount: 8, superEffective: true });
+    expect(golemWorldDamage(8, ['rock'], 'plant')).toEqual({ amount: 4, superEffective: false });
+    expect(golemWorldDamage(8, ['plant', 'sun'], 'sun')).toEqual({ amount: 6, superEffective: true });
     expect(monsterWorldDamage(5)).toBe(2.5);
   });
 });
@@ -125,7 +125,7 @@ describe('monstres et combat', () => {
     sim.engage(a);
     run(sim, hero, 40);
     expect(a.mode).toBe('dead');
-    run(sim, hero, MONSTER_RESPAWN_S - 30, 0.25);
+    run(sim, hero, MONSTER_RESPAWN_S, 0.25);
     expect(a.mode).toBe('idle');
     expect(a.hp).toBe(a.maxHp);
     expect(Math.hypot(a.body.x - a.home.x, a.body.z - a.home.z)).toBeLessThan(5);

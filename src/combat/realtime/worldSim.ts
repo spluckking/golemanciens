@@ -12,10 +12,10 @@ import {
   WORLD_DAMAGE_FACTOR,
   WORLD_GOLEM_ATTACK_INTERVAL_S,
   WORLD_MONSTER_ATTACK_INTERVAL_S,
-  WORLD_WEAKNESS_MULTIPLIER,
+  WEAKNESS_MULTIPLIER,
   monsterStats,
 } from '../../data/balance';
-import { GOLEMS, MONSTERS, type Element, type MonsterSpecies } from '../../data/creatures';
+import { MONSTERS, unlockedAttacks, type AttackType, type MonsterSpecies } from '../../data/creatures';
 
 /**
  * Simulation du monde (sans rendu) : golems qui suivent le héros, monstres neutres,
@@ -44,7 +44,8 @@ export interface Agent {
 
 export interface GolemAgent extends Agent {
   data: GolemData;
-  element: Element;
+  /** Types de ses attaques débloquées : il utilise tout seul la plus efficace. */
+  types: AttackType[];
   slot: number;
   ko: boolean;
   sleepTimer: number;
@@ -65,7 +66,7 @@ export interface MonsterAgent extends Agent {
   hp: number;
   maxHp: number;
   atk: number;
-  weakness: Element;
+  weakness: AttackType;
   mode: MonsterMode;
   target: GolemAgent | null;
   attackTimer: number;
@@ -97,10 +98,10 @@ export interface HeroPose {
   facing: number;
 }
 
-/** Dégâts d'un golem dans le monde : ATQ × 0,5, doublés si la faiblesse correspond. */
-export function golemWorldDamage(atk: number, element: Element, weakness: Element): { amount: number; superEffective: boolean } {
-  const superEffective = element === weakness;
-  return { amount: atk * WORLD_DAMAGE_FACTOR * (superEffective ? WORLD_WEAKNESS_MULTIPLIER : 1), superEffective };
+/** Dégâts d'un golem dans le monde : ATQ × 0,5, ×1,5 si l'une de ses attaques a le type de la faiblesse. */
+export function golemWorldDamage(atk: number, types: readonly AttackType[], weakness: AttackType): { amount: number; superEffective: boolean } {
+  const superEffective = types.includes(weakness);
+  return { amount: atk * WORLD_DAMAGE_FACTOR * (superEffective ? WEAKNESS_MULTIPLIER : 1), superEffective };
 }
 
 export function monsterWorldDamage(atk: number): number {
@@ -137,7 +138,7 @@ export class WorldSim {
   addGolem(data: GolemData, x: number, y: number, z: number): GolemAgent {
     const g: GolemAgent = {
       data,
-      element: GOLEMS[data.species].element,
+      types: unlockedAttacks(data.species, data.stage).map((a) => a.type),
       slot: this.golems.length,
       body: { x, y, z, vy: 0, onGround: false },
       facing: 0,
@@ -301,7 +302,7 @@ export class WorldSim {
       g.attackTimer -= dt;
       if (d <= GOLEM_RANGE && g.attackTimer <= 0) {
         g.attackTimer = WORLD_GOLEM_ATTACK_INTERVAL_S;
-        const { amount, superEffective } = golemWorldDamage(g.data.atk, g.element, t.weakness);
+        const { amount, superEffective } = golemWorldDamage(g.data.atk, g.types, t.weakness);
         t.hp -= amount;
         t.chaseTimer = 0;
         events.push({ type: 'damage', target: 'monster', amount, superEffective, x: t.body.x, y: t.body.y + 1.1, z: t.body.z });

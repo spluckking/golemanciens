@@ -37,7 +37,7 @@ export function monsterStats(phase: number): { hp: number; atk: number } {
 export const WORLD_GOLEM_ATTACK_INTERVAL_S = 1.5;
 export const WORLD_MONSTER_ATTACK_INTERVAL_S = 2;
 export const WORLD_DAMAGE_FACTOR = 0.5;
-export const WORLD_WEAKNESS_MULTIPLIER = 2;
+
 export const REGEN_DELAY_S = 4;
 export const REGEN_PER_S = 0.02;
 export const KO_SLEEP_S = 20;
@@ -52,3 +52,34 @@ export const MONSTER_RESPAWN_S = 180;
 export const FOOD_CRATE_CHANCE = 0.5;
 export const FOOD_CRATE = 1;
 export const FOOD_CHEST = 3;
+
+/** Faiblesses (révision 1.4) : bonus quand le type de l'attaque est la faiblesse de la cible. */
+export const WEAKNESS_MULTIPLIER = 1.5;
+/** Arc-en-ciel : bonus permanent sur toutes ses attaques (§ 7.1). */
+export const ALL_ROUND_MULTIPLIER = 1.25;
+
+/** Combat au tour par tour (§ 7.1). */
+export const ATTACK_POWER: Record<AttackSlot, number> = { a1: 1, a2: 1.2, a3: 1, ultimate: 2.5 };
+export const GOLEM_DAMAGE_VARIANCE = 0.1;
+export const MONSTER_DAMAGE_MIN = 0.8;
+export const MONSTER_DAMAGE_MAX = 1.2;
+export const MONSTER_MISS_CHANCE = 0.15;
+export const BLIND_MISS_CHANCE = 0.5;
+export const SLEEP_MIN_TURNS = 1;
+export const SLEEP_MAX_TURNS = 2;
+export const SHIELD_DAMAGE_TAKEN = 0.5;
+export const SHIELD_REFLECT = 0.5;
+/** Coefficient des dégâts des monstres au tour par tour (réglé par la simulation, § 15). */
+export const ARENA_MONSTER_DAMAGE_FACTOR = 1.6;
+export const BOSS_DAMAGE_FACTOR = 0.5;
+
+/** Boss et dragon (§ 5.3) : PV par étape et ATQ, à partir d'un monstre de leur phase (boss : 2,5 → 2,25, révision 1.4). */
+export const BOSS_HP_FACTOR = 2.25;
+export const BOSS_ATK_FACTOR = 1.3;
+export const DRAGON_HP_FACTOR = 3;
+
+export function bossStats(phase: number): { hp: number; atk: number } {
+  const m = monsterStats(phase);
+  const hpFactor = phase >= 6 ? DRAGON_HP_FACTOR : BOSS_HP_FACTOR;
+  return { hp: Math.round(m.hp * hpFactor), atk: m.atk * BOSS_ATK_FACTOR };
+}

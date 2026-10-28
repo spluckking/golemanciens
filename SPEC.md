@@ -32,12 +32,12 @@
 
 ### 1.2 Déroulé d'une phase (chapitres 1 à 5)
 
-1. **Texte d'introduction et questions de lecture**, en boucle jusqu'à réussite (§ 9.1).
+1. **Cinématique d'introduction et questions de lecture**, en boucle jusqu'à réussite (§ 9.1 et § 9.4).
 2. **Quête de l'œuf** : un sanctuaire fermé par des énigmes de difficulté progressive (§ 10.1). L'œuf éclot, puis le joueur **choisit** l'un des 2 golems de la phase.
 3. **Quêtes villageoises** : 3 quêtes obligatoires qui rapportent de la nourriture. Quand elles sont toutes faites, l'**arène du biome** s'ouvre. 2 quêtes facultatives restent disponibles.
 4. **Arène** : 3 combats au tour par tour en **N contre N**, où N est le nombre de golems possédés. Quand les 3 sont gagnés, l'arène est « terminée ».
 5. **Quête du boss** (débloquée après l'arène), puis **combat contre le boss**. Le boss donne l'éclat de Pierre-Étoile et l'objet d'évolution « boss » de la phase.
-6. **Outro** : un court texte de 40 à 60 mots avec une animation de l'éclat. Il n'y a pas de questions sur l'outro. La phase suivante est alors débloquée.
+6. **Outro** : une courte cinématique qui raconte un texte de 40 à 60 mots, avec l'éclat qui rejoint l'Académie. Il n'y a pas de questions sur l'outro. Un trophée du boss apparaît dans la maison du joueur (§ 18). La phase suivante est alors débloquée.
 
 L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à tout moment dans le biome.
 
@@ -62,7 +62,8 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
   - 3 ou 4 camps de monstres, avec un coffre de nourriture chacun ;
   - une vingtaine de caisses à casser (nourriture en petite quantité, parfois rien) ;
   - l'objet d'évolution caché (phases 2 à 4), placé dans un endroit secret mais trouvable ;
-  - des points de sauvegarde visibles (lanternes) au village, au sanctuaire et devant le repaire.
+  - des points de sauvegarde visibles (lanternes) au village, au sanctuaire et devant le repaire ;
+  - dans la Prairie seulement : la **maison du joueur**, au village de Ferme-des-Blocs (§ 18).
 - **Ambiance par biome** : palette de couleurs, ciel, brouillard léger et musique propres à chaque biome.
   - **Prairie** : vert tendre, fleurs, ferme, rivière.
   - **Forêt** : très grands arbres, lumière filtrée, cabanes perchées reliées par des passerelles.
@@ -96,8 +97,8 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 
 | Phase | Golem | Élément | Attaques (A1 / A2 / A3 / Ultime) |
 |---|---|---|---|
-| 1 | **Pierre** | 🪨 Roche | Coup de poing (F) / Séisme (M) / Rocher roulant (F, Étourdi) / **Avalanche** (M) |
-| 1 | **Mousse** | 🌿 Plante | Fouet de lianes (F) / Pluie de pollen (M) / Liane-piège (F, Étourdi) / **Jardin géant** (M) |
+| 1 | **Pierre** | 🪨 Roche | Coup de poing (F) / Galets brûlants (M, ☀️) / Rocher roulant (F, Étourdi) / **Avalanche** (M) |
+| 1 | **Mousse** | 🌿 Plante | Fouet de lianes (F) / Tournesol brûlant (M, ☀️) / Liane-piège (F, Étourdi) / **Jardin géant** (M) |
 | 2 | **Écorce** | 🌿 Plante | Coup de branche (F) / Pluie de feuilles (M) / Racines (F, Étourdi) / **Forêt vivante** (M) |
 | 2 | **Champignon** | 🍄 Spore | Coup de chapeau (F) / Nuage de spores (M) / Spores dodo (M, Endormi) / **Champignon géant** (F) |
 | 3 | **Sable** | 🏜️ Sable | Poing de sable (F) / Tourbillon (M) / Tempête aveuglante (M, Aveuglé) / **Dune géante** (F) |
@@ -109,6 +110,8 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 | Évol. | **Galaxie** | ✨ Étoile | Étoile filante (F) / Pluie de météores (M) / Trou noir (M, Étourdi) / **Supernova** (F) |
 
 - **F = Force**, l'attaque déclenche une **question de calcul**. **M = Magie**, elle déclenche une **énigme**.
+- **Type d'attaque** (révision 1.4) : chaque attaque a un **type**, affiché par une icône sur son bouton. C'est l'élément du golem, sauf quand le tableau indique un autre type (par exemple ☀️ Soleil). **La faiblesse d'un monstre se compare au type de l'attaque**, pas au golem.
+- **Règle de conception** : chacun des 2 golems d'une phase a, dès l'éclosion (A1 ou A2), une attaque dont le type est la faiblesse du boss de cette phase. Les types et les éventuels nouveaux noms d'A2 des phases 2 à 5 sont fixés au jalon de chaque phase.
 - **Modèles** : chaque golem est un assemblage de cubes d'environ 1,5 à 2 blocs de haut au stade 1, avec une silhouette et une couleur bien distinctes et une animation de marche (balancement des bras et jambes). Chaque stade le rend **plus grand** et ajoute des détails : runes lumineuses au stade 2, éléments de son type au stade 3 (cristaux, branches, éclairs…), aura au stade 4. Le Galaxie est bleu nuit avec des points d'étoiles scintillants.
 
 ### 4.2 Obtention et équipe
@@ -122,9 +125,11 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 
 | Objet | Où | Effet |
 |---|---|---|
-| **Rune d'éveil** (×2, phase 2) | 1 caché dans le biome, 1 donné par le boss | Stade 1 → 2 : PV ×1,35, ATQ ×1,35, attaque **A2** débloquée |
-| **Cristal de puissance** (×2, phase 3) | idem | Stade 2 → 3 : ×1,35, attaque **A3** (avec effet) débloquée |
-| **Cœur ancestral** (×2, phase 4) | idem | Stade 3 → 4 : ×1,35, **Ultime** débloquée (1 fois par combat) |
+| **Rune d'éveil** (×2, phase 2) | 1 caché dans le biome, 1 donné par le boss | Stade 1 → 2 : PV ×1,35, ATQ ×1,35, attaque **A3** (avec effet) débloquée |
+| **Cristal de puissance** (×2, phase 3) | idem | Stade 2 → 3 : ×1,35, **Ultime** débloquée (1 fois par combat) |
+| **Cœur ancestral** (×2, phase 4) | idem | Stade 3 → 4 : ×1,35 et aura |
+
+- **Au stade 1**, un golem a déjà **A1 et A2** (révision 1.4).
 | **Poussière d'étoile** (×1, fin de phase 5) | Formée par les 5 éclats réunis | Un seul golem au **stade 4**, choisi par le joueur, devient **Galaxie** : ×1,4, nouveau modèle, toutes ses attaques deviennent ✨ Étoile |
 
 - Un objet ne s'applique qu'à un golem du **bon stade**. L'interface grise les autres.
@@ -153,7 +158,7 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 
 | Phase | Monstre | Faible contre | Look (cubes, original) |
 |---|---|---|---|
-| 1 | Slime | 🌿 | Cube gélatineux vert qui rebondit |
+| 1 | Slime | ☀️ | Cube gélatineux vert qui rebondit |
 | 1 | Zombie | 🪨 | Silhouette verdâtre aux bras tendus, vêtements déchirés |
 | 1 | Araignée | 🌿 | Corps brun, 8 pattes, yeux rouges |
 | 2 | Squelette archer | 🪨 | Os blancs, arc |
@@ -173,7 +178,7 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 
 | Boss | Faible contre | Étapes |
 |---|---|---|
-| Roi Slime | 🪨 | 2 : à l'étape 2, il se divise visuellement et ses attaques deviennent « Pluie de gouttes » |
+| Roi Slime | ☀️ | 2 : à l'étape 2, il se divise visuellement et ses attaques deviennent « Pluie de gouttes » |
 | Reine Araignée | 🍄 | 2 : à l'étape 2, « Toile », qui étourdit un tour |
 | Grand Ver des Sables | ⚡ | 2 : à l'étape 2, il plonge sous le sable, puis « Surgissement » |
 | Sorcière du Blizzard | 💎 | 2 : à l'étape 2, « Tempête », qui aveugle |
@@ -190,7 +195,7 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 ### 5.3 Stats des monstres (phase p)
 
 - **PV** = 24 + 14 × (p − 1) ; **ATQ** = 5 + 2 × (p − 1).
-- **Boss** : PV par étape = 2,5 × les PV d'un monstre de sa phase, et ATQ × 1,3.
+- **Boss** : PV par étape = 2,25 × les PV d'un monstre de sa phase, et ATQ × 1,3. (Révision 1.4 : 2,5 → 2,25 ; au tour par tour, le boss frappe avec un coefficient 0,5 et les monstres d'arène avec 1,6, réglés par la simulation.)
 - **Dragon** (p = 6) : PV par étape = 3 × les PV d'un monstre de la phase 6, et ATQ × 1,3.
 
 ---
@@ -198,7 +203,7 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 ## 6. Combat dans le monde (temps réel)
 
 - Le héros lance une étincelle sur un monstre : le groupe entier est engagé.
-- Les golems choisissent automatiquement une cible (de préférence celle du héros) et attaquent au corps à corps toutes les 1,5 s, pour `ATQ × 0,5` de dégâts (×2 si la faiblesse correspond).
+- Les golems choisissent automatiquement une cible (de préférence celle du héros) et attaquent au corps à corps toutes les 1,5 s, pour `ATQ × 0,5` de dégâts. Chaque golem utilise tout seul son attaque débloquée la plus efficace : ×1,5 si son type est la faiblesse de la cible.
 - Les monstres attaquent les golems toutes les 2 s, pour `ATQ × 0,5`.
 - **Pas de questions** dans le monde : le combat doit rester rapide (10 à 20 s pour un groupe à niveau égal).
 - Les dégâts s'affichent en chiffres flottants, et une petite barre de PV apparaît au-dessus des entités engagées.
@@ -216,10 +221,10 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 - **Toute attaque déclenche une question** (§ 8) :
   - bonne réponse : l'attaque touche ;
   - mauvaise réponse : l'attaque **rate**, la bonne réponse est surlignée en vert et **l'explication d'une ligne** s'affiche, puis bouton « J'ai compris ».
-- **Dégâts** : `ATQ × puissance × (2 si faiblesse)`, avec une variation de ±10 %. Puissance : A1 = 1,0, A2 = 1,2, A3 = 1,0 + effet, Ultime = 2,5.
-  - L'**Arc-en-ciel** fait toujours ×1,5, et ×2 si la faiblesse est 🌈.
+- **Dégâts** : `ATQ × puissance × (1,5 si le type de l'attaque est la faiblesse)`, avec une variation de ±10 %. Puissance : A1 = 1,0, A2 = 1,2, A3 = 1,0 + effet, Ultime = 2,5. (Révision 1.4 : le bonus passe de ×2 à ×1,5, réglé dans `balance.ts`.)
+  - L'**Arc-en-ciel** fait toujours ×1,25, et ×1,5 si la faiblesse est 🌈.
   - Une faiblesse touchée affiche « Super efficace ! ».
-- **Attaque d'un monstre** : `ATQ × (0,8 à 1,2)`. Elle a 15 % de chances de rater (50 % s'il est Aveuglé).
+- **Attaque d'un monstre** : `ATQ × coefficient × (0,8 à 1,2)`. Le coefficient (monstre d'arène, boss) est réglé dans `balance.ts` par la simulation pour tenir les objectifs du § 15. Elle a 15 % de chances de rater (50 % s'il est Aveuglé).
 - **Effets** (durée d'un tour adverse, sauf indication) :
   - **Étourdi** : passe son tour.
   - **Endormi** : passe 1 ou 2 tours, mais se réveille s'il est touché.
@@ -229,6 +234,7 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 - **Fin** : quand toute une équipe est K.O.
   - Victoire : récompense, et à l'arène, soin complet.
   - Défaite : message encourageant, aucune perte. À l'arène, soin complet. Contre un boss, on peut réessayer tout de suite.
+- **Leçon des faiblesses** (révision 1.4, à la **première défaite** seulement, arène ou boss) : Lumibloc explique en 2 ou 3 bulles comment lire l'icône de faiblesse et choisir l'attaque du même type. Puis un **QCM de 3 questions**, construites à partir des monstres de la phase et des golems du joueur (« Le Roi Slime est faible contre ☀️. Quelle attaque choisis-tu ? »). Il faut tout réussir pour continuer : en cas d'erreur, la bonne réponse est montrée en vert avec l'explication, et la question revient à la fin. Pas de chrono.
 
 ### 7.2 Interface au tour par tour
 
@@ -236,6 +242,7 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 - **En bas à gauche** : le golem actif, sa barre de PV et ses effets.
 - **En bas à droite** : de 1 à 4 gros boutons d'attaque. Chacun affiche une icône, le nom de l'attaque et un badge 🔢 (calcul) ou 🧩 (énigme). Il y a aussi un bouton « Changer » qui montre les mini-portraits des golems avec leurs PV.
 - **Indicateur d'équipe** : des pastilles pour les golems et monstres restants.
+- **Bouton 📒 « Faiblesses »** (révision 1.4, après la leçon) : une fiche avec la faiblesse du monstre actif et les attaques des golems, les plus efficaces mises en évidence.
 - Les attaques ont des animations courtes (moins de 1,5 s), chacune avec des particules en cubes de la couleur de l'élément.
 
 ---
@@ -279,22 +286,30 @@ Une même boîte de dialogue sert à tout : grande carte centrale, texte en au m
 
 ### 9.1 Boucle de lecture (chaque début de chapitre)
 
-1. Le texte s'affiche en plein écran, façon parchemin, en au moins 24 px avec un interligne de 1,5, et `{prenom}` est remplacé par le prénom. Pas de synthèse vocale sur ce texte.
-2. Le bouton « J'ai lu ! » ne s'active qu'après **20 s**, pour éviter de passer sans lire.
+1. **La première fois**, le texte est raconté par une **cinématique** (§ 9.4) : chaque phrase s'affiche en sous-titre, en au moins 24 px, pendant le plan qui l'illustre, et `{prenom}` est remplacé par le prénom. Pas de synthèse vocale sur ce texte.
+2. Chaque plan reste à l'écran jusqu'à ce que l'enfant touche ▶ ; le bouton n'apparaît qu'après un court temps de lecture, proportionnel à la longueur de la phrase. (Révision 1.4 : remplace l'attente de 20 s du parchemin.)
 3. **2 questions** (QCM à 3 choix) sont tirées dans la banque de 8 du texte.
 4. **Avec 2 bonnes réponses**, des confettis apparaissent et le jeu continue.
-5. **Avec au moins une erreur**, le message « Relis bien le texte, la réponse s'y cache ! » s'affiche, **sans révéler la bonne réponse**. Le joueur revient au texte (bouton actif après 10 s), puis reçoit **2 nouvelles questions** jamais posées dans ce cycle. Si la banque est épuisée, on recommence en excluant les 2 dernières. La boucle continue jusqu'à réussite.
+5. **Avec au moins une erreur**, le message « Relis bien le texte, la réponse s'y cache ! » s'affiche, **sans révéler la bonne réponse**. La cinématique **n'est pas rejouée** : le texte entier s'affiche en une seule bulle, façon parchemin, en au moins 24 px avec un interligne de 1,5 (bouton « J'ai lu ! » actif après 10 s), puis reçoit **2 nouvelles questions** jamais posées dans ce cycle. Si la banque est épuisée, on recommence en excluant les 2 dernières. La boucle continue jusqu'à réussite.
 6. Les statistiques sont enregistrées pour le menu parent : nombre de lectures et taux de réussite par texte.
 
 ### 9.2 Outros
 
-Un court texte de fin de phase, avec une animation de l'éclat qui rejoint la Pierre-Étoile au-dessus de l'Académie. Pas de questions.
+Un court texte de fin de phase, raconté par une cinématique (§ 9.4), avec l'éclat qui rejoint la Pierre-Étoile au-dessus de l'Académie. Pas de questions.
 
 ### 9.3 Dialogues
 
 - Les dialogues sont des bulles courtes, de 1 ou 2 phrases, avec un portrait en cubes.
 - Un bouton 🔊 lit le dialogue avec la **Web Speech API** en `fr-FR`. Il est masqué si aucune voix française n'est disponible.
 - Les personnages récurrents sont le **professeur Lumibloc** (mentor) et un chef par village.
+
+### 9.4 Cinématiques (révision 1.4)
+
+- Chaque texte d'histoire (T1 à T6) et chaque outro (O1 à O6) est raconté par une cinématique **jouée dans le moteur** : petits décors en blocs construits pour elle, modèles en cubes, caméra scénarisée, effets en particules. Aucun fichier vidéo.
+- Le texte est **mot pour mot** celui de `CONTENU.md`, découpé en plans de 1 à 3 phrases. Seule la mise en scène est nouvelle.
+- La première fois, on ne peut pas passer une cinématique de texte d'histoire, puisque c'est l'exercice de lecture. Le Journal propose « Revoir l'histoire » pour rejouer celles déjà vues, et là on peut les passer.
+- **Ordre de réalisation** : intro T1 et outro O1 (jalon 1), outro finale O6 (fin du jalon 1), puis les intros et outros de chaque phase dans le jalon de leur biome.
+- Le mode test permet de passer les cinématiques.
 
 ---
 
@@ -325,7 +340,7 @@ Elle est donnée par le chef du village une fois l'arène terminée. C'est un pe
 
 ## 11. Interface et expérience de jeu
 
-- **Premier lancement** : écran titre (logo en blocs « Les Golémanciens de Cubeterre »), saisie du prénom, puis texte 1. Le tutoriel est intégré au chapitre 1, avec des bulles de Lumibloc : se déplacer, regarder, casser une caisse, parler.
+- **Premier lancement** : écran titre (logo en blocs « Les Golémanciens de Cubeterre »), saisie du prénom, puis cinématique et questions du texte 1. Le jeu commence ensuite **dans la maison du joueur**, avec Lumibloc devant la porte. Le tutoriel est intégré au chapitre 1, avec des bulles de Lumibloc : se déplacer, regarder, casser une caisse, parler.
 - **Écran Golems** : liste des golems, avec stats, stade, attaques, bouton Repas (🍎) et utilisation des objets d'évolution.
 - **Encyclopédie** : les 10 golems (ceux qui n'ont pas été choisis restent en silhouette), les 15 monstres et les 5 boss, à mesure qu'on les rencontre.
 - **Journal** : quêtes en cours et terminées, avec l'objectif actif mis en évidence.
@@ -377,7 +392,7 @@ Elle est donnée par le chef du village une fois l'arène terminée. C'est un pe
 
 ## 16. Hors périmètre
 
-Pas de construction ni de minage (on ne fait que casser des caisses), pas de multijoueur, pas de réseau en jeu, pas de compte, pas d'achats, pas de pub, pas de télémétrie, pas d'œuf légendaire et pas de créatures autres que celles listées.
+Pas de construction ni de minage (on ne fait que casser des caisses), pas de multijoueur, pas de réseau en jeu, pas de compte, pas d'achats, pas de pub, pas de télémétrie, pas d'œuf légendaire et pas de créatures autres que celles listées (le golem de maison du § 18 en fait partie).
 
 ---
 
@@ -393,3 +408,13 @@ Pas de construction ni de minage (on ne fait que casser des caisses), pas de mul
 8. Le menu parent est complet.
 9. Tous les tests passent : unitaires, contenu, simulation d'équilibrage, et parcours bout en bout du chapitre 1.
 10. Aucun nom ni élément de licence existante n'est présent.
+
+---
+
+## 18. Maison du joueur (révision 1.4)
+
+- **Où** : au village de Ferme-des-Blocs, dans la Prairie. C'est là que le jeu commence, après la cinématique et les questions du texte 1.
+- **Le lit** (« Dormir ») : soigne les golems, devient le point de retour (comme une lanterne) et **enregistre la partie**. La sauvegarde automatique (§ 13) continue à côté.
+- **L'étagère à trophées** : après chaque phase, une statuette dorée du boss vaincu y apparaît. En s'approchant, on lit son nom.
+- **Elle évolue à chaque phase** : une extension dans le style du biome terminé (balcon de bois, terrasse de sable, cheminée et tapis de laine, fenêtre-nuage…). Chaque jalon construit la version de sa phase.
+- **Le golem de maison** : un petit golem original, couleur cuivre, qui reste dans la maison, fait le ménage et salue le joueur. Il ne combat pas et ne suit pas le héros. Son nom et son modèle sont à valider par le parent.

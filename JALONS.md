@@ -29,8 +29,11 @@ Travaille en 5 sous-étapes. Fais un commit et un point d'étape à la fin de ch
     PNJ, dialogues avec bouton 🔊, journal, boussole.
 1.4 Quêtes : sanctuaire S1 (pierre-énigme + dalles fleuries, éclosion avec choix), 5 quêtes du village,
     arène du biome (combat au tour par tour N contre N avec questions, faiblesses), quête P1, boss Roi Slime (2 étapes), outro O1.
+    Révision 1.4 : types d'attaque et leçon des faiblesses, moteur de cinématiques (intro T1, outro O1),
+    maison du joueur au village (lit, étagère à trophées, golem de maison).
 1.5 Autour du jeu : sauvegarde IndexedDB auto + export/import, menu parent (stats, réglages, mode test, FPS),
     écran Golems avec Repas, encyclopédie, rappel de pause, audio (musique Prairie, arène, boss + SFX).
+1.6 Cinématique de l'outro finale O6 (décor de volcan dédié, dragon, médaille, générique), visible depuis le mode test.
 
 Critères d'acceptation du jalon 1 :
 - npm test, npm run build et l'E2E « chapitre 1 » passent.
