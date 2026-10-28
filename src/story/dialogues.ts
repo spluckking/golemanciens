@@ -13,6 +13,9 @@ export const NPC_NAMES: Record<string, string> = {
   paquerette: 'Pâquerette',
   gaston: 'Gaston',
   rivet: 'Rivet',
+  noisette: 'Sage Noisette',
+  pip: 'Pip',
+  tilleul: 'Tilleul',
 };
 
 const GREETINGS: Record<string, string> = {
@@ -21,6 +24,9 @@ const GREETINGS: Record<string, string> = {
   paquerette: 'Bonjour ! Mon pain sort tout juste du four.',
   gaston: 'Mon moulin tourne grâce au vent de la Prairie.',
   rivet: 'Bonjour, {prenom} ! J’ai balayé toute la maison.',
+  noisette: 'Bienvenue aux Cabanes des Cimes. Ici, les feuilles écoutent et le vent répond.',
+  pip: 'Tu as vu nos passerelles ? Je cours dessus plus vite que les écureuils !',
+  tilleul: 'Bonjour ! Je suis charpentier. Les ponts de la forêt, c’est moi.',
 };
 
 export function greeting(npcId: string): DialogLine {

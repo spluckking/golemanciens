@@ -472,6 +472,10 @@ export const VILLAGER_LOOKS: Record<string, VillagerLook> = {
   apprenticeRed: { skin: 0xf2c6a0, hair: 0xe0a040, hairStyle: 'long', hat: 'pointy', hatColor: 0xb03040, top: 0xb03040, bottom: 0x7a1e2a, shoes: 0x3a2a1e, outfit: 'robe', outfitColor: 0xf0c43c },
   apprenticeGreen: { skin: 0x9a6648, hair: 0x2a1a10, hairStyle: 'spiky', hat: 'none', hatColor: 0, top: 0x2f8a52, bottom: 0x1f5a36, shoes: 0x3a2a1e, outfit: 'robe', outfitColor: 0xf0c43c },
   apprenticeTeal: { skin: 0xe8b890, hair: 0x6a3e22, hairStyle: 'bun', hat: 'pointy', hatColor: 0x2a8a9a, top: 0x2a8a9a, bottom: 0x1c5a66, shoes: 0x3a2a1e, outfit: 'robe', outfitColor: 0xf0c43c },
+  // Forêt Murmurante : Sage Noisette (vieux sage à la robe de feuilles), Pip (petit garçon), Tilleul (charpentier).
+  noisette: { skin: 0xd8a882, hair: 0xe8e2d0, hairStyle: 'long', hat: 'kerchief', hatColor: 0x6a8a3a, top: 0x5a7a34, bottom: 0x3e5424, shoes: 0x4a3426, outfit: 'robe', outfitColor: 0xb08a4a, beard: 0xe8e2d0 },
+  pip: { skin: 0xf2c6a0, hair: 0xc0702a, hairStyle: 'spiky', hat: 'none', hatColor: 0, top: 0xe0a040, bottom: 0x5a4632, shoes: 0x3a2a1e, outfit: 'plain', outfitColor: 0 },
+  tilleul: { skin: 0xb07a52, hair: 0x2a1a10, hairStyle: 'short', hat: 'cap', hatColor: 0x8a5a2c, top: 0xc8b07a, bottom: 0x5a4632, shoes: 0x3a2a1e, outfit: 'apron', outfitColor: 0x8a5a2c },
 };
 
 // ---------- Dragon d'Ombre (finale) ----------
@@ -1067,6 +1071,9 @@ export const PORTRAITS: Record<string, PortraitColors> = {
   paquerette: { skin: 0xf6d2b0, hair: 0xf2d060, hat: 0xffffff, eye: EYE_DARK },
   gaston: { skin: 0xdcae88, hair: 0x8a8a8a, hat: 0x3e64a0, eye: EYE_DARK },
   rivet: { skin: 0xc8743c, hair: 0x8a4a24, hat: 0x5a5a66, eye: 0xfff3c0 },
+  noisette: { skin: 0xd8a882, hair: 0xe8e2d0, hat: 0x6a8a3a, beard: 0xe8e2d0, eye: EYE_DARK },
+  pip: { skin: 0xf2c6a0, hair: 0xc0702a, eye: EYE_DARK },
+  tilleul: { skin: 0xb07a52, hair: 0x2a1a10, hat: 0x8a5a2c, eye: EYE_DARK },
 };
 
 /** Définitions construites une seule fois : la géométrie de chaque pièce est partagée entre instances. */
@@ -1108,6 +1115,9 @@ export const MODELS = {
   shadowMousse: silhouette(mousseModel()),
   villagerFarmer: villagerModel(VILLAGER_LOOKS.farmer),
   villagerBaker: villagerModel(VILLAGER_LOOKS.baker),
+  noisette: villagerModel(VILLAGER_LOOKS.noisette),
+  pip: villagerModel(VILLAGER_LOOKS.pip),
+  tilleul: villagerModel(VILLAGER_LOOKS.tilleul),
   villagerGrandpa: villagerModel(VILLAGER_LOOKS.grandpa),
   villagerGirl: villagerModel(VILLAGER_LOOKS.girl),
   villagerFisher: villagerModel(VILLAGER_LOOKS.fisher),

@@ -183,6 +183,40 @@ const painters: Record<TileId, (t: PixelTile, rng: Rng) => void> = {
     for (let k = 0; k < 10; k++) t.set(Math.floor(rng() * 16), Math.floor(rng() * 16), [120, 112, 114]);
     for (let k = 0; k < 3; k++) t.set(Math.floor(rng() * 16), Math.floor(rng() * 16), [230, 110, 40]);
   },
+  [Tile.MossStone]: (t, rng) => {
+    t.noise(rng, [128, 132, 124], 0.1);
+    // Plaques de mousse qui débordent par le haut.
+    for (let x = 0; x < 16; x++) {
+      const depth = 3 + Math.floor(rng() * 4);
+      for (let y = 0; y < depth; y++) t.set(x, y, jitter([84, 140, 64], rng, 0.12));
+    }
+    for (let k = 0; k < 9; k++) t.set(Math.floor(rng() * 16), 4 + Math.floor(rng() * 12), jitter([92, 150, 70], rng, 0.1));
+  },
+  [Tile.Fern]: (t, rng) => {
+    for (let k = 0; k < 4; k++) {
+      const x0 = 3 + k * 3;
+      for (let y = 4; y < 16; y++) {
+        const x = x0 + Math.round(Math.sin(y * 0.5 + k) * 1.2);
+        t.set(x, y, jitter([70, 150, 60], rng, 0.1));
+        if (y % 2 === 0) {
+          t.set(x - 1, y - 1, [90, 170, 70]);
+          t.set(x + 1, y - 1, [90, 170, 70]);
+        }
+      }
+    }
+  },
+  [Tile.MushroomRed]: (t) => mushroom(t, [214, 52, 52]),
+  [Tile.MushroomBlue]: (t) => mushroom(t, [64, 120, 230]),
+  [Tile.Web]: (t) => {
+    const c: Rgb = [235, 240, 250];
+    for (let i = 0; i < 16; i++) {
+      t.set(i, i, c, 200);
+      t.set(15 - i, i, c, 200);
+      t.set(7, i, c, 200);
+      t.set(i, 7, c, 200);
+    }
+    for (const r of [3, 6]) for (let a = 0; a < 24; a++) t.set(Math.round(7.5 + Math.cos((a / 24) * Math.PI * 2) * r), Math.round(7.5 + Math.sin((a / 24) * Math.PI * 2) * r), c, 180);
+  },
   [Tile.FlowerRed]: (t) => flower(t, [230, 60, 60], [255, 220, 80]),
   [Tile.FlowerYellow]: (t) => flower(t, [250, 215, 50], [200, 120, 30]),
   [Tile.FlowerBlue]: (t) => flower(t, [80, 130, 240], [255, 255, 255]),
@@ -225,6 +259,18 @@ const painters: Record<TileId, (t: PixelTile, rng: Rng) => void> = {
     }
   },
 };
+
+/** Champignon sur fond transparent : pied clair, chapeau coloré à pois blancs. */
+function mushroom(t: PixelTile, cap: Rgb): void {
+  for (let y = 9; y < 16; y++) for (let x = 6; x <= 9; x++) t.set(x, y, [236, 226, 204]);
+  for (let y = 4; y <= 9; y++)
+    for (let x = 2; x <= 13; x++) {
+      const dx = (x - 7.5) / 6;
+      const dy = (y - 9) / 5;
+      if (dx * dx + dy * dy <= 1) t.set(x, y, cap);
+    }
+  for (const [x, y] of [[5, 6], [9, 5], [11, 7], [7, 8]]) t.set(x, y, [255, 255, 255]);
+}
 
 /** Fleur sur fond transparent : tige, feuilles, pétales en croix et cœur. */
 function flower(t: PixelTile, petal: Rgb, heart: Rgb): void {

@@ -19,6 +19,8 @@ export const Block = {
   Basalt: 15,
   Lava: 16,
   Ash: 17,
+  /** Forêt : pierre couverte de mousse (sanctuaire). */
+  MossStone: 18,
 } as const;
 export type BlockId = (typeof Block)[keyof typeof Block];
 
@@ -51,11 +53,16 @@ export const Tile = {
   Basalt: 24,
   Lava: 25,
   Ash: 26,
+  MossStone: 27,
+  Fern: 28,
+  MushroomRed: 29,
+  MushroomBlue: 30,
+  Web: 31,
 } as const;
 export type TileId = (typeof Tile)[keyof typeof Tile];
 
 export const ATLAS_COLS = 8;
-export const ATLAS_ROWS = 4;
+export const ATLAS_ROWS = 8;
 export const TILE_PX = 16;
 
 /** Face d'un cube : 0 = +X, 1 = -X, 2 = +Y, 3 = -Y, 4 = +Z, 5 = -Z. */
@@ -85,6 +92,7 @@ const defs: Record<number, BlockDef> = {
   [Block.Basalt]: uniform(Tile.Basalt),
   [Block.Lava]: uniform(Tile.Lava),
   [Block.Ash]: { top: Tile.Ash, side: Tile.Basalt, bottom: Tile.Basalt },
+  [Block.MossStone]: { top: Tile.MossStone, side: Tile.MossStone, bottom: Tile.Stone },
 };
 
 function uniform(t: TileId): BlockDef {

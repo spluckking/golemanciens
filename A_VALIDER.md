@@ -27,3 +27,15 @@ Textes nouveaux (ajoutés à `CONTENU.md`, section G) :
 ## Sous-étape 2.1 (plusieurs biomes)
 
 Textes nouveaux : « Voyager », « Où veux-tu aller ? », « Rester ici », « L'arche dort encore. Lumibloc te dira quand elle s'éveillera. », « Explore la Forêt Murmurante ».
+
+## Sous-étape 2.2 (décor de la Forêt)
+
+Décisions :
+- Village des Cabanes des Cimes : une place au sol (Sage Noisette, Pip), un grand chêne avec plateforme, deux cabanes reliées par des passerelles, et « la cabane la plus haute » plus haut encore. On y monte par des **escaliers droits** (plus faciles au doigt qu'une échelle ou un colimaçon).
+- Le ruisseau se traverse à pied (un bloc d'eau) : le pont cassé de Tilleul n'empêche jamais d'avancer.
+- Apparence des nouveaux personnages : Sage Noisette (vieux sage à barbe blanche, robe de feuilles), Pip (petit garçon roux), Tilleul (charpentier en tablier).
+
+Textes nouveaux (salutations) :
+- Sage Noisette : « Bienvenue aux Cabanes des Cimes. Ici, les feuilles écoutent et le vent répond. »
+- Pip : « Tu as vu nos passerelles ? Je cours dessus plus vite que les écureuils ! »
+- Tilleul : « Bonjour ! Je suis charpentier. Les ponts de la forêt, c'est moi. »
