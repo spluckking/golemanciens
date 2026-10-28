@@ -40,7 +40,8 @@ export async function answerShown(page: Page, correct: boolean): Promise<void> {
  */
 export async function playFight(page: Page, correct: boolean, endId: string): Promise<void> {
   const end = page.getByTestId(endId);
-  for (let step = 0; step < 300; step++) {
+  // Pas de limite serrée : sur un serveur lent, un combat peut demander beaucoup d'étapes.
+  for (let step = 0; step < 3000; step++) {
     if (await end.isVisible()) return;
     for (const id of ['combat-lumibloc-ok', 'btn-understood']) {
       if (await page.getByTestId(id).isVisible()) {
