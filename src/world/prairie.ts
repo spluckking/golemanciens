@@ -2,7 +2,7 @@ import { createRng, randInt } from '../core/rng';
 import type { MonsterSpecies } from '../data/creatures';
 import { Block, Tile, type TileId } from './blocks';
 import { Noise2D } from './noise';
-import { buildAcademy, buildTree, buildVillage, type VillagePlan } from './structures';
+import { buildAcademy, buildSanctuary, buildTree, buildVillage, type SanctuaryPlan, type VillagePlan } from './structures';
 import { VoxelWorld, WORLD_HEIGHT } from './voxelWorld';
 
 export const PRAIRIE_SIZE = 128;
@@ -37,6 +37,7 @@ export interface BiomeLayout {
   decorations: Decoration[];
   academyDoor: { x: number; y: number; z: number };
   village: VillagePlan;
+  sanctuary: SanctuaryPlan;
   /** Position de Lumibloc au chapitre 1 : devant la maison du joueur. */
   lumibloc: { x: number; z: number; facing: number };
   camps: Camp[];
@@ -73,7 +74,7 @@ const CAMPS: Omit<Camp, 'chest'>[] = [
   { id: 'mixed', x: 76, z: 90, monsters: ['zombie', 'slime'] },
 ];
 const LANTERN_SPOTS: Record<string, Point2> = {
-  sanctuary: { x: 106.5, z: 103.5 },
+  sanctuary: { x: 103.5, z: 104.5 },
   bossLair: { x: 25.5, z: 107.5 },
 };
 const CRATE_COUNT = 20;
@@ -181,6 +182,8 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
   const door = buildAcademy(world, ACADEMY.x, ACADEMY.z, ACADEMY_FLOOR);
   const villageFloor = world.surfaceY(PADS.village.x, PADS.village.z);
   const village = buildVillage(world, PADS.village.x, PADS.village.z, villageFloor);
+  const sanctuaryFloor = world.surfaceY(PADS.sanctuary.x - 4, PADS.sanctuary.z);
+  const sanctuary = buildSanctuary(world, PADS.sanctuary.x, PADS.sanctuary.z, sanctuaryFloor);
 
   // Camps : sol piétiné, coffre au bord du camp.
   const camps: Camp[] = CAMPS.map((c) => {
@@ -290,6 +293,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     decorations,
     academyDoor: { x: door.doorX + 0.5, y: ACADEMY_FLOOR, z: door.doorZ + 0.5 },
     village,
+    sanctuary,
     lumibloc: { x: home.door.x + 2, z: home.door.z - 1.2, facing: Math.PI * 0.8 },
     camps,
     crates,

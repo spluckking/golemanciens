@@ -5,7 +5,10 @@ import { Sparks } from '../entities/sparks';
 import { CONTENT } from '../data/content';
 import { CINEMATICS, storyCaptions } from '../story/cinematics';
 import { CinematicDirector, type CinematicScript } from '../story/cinematics/director';
+import { OBJECTIVE_BACK_TO_VILLAGE } from '../data/sanctuaries';
 import { JOURNAL_NO_DONE, OBJECTIVE_FIND_EGG } from '../story/dialogues';
+import { askNickname, chooseGolem } from '../ui/hatching';
+import { askQuestion, revealAnswer } from '../ui/screens';
 import { DebugOverlay } from '../ui/debugOverlay';
 import { DialogBubble } from '../ui/dialog';
 import { el } from '../ui/dom';
@@ -83,6 +86,8 @@ export class Game {
   private mode: GameMode = 'play';
   /** Le héros a été placé dans sa maison (première entrée en jeu). */
   private entered = false;
+  /** Énigme ou éclosion en cours : le héros ne bouge plus. */
+  private locked = false;
   /** Menu ouvert (journal) ou transition : le monde ne bouge plus. */
   private paused = false;
   private readonly tipWorld = new THREE.Vector3();
@@ -152,6 +157,15 @@ export class Game {
       sparks: this.sparks,
       onAllKO: () => this.recoverFromKO(),
       onSleep: () => this.sleep(),
+      sanctuary: {
+        rebuild: (cells) => this.biome.rebuildCells(cells),
+        ask: (view) => askQuestion(this.uiLayer, view, this.state.playerName),
+        reveal: (view, chosen) => revealAnswer(this.uiLayer, view, chosen, this.state.playerName),
+        chooseGolem: (choices) => chooseGolem(this.uiLayer, choices),
+        askNickname: (species) => askNickname(this.uiLayer, species),
+        lock: (locked) => this.lock(locked),
+        placeHero: (x, z, facing) => this.teleport(x, z, facing),
+      },
     });
     this.scene.add(this.life.group);
 
@@ -224,12 +238,30 @@ export class Game {
     }
   }
 
+  /**
+   * Séquence où le héros ne bouge plus (énigme, éclosion) : commandes masquées, le monde continue
+   * de s'animer.
+   */
+  private lock(locked: boolean): void {
+    this.locked = locked;
+    this.input.stickX = this.input.stickY = 0;
+    this.input.jumpHeld = false;
+    this.controls.root.classList.toggle('hidden', locked || this.mode !== 'play');
+  }
+
+  /** Objectif actif du journal et de la boussole, selon l'avancement du chapitre. */
+  private objective(): { text: string; target: { x: number; z: number }; done: string[] } {
+    if (this.state.sanctuary.step !== 'hatched') return { text: OBJECTIVE_FIND_EGG, target: this.layout.landmarks.sanctuary, done: [] };
+    return { text: OBJECTIVE_BACK_TO_VILLAGE, target: this.layout.landmarks.village, done: [OBJECTIVE_FIND_EGG] };
+  }
+
   private async showJournal(): Promise<void> {
     if (this.paused) return;
     this.paused = true;
     this.input.stickX = this.input.stickY = 0;
     const replays = CONTENT.stories.filter((s) => this.state.storiesRead.includes(s.id) && CINEMATICS[s.id]).map((s) => ({ id: s.id, title: s.title }));
-    const replay = await openJournal(this.uiLayer, [{ text: OBJECTIVE_FIND_EGG, active: true }], [], JOURNAL_NO_DONE, this.state.playerName, replays);
+    const goal = this.objective();
+    const replay = await openJournal(this.uiLayer, [{ text: goal.text, active: true }], goal.done, JOURNAL_NO_DONE, this.state.playerName, replays);
     const story = CONTENT.stories.find((s) => s.id === replay);
     if (story) {
       // Histoire déjà vue : on peut la passer.
@@ -289,7 +321,7 @@ export class Game {
   }
 
   private update(dt: number): void {
-    const playing = this.mode === 'play' && !this.paused;
+    const playing = this.mode === 'play' && !this.paused && !this.locked;
     const look = this.input.consumeLook();
     if (playing) this.rig.rotate(-look.dx * LOOK_YAW_PER_PX, look.dy * LOOK_PITCH_PER_PX);
     else if (this.mode === 'title') this.rig.rotate(dt * TITLE_ORBIT_SPEED, 0);
@@ -316,7 +348,7 @@ export class Game {
     this.updateShadow();
     this.sparks.update(dt, this.solid, (x, y, z) => this.life.hitTest(x, y, z));
 
-    this.life.update(dt, h, this.camera, this.mode === 'play' && dt > 0);
+    this.life.update(dt, h, this.camera, this.mode === 'play' && dt > 0, playing);
 
     this.watchStuck(dt, playing, Math.hypot(move.x, move.y), inWater);
     const near = playing ? this.interactions.nearest(h.x, h.y, h.z) : null;
@@ -329,7 +361,7 @@ export class Game {
 
     this.hud.setStats(this.state.food, this.state.shards);
     this.hud.setGolems(this.state.golems, (id) => this.life.isGolemKo(id));
-    const target = this.layout.landmarks.sanctuary;
+    const { target } = this.objective();
     this.hud.setCompass(compassRotation(this.rig.yaw, h.x, h.z, target.x, target.z));
     this.hud.update(dt);
     this.rig.update(dt, h.x, h.y, h.z, this.solid);

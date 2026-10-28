@@ -243,7 +243,7 @@ Lumibloc ouvre une vieille carte. « Le Dragon d'Ombre vit dans le Volcan d'Ombr
 
 Le dragon déploie ses ailes immenses. « Tu crois pouvoir me battre avec tes petits golems ? » gronde-t-il.
 
-{prenom} serre son bâton de golémancien. Ses golems se placent autour de lui. Le combat final commence !
+{prenom} serre sa baguette de golémancien. Ses golems se placent autour de lui. Le combat final commence !
 
 **Questions**
 
@@ -276,7 +276,7 @@ Le dragon déploie ses ailes immenses. « Tu crois pouvoir me battre avec tes pe
    - [ ] Verts
    - [ ] Bleus
 8. Que tient {prenom} dans sa main ?
-   - [x] Son bâton de golémancien
+   - [x] Sa baguette de golémancien
    - [ ] Une épée
    - [ ] Une lanterne
 

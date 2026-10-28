@@ -7,6 +7,7 @@ import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
 import { CINEMATICS, storyCaptions } from './story/cinematics';
+import { SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { applyBlockTheme } from './ui/theme';
 
 declare global {
@@ -21,6 +22,7 @@ declare global {
       life: () => ReturnType<Game['life']['snapshot']>;
       teleport: (x: number, z: number, facing?: number) => void;
       drawCalls: () => number;
+      sanctuary: () => ReturnType<Game['life']['sanctuary']['snapshot']>;
     };
   }
 }
@@ -40,6 +42,9 @@ window.addEventListener('contextmenu', (e) => e.preventDefault());
 function boot(root: HTMLElement, layer: HTMLElement): void {
   const isTest = params.has('test');
   const state = createGameState();
+  // Mode test : « ?test&sanctuary=tiles|open|hatched » avance la quête de l'œuf (avant la construction du monde).
+  const step = params.get('sanctuary');
+  if (isTest && step && SANCTUARY_STEPS.includes(step as SanctuaryStep)) state.sanctuary.step = step as SanctuaryStep;
   // Mode test : graine fixe, pour des tirages reproductibles.
   const rng = createRng(isTest ? 12345 : (Date.now() ^ 0x9e3779b9) >>> 0);
   const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest });
@@ -85,6 +90,7 @@ function boot(root: HTMLElement, layer: HTMLElement): void {
       life: () => game.life.snapshot(),
       teleport: (x, z, facing) => game.teleport(x, z, facing),
       drawCalls: () => game.drawCalls,
+      sanctuary: () => game.life.sanctuary.snapshot(),
     };
   } else {
     void app.start();

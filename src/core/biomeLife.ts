@@ -12,6 +12,7 @@ import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { BiomeLayout } from '../world/prairie';
 import type { GameState } from './gameState';
 import { HomeLife } from './home';
+import { SanctuaryLife, type SanctuaryHooks } from './sanctuaryLife';
 import type { Interactions } from './interactions';
 import type { SolidFn } from './physics';
 import type { Rng } from './rng';
@@ -36,6 +37,8 @@ export interface LifeHooks {
   onAllKO: () => void;
   /** Le héros se couche dans son lit. */
   onSleep: () => void;
+  /** Interface et monde pour le sanctuaire (énigmes, éclosion, portes). */
+  sanctuary: Omit<SanctuaryHooks, 'dialog' | 'toast' | 'burst'>;
 }
 
 interface CreatureView {
@@ -84,6 +87,7 @@ export class BiomeLife {
   readonly group = new THREE.Group();
   readonly sim: WorldSim;
   readonly home: HomeLife;
+  readonly sanctuary: SanctuaryLife;
   private readonly golemViews = new Map<GolemAgent, CreatureView>();
   private readonly monsterViews = new Map<MonsterAgent, CreatureView>();
   private readonly npcs: Npc[] = [];
@@ -132,6 +136,14 @@ export class BiomeLife {
       dialog: hooks.dialog,
       toast: hooks.toast,
       onSleep: hooks.onSleep,
+    });
+
+    // Sanctuaire des Fleurs : pierre-énigme, dalles, œuf.
+    this.sanctuary = new SanctuaryLife(layout.sanctuary, layout.world, this.group, state, interactions, rng, {
+      ...hooks.sanctuary,
+      dialog: hooks.dialog,
+      toast: hooks.toast,
+      burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
     });
 
     // PNJ : Lumibloc devant la maison du joueur et les villageois.
@@ -284,8 +296,9 @@ export class BiomeLife {
 
   // ---------- Mise à jour ----------
 
-  update(dt: number, hero: HeroState, camera: THREE.Camera, playing: boolean): void {
+  update(dt: number, hero: HeroState, camera: THREE.Camera, playing: boolean, controllable = playing): void {
     this.time += dt;
+    this.sanctuary.update(dt, hero, controllable);
     if (playing) {
       this.syncGolems(hero);
       const events = this.sim.update(dt, hero);
@@ -465,6 +478,7 @@ export class BiomeLife {
     chests: { campId: string; opened: boolean; x: number; z: number }[];
     npcs: { id: string; x: number; z: number }[];
     home: ReturnType<HomeLife['snapshot']>;
+    sanctuary: ReturnType<SanctuaryLife['snapshot']>;
   } {
     return {
       monsters: this.sim.monsters.map((m) => ({ id: m.id, species: m.species, mode: m.mode, hp: m.hp, x: m.body.x, z: m.body.z })),
@@ -473,6 +487,7 @@ export class BiomeLife {
       chests: this.chests.map((c) => ({ campId: c.campId, opened: c.opened, x: c.x, z: c.z })),
       npcs: this.npcs.map((n) => ({ id: n.id, x: n.x, z: n.z })),
       home: this.home.snapshot(),
+      sanctuary: this.sanctuary.snapshot(),
     };
   }
 }

@@ -3,6 +3,7 @@ import { GOLEMS, type GolemSpecies } from '../data/creatures';
 import { createAdaptiveLevel, type AdaptiveLevel } from '../questions/difficulty';
 import type { ReadingStats } from '../questions/readingLoop';
 import { createRiddleMemory, type RiddleMemory } from '../questions/riddleBank';
+import { createSanctuaryProgress, type SanctuaryProgress } from '../quests/sanctuary';
 
 export const SAVE_VERSION = 1;
 
@@ -39,6 +40,8 @@ export interface GameState {
   tutorialsSeen: string[];
   /** Boss vaincus : leurs statuettes sont sur l'étagère de la maison. */
   trophies: string[];
+  /** Quête de l'œuf du biome en cours (sanctuaire S1). */
+  sanctuary: SanctuaryProgress;
 }
 
 export function createGameState(): GameState {
@@ -59,6 +62,7 @@ export function createGameState(): GameState {
     lastLantern: null,
     tutorialsSeen: [],
     trophies: [],
+    sanctuary: createSanctuaryProgress(),
   };
 }
 

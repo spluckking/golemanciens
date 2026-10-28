@@ -355,6 +355,7 @@ Elle est donnée par le chef du village une fois l'arène terminée. C'est un pe
 
 - Une **boucle musicale par biome** (style chiptune doux), plus des musiques pour l'arène, les boss et le dragon.
 - **Effets sonores** : pas, caisse, attaques par élément, bonne réponse, erreur (douce), évolution, éclosion, gain de 🍎.
+- **Cinématiques** (révision 1.4) : une musique d'histoire qui suit l'ambiance du plan (calme le jour, inquiétante la nuit, joyeuse au matin) et des bruitages de mise en scène (grondement, ailes et rugissement du dragon, cristal qui se brise, coups à la porte, apparitions).
 - **Volumes musique et effets séparés** dans les options. L'audio ne démarre qu'après une première interaction (règle Android).
 
 ---

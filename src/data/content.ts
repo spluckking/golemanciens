@@ -432,7 +432,7 @@ export const CONTENT: Content = {
         "Lumibloc ouvre une vieille carte. « Le Dragon d'Ombre vit dans le Volcan d'Ombre, au bout du monde. La lave y coule comme des rivières, et la fumée cache le ciel. Son armure est si dure que rien ne peut la casser… sauf la lumière des étoiles. »",
         "{prenom} traverse un pont de pierre noire au-dessus de la lave. Il fait de plus en plus chaud. Tout au fond du cratère, deux yeux rouges s'allument.",
         "Le dragon déploie ses ailes immenses. « Tu crois pouvoir me battre avec tes petits golems ? » gronde-t-il.",
-        "{prenom} serre son bâton de golémancien. Ses golems se placent autour de lui. Le combat final commence !"
+        "{prenom} serre sa baguette de golémancien. Ses golems se placent autour de lui. Le combat final commence !"
       ],
       "questions": [
         {
@@ -501,7 +501,7 @@ export const CONTENT: Content = {
         {
           "text": "Que tient {prenom} dans sa main ?",
           "choices": [
-            "Son bâton de golémancien",
+            "Sa baguette de golémancien",
             "Une épée",
             "Une lanterne"
           ],

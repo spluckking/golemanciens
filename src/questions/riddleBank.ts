@@ -18,15 +18,16 @@ export function createRiddleMemory(): RiddleMemory {
  * Tirage sans répétition (SPEC.md § 8.2) : une énigme non vue du niveau demandé ;
  * sinon une non vue d'un niveau voisin (le plus facile d'abord) ;
  * sinon le niveau est réinitialisé, en excluant les 5 dernières tirées.
+ * Avec sameLevel (pierres-énigmes des sanctuaires, § 10.1), on ne passe jamais au niveau voisin.
  */
-export function drawRiddle(riddles: readonly Riddle[], memory: RiddleMemory, level: number, rng: Rng): Riddle {
+export function drawRiddle(riddles: readonly Riddle[], memory: RiddleMemory, level: number, rng: Rng, sameLevel = false): Riddle {
   const lv = Math.max(RIDDLE_MIN_LEVEL, Math.min(RIDDLE_MAX_LEVEL, level));
   const seen = new Set(memory.seen);
   const unseenAt = (l: number): Riddle[] => riddles.filter((r) => r.level === l && !seen.has(r.id));
 
   let pool = unseenAt(lv);
-  if (pool.length === 0) pool = unseenAt(lv - 1);
-  if (pool.length === 0) pool = unseenAt(lv + 1);
+  if (pool.length === 0 && !sameLevel) pool = unseenAt(lv - 1);
+  if (pool.length === 0 && !sameLevel) pool = unseenAt(lv + 1);
   if (pool.length === 0) {
     const levelIds = new Set(riddles.filter((r) => r.level === lv).map((r) => r.id));
     memory.seen = memory.seen.filter((id) => !levelIds.has(id));

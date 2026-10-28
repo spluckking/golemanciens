@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ATLAS_COLS, ATLAS_ROWS, type TileId } from './blocks';
 import { meshChunk, type MeshData } from './mesher';
+import { CHUNK_SIZE } from './voxelWorld';
 import type { BiomeLayout } from './prairie';
 import { createVoxelMaterial } from './voxelMaterial';
 
@@ -9,22 +10,61 @@ export class BiomeScene {
   readonly group = new THREE.Group();
   private readonly geometries: THREE.BufferGeometry[] = [];
   private readonly materials: THREE.Material[] = [];
+  private readonly opaqueMat: THREE.Material;
+  private readonly waterMat: THREE.Material;
+  /** Maillages de chaque chunk (clé « cx,cz »), pour pouvoir les reconstruire. */
+  private readonly chunkMeshes = new Map<string, THREE.Mesh[]>();
 
-  constructor(layout: BiomeLayout, atlas: THREE.Texture) {
-    const opaqueMat = createVoxelMaterial(atlas);
-    const waterMat = createVoxelMaterial(atlas, { transparent: true, opacity: 0.78, depthWrite: false });
-    this.materials.push(opaqueMat, waterMat);
+  constructor(
+    private readonly layout: BiomeLayout,
+    atlas: THREE.Texture,
+  ) {
+    this.opaqueMat = createVoxelMaterial(atlas);
+    this.waterMat = createVoxelMaterial(atlas, { transparent: true, opacity: 0.78, depthWrite: false });
+    this.materials.push(this.opaqueMat, this.waterMat);
 
     const { world } = layout;
-    for (let cz = 0; cz < world.chunksZ; cz++) {
-      for (let cx = 0; cx < world.chunksX; cx++) {
-        const chunk = meshChunk(world, cx, cz);
-        this.addMesh(chunk.opaque, opaqueMat, `chunk-${cx}-${cz}`);
-        const water = this.addMesh(chunk.water, waterMat, `water-${cx}-${cz}`);
-        if (water) water.renderOrder = 1;
-      }
-    }
+    for (let cz = 0; cz < world.chunksZ; cz++) for (let cx = 0; cx < world.chunksX; cx++) this.buildChunk(cx, cz);
     this.addDecorations(layout, atlas);
+  }
+
+  private buildChunk(cx: number, cz: number): void {
+    const chunk = meshChunk(this.layout.world, cx, cz);
+    const meshes: THREE.Mesh[] = [];
+    const opaque = this.addMesh(chunk.opaque, this.opaqueMat, `chunk-${cx}-${cz}`);
+    if (opaque) meshes.push(opaque);
+    const water = this.addMesh(chunk.water, this.waterMat, `water-${cx}-${cz}`);
+    if (water) {
+      water.renderOrder = 1;
+      meshes.push(water);
+    }
+    this.chunkMeshes.set(`${cx},${cz}`, meshes);
+  }
+
+  /**
+   * Après une modification du monde (porte qui s'ouvre…) : reconstruit les chunks touchés,
+   * et leurs voisins quand la case est au bord d'un chunk.
+   */
+  rebuildCells(cells: readonly { x: number; z: number }[]): void {
+    const { world } = this.layout;
+    const keys = new Set<string>();
+    for (const { x, z } of cells)
+      for (const dx of [-1, 0, 1])
+        for (const dz of [-1, 0, 1]) {
+          const cx = Math.floor((x + dx) / CHUNK_SIZE);
+          const cz = Math.floor((z + dz) / CHUNK_SIZE);
+          if (cx >= 0 && cz >= 0 && cx < world.chunksX && cz < world.chunksZ) keys.add(`${cx},${cz}`);
+        }
+    for (const key of keys) {
+      for (const mesh of this.chunkMeshes.get(key) ?? []) {
+        mesh.removeFromParent();
+        mesh.geometry.dispose();
+        const i = this.geometries.indexOf(mesh.geometry);
+        if (i >= 0) this.geometries.splice(i, 1);
+      }
+      const [cx, cz] = key.split(',').map(Number);
+      this.buildChunk(cx, cz);
+    }
   }
 
   private addMesh(data: MeshData, material: THREE.Material, name: string): THREE.Mesh | null {

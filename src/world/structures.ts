@@ -277,3 +277,104 @@ export function buildVillage(world: VoxelWorld, cx: number, cz: number, floorY: 
     home,
   };
 }
+
+/** Une case de bloc (porte de lianes, porte du temple) que la quête peut ouvrir. */
+export interface Cell {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface SanctuaryPlan {
+  /** Pierre-énigme, devant la porte de lianes. */
+  stone: { x: number; z: number };
+  /** Porte de lianes de la cour (ouverte par la pierre-énigme). */
+  gate: Cell[];
+  /** Dalles fleuries (une case chacune), dans le désordre. */
+  tiles: { color: 'red' | 'yellow' | 'blue' | 'white' | 'violet'; x: number; z: number }[];
+  /** Fresque au-dessus de la porte du temple, tournée vers la cour. */
+  fresco: { x: number; y: number; z: number; facing: number };
+  /** Porte du temple (ouverte par les dalles). */
+  door: Cell[];
+  /** Nid de mousse où repose l'œuf. */
+  nest: { x: number; z: number };
+  floorY: number;
+}
+
+/**
+ * Sanctuaire des Fleurs (CONTENU.md, S1) : une cour fermée par une haie, avec une porte de lianes
+ * gardée par la pierre-énigme ; 5 dalles fleuries dans la cour ; un petit temple de pierre
+ * dont la porte s'ouvre quand les dalles sont réussies, et l'œuf sur son nid de mousse.
+ * On arrive par l'ouest (le pont). (cx, cz) = centre du temple.
+ */
+export function buildSanctuary(world: VoxelWorld, cx: number, cz: number, floorY: number): SanctuaryPlan {
+  const cx0 = cx - 7;
+  const cx1 = cx + 1;
+  const cz0 = cz - 4;
+  const cz1 = cz + 4;
+
+  // Cour : sol de terre battue, haie de 2 blocs (on ne peut pas l'enjamber).
+  for (let x = cx0; x <= cx1 + 1; x++)
+    for (let z = cz0; z <= cz1; z++) {
+      world.set(x, floorY - 1, z, Block.Path);
+      for (let y = floorY; y < floorY + 6; y++) world.set(x, y, z, Block.Air);
+    }
+  for (let y = floorY; y <= floorY + 1; y++) {
+    for (let x = cx0; x <= cx1; x++) {
+      world.set(x, y, cz0, Block.Leaves);
+      world.set(x, y, cz1, Block.Leaves);
+    }
+    for (let z = cz0; z <= cz1; z++) world.set(cx0, y, z, Block.Leaves);
+  }
+  const gate: Cell[] = [];
+  for (let z = cz - 1; z <= cz + 1; z++) for (let y = floorY; y <= floorY + 1; y++) gate.push({ x: cx0, y, z });
+
+  // Temple : murs de pierre, toit en gradins, porte au milieu du mur ouest.
+  const tx0 = cx + 2;
+  const tx1 = cx + 8;
+  world.fill(tx0, floorY - 1, cz0, tx1, floorY - 1, cz1, Block.Stone);
+  const top = floorY + 4;
+  for (let y = floorY; y <= top; y++)
+    for (let x = tx0; x <= tx1; x++)
+      for (let z = cz0; z <= cz1; z++) {
+        const edge = x === tx0 || x === tx1 || z === cz0 || z === cz1;
+        world.set(x, y, z, edge ? Block.Stone : Block.Air);
+      }
+  for (let level = 0; ; level++) {
+    const az = cz0 - 1 + level;
+    const bz = cz1 + 1 - level;
+    if (az > bz) break;
+    world.fill(tx0 - 1, top + 1 + level, az, tx1 + 1, top + 1 + level, bz, Block.Roof);
+    if (level > 0) world.fill(tx0, top + level, az + 1, tx1, top + level, bz - 1, Block.Air);
+  }
+  for (const z of [cz - 3, cz + 3]) world.set(tx0, floorY + 2, z, Block.Window);
+  const door: Cell[] = [];
+  for (let z = cz - 1; z <= cz + 1; z++)
+    for (let y = floorY; y <= floorY + 2; y++) {
+      world.set(tx0, y, z, Block.Door);
+      door.push({ x: tx0, y, z });
+    }
+  // Linteau doré au-dessus de la porte.
+  for (let z = cz - 2; z <= cz + 2; z++) world.set(tx0, floorY + 3, z, Block.Gold);
+  // Nid de mousse au fond du temple.
+  world.fill(cx + 5, floorY - 1, cz - 1, cx + 7, floorY - 1, cz + 1, Block.Grass);
+
+  // Haie et portes posées : on ferme le passage de lianes.
+  for (const c of gate) world.set(c.x, c.y, c.z, Block.Leaves);
+
+  return {
+    stone: { x: cx0 - 1.5, z: cz + 0.5 },
+    gate,
+    tiles: [
+      { color: 'yellow', x: cx - 5, z: cz + 1 },
+      { color: 'white', x: cx - 4, z: cz - 2 },
+      { color: 'violet', x: cx - 3, z: cz },
+      { color: 'blue', x: cx - 1, z: cz - 2 },
+      { color: 'red', x: cx - 2, z: cz + 2 },
+    ],
+    fresco: { x: tx0 - 0.12, y: floorY + 4.2, z: cz + 0.5, facing: Math.PI / 2 },
+    door,
+    nest: { x: cx + 6.5, z: cz + 0.5 },
+    floorY,
+  };
+}

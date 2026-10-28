@@ -32,7 +32,8 @@ Travaille en 5 sous-étapes. Fais un commit et un point d'étape à la fin de ch
     Révision 1.4 : types d'attaque et leçon des faiblesses, moteur de cinématiques (intro T1, outro O1),
     maison du joueur au village (lit, étagère à trophées, golem de maison).
 1.5 Autour du jeu : sauvegarde IndexedDB auto + export/import, menu parent (stats, réglages, mode test, FPS),
-    écran Golems avec Repas, encyclopédie, rappel de pause, audio (musique Prairie, arène, boss + SFX).
+    écran Golems avec Repas, encyclopédie, rappel de pause, audio (musique Prairie, arène, boss + SFX ;
+    révision 1.4 : musique et bruitages des cinématiques).
 1.6 Cinématique de l'outro finale O6 (décor de volcan dédié, dragon, médaille, générique), visible depuis le mode test.
 
 Critères d'acceptation du jalon 1 :

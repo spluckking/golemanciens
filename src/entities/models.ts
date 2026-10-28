@@ -476,7 +476,7 @@ export const VILLAGER_LOOKS: Record<string, VillagerLook> = {
 
 // ---------- Dragon d'Ombre (finale) ----------
 
-/** Grand dragon noir et violet, yeux et pointes lumineux. Il regarde vers -Z ; origine au centre du corps. */
+/** Grand dragon noir et violet, yeux rouges (texte T6) et pointes lumineuses. Il regarde vers -Z ; origine au centre du corps. */
 export function dragonModel(): ModelDef {
   const dark = 0x2a2238;
   const mid = 0x3d2f55;
@@ -542,7 +542,7 @@ export function dragonModel(): ModelDef {
       ],
     },
     { name: 'jaw', parent: 'head', pivot: [0, -0.3, -0.7], cubes: [[0.68, 0.18, 0.82, 0, -0.06, -0.5, mid], [0.06, 0.1, 0.06, -0.24, 0.07, -0.82, bone], [0.06, 0.1, 0.06, 0.24, 0.07, -0.82, bone]] },
-    { name: 'eyes', parent: 'head', pivot: [0, 0, 0], glow: true, cubes: [[0.22, 0.12, 0.05, -0.33, 0.28, -0.92, 0xe08bff], [0.22, 0.12, 0.05, 0.33, 0.28, -0.92, 0xe08bff]] },
+    { name: 'eyes', parent: 'head', pivot: [0, 0, 0], glow: true, cubes: [[0.22, 0.12, 0.05, -0.33, 0.28, -0.92, 0xff3a2a], [0.22, 0.12, 0.05, 0.33, 0.28, -0.92, 0xff3a2a]] },
     ...wing(-1),
     ...wing(1),
     { name: 'tail1', parent: 'body', pivot: [0, 0, 1.45], cubes: [[0.75, 0.62, 1.7, 0, 0, 0.85, dark], [0.2, 0.3, 0.3, 0, 0.42, 0.85, spike]] },
@@ -582,8 +582,8 @@ export function starShardModel(): ModelDef {
   return [{ name: 'body', pivot: [0, 0, 0], glow: true, cubes: [[0.3, 0.42, 0.3, 0, 0, 0, 0xfff3a0], [0.18, 0.18, 0.18, 0.12, 0.18, 0.08, 0xffd24a]] }];
 }
 
-/** Œuf de golem : coquille crème tachetée de la couleur du golem. Origine à sa base. */
-function eggModel(spot: number): ModelDef {
+/** Œuf de golem : coquille crème tachetée de la couleur du golem (ou de deux couleurs). Origine à sa base. */
+function eggModel(spot: number, spot2 = spot): ModelDef {
   const shell = 0xf6efdc;
   return [
     {
@@ -595,13 +595,103 @@ function eggModel(spot: number): ModelDef {
         [0.52, 0.24, 0.52, 0, 0.66, 0, shell],
         [0.32, 0.12, 0.32, 0, 0.84, 0, shell],
         [0.14, 0.14, 0.02, -0.12, 0.42, -0.315, spot],
-        [0.1, 0.1, 0.02, 0.16, 0.6, -0.265, spot],
-        [0.02, 0.12, 0.12, 0.315, 0.3, 0.1, spot],
+        [0.1, 0.1, 0.02, 0.16, 0.6, -0.265, spot2],
+        [0.02, 0.12, 0.12, 0.315, 0.3, 0.1, spot2],
         [0.02, 0.1, 0.1, -0.265, 0.62, -0.05, spot],
         [0.12, 0.02, 0.12, 0.05, 0.905, 0.02, spot],
       ],
     },
   ];
+}
+
+// ---------- Sanctuaire des Fleurs ----------
+
+/** Pierre-énigme : bloc de pierre gravé, rune lumineuse (part 'rune'). Origine à sa base. */
+function riddleStoneModel(): ModelDef {
+  const stone = 0x8d8f9c;
+  const dark = 0x5f6170;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [1.0, 0.2, 0.7, 0, 0.1, 0, dark],
+        [0.8, 1.3, 0.5, 0, 0.85, 0, stone],
+        [0.6, 0.2, 0.4, 0, 1.6, 0, stone],
+        [0.84, 0.06, 0.54, 0, 0.5, 0, dark],
+        [0.2, 0.2, 0.2, 0.32, 0.3, 0.2, 0x6fae52],
+      ],
+    },
+    { name: 'rune', parent: 'body', pivot: [0, 0, 0], glow: true, cubes: [[0.34, 0.08, 0.02, 0, 1.15, -0.26, 0x9ff0ff], [0.08, 0.34, 0.02, 0, 1.0, -0.26, 0x9ff0ff], [0.2, 0.08, 0.02, 0, 0.85, -0.26, 0x9ff0ff]] },
+  ];
+}
+
+const TILE_COLORS = { red: 0xe0453a, yellow: 0xf2c43c, blue: 0x3f7fe0, white: 0xf4f2ea, violet: 0x9a5ad0 } as const;
+
+/** Dalle fleurie : dalle de pierre claire et fleur de sa couleur. La version allumée brille. */
+function floorTileModel(color: number, lit: boolean): ModelDef {
+  const petals: Cube[] = [
+    [0.18, 0.04, 0.18, 0, 0.1, -0.2, color],
+    [0.18, 0.04, 0.18, 0, 0.1, 0.2, color],
+    [0.18, 0.04, 0.18, -0.2, 0.1, 0, color],
+    [0.18, 0.04, 0.18, 0.2, 0.1, 0, color],
+    [0.14, 0.05, 0.14, 0, 0.11, 0, 0xffe27a],
+  ];
+  return [
+    { name: 'body', pivot: [0, 0, 0], cubes: [[0.94, 0.08, 0.94, 0, 0.04, 0, lit ? 0xfff6c8 : 0xc9c4b4]] },
+    { name: 'flower', parent: 'body', pivot: [0, 0, 0], glow: lit, cubes: petals },
+  ];
+}
+
+/** Fresque : panneau de pierre claire, trois fleurs peintes de gauche (vue de face) à droite : rouge, jaune, bleue. */
+function frescoModel(): ModelDef {
+  const flower = (x: number, c: number): Cube[] => [
+    [0.06, 0.34, 0.03, x, -0.16, -0.06, 0x3d7a34],
+    [0.12, 0.06, 0.03, x + 0.08, -0.2, -0.06, 0x3d7a34],
+    [0.3, 0.3, 0.04, x, 0.14, -0.07, c],
+    [0.12, 0.12, 0.04, x, 0.14, -0.1, 0xffe27a],
+  ];
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [2.6, 0.9, 0.08, 0, 0, 0, 0xf1e3bf],
+        [2.76, 0.08, 0.12, 0, 0.47, 0, 0xc9a040],
+        [2.76, 0.08, 0.12, 0, -0.47, 0, 0xc9a040],
+        // La face avant regarde vers -Z ; de face, la gauche est du côté +X.
+        ...flower(0.85, TILE_COLORS.red),
+        ...flower(0, TILE_COLORS.yellow),
+        ...flower(-0.85, TILE_COLORS.blue),
+      ],
+    },
+  ];
+}
+
+/** Nid de mousse en couronne. Origine au sol. */
+function nestModel(): ModelDef {
+  const moss = 0x6fae52;
+  const dark = 0x4a8a3a;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [1.3, 0.16, 1.3, 0, 0.08, 0, dark],
+        [1.3, 0.2, 0.25, 0, 0.26, -0.55, moss],
+        [1.3, 0.2, 0.25, 0, 0.26, 0.55, moss],
+        [0.25, 0.2, 0.85, -0.55, 0.26, 0, moss],
+        [0.25, 0.2, 0.85, 0.55, 0.26, 0, moss],
+        [0.12, 0.1, 0.12, 0.4, 0.4, 0.5, 0xf08ac0],
+        [0.12, 0.1, 0.12, -0.5, 0.4, -0.3, 0xffe066],
+      ],
+    },
+  ];
+}
+
+/** Silhouette sombre d'un modèle (l'œuf hésite entre deux golems). */
+function silhouette(def: ModelDef): ModelDef {
+  return def.map((p) => ({ ...p, glow: false, cubes: p.cubes.map((c): Cube => [c[0], c[1], c[2], c[3], c[4], c[5], 0x2a2440]) }));
 }
 
 // ---------- Maison du joueur ----------
@@ -767,6 +857,22 @@ export const MODELS = {
   starShard: starShardModel(),
   eggPierre: eggModel(0x8d8f9c),
   eggMousse: eggModel(0x5aa04a),
+  eggPrairie: eggModel(0x8d8f9c, 0x5aa04a),
+  riddleStone: riddleStoneModel(),
+  tileRed: floorTileModel(TILE_COLORS.red, false),
+  tileYellow: floorTileModel(TILE_COLORS.yellow, false),
+  tileBlue: floorTileModel(TILE_COLORS.blue, false),
+  tileWhite: floorTileModel(TILE_COLORS.white, false),
+  tileViolet: floorTileModel(TILE_COLORS.violet, false),
+  tileRedLit: floorTileModel(TILE_COLORS.red, true),
+  tileYellowLit: floorTileModel(TILE_COLORS.yellow, true),
+  tileBlueLit: floorTileModel(TILE_COLORS.blue, true),
+  tileWhiteLit: floorTileModel(TILE_COLORS.white, true),
+  tileVioletLit: floorTileModel(TILE_COLORS.violet, true),
+  fresco: frescoModel(),
+  nest: nestModel(),
+  shadowPierre: silhouette(pierreModel()),
+  shadowMousse: silhouette(mousseModel()),
   villagerFarmer: villagerModel(VILLAGER_LOOKS.farmer),
   villagerBaker: villagerModel(VILLAGER_LOOKS.baker),
   villagerGrandpa: villagerModel(VILLAGER_LOOKS.grandpa),
