@@ -673,6 +673,7 @@ Le dragon déploie ses ailes immenses. « Tu crois pouvoir me battre avec tes pe
 
 > « Pierre » = pierre-énigme tirée de la banque C, au niveau indiqué. « Monde » = énigme à résoudre dans le décor.
 > Règles communes : bouton « Recommencer » ; aide de Lumibloc (bulle) après 3 échecs ; on ne peut jamais rester bloqué.
+> Énigmes d'ingénierie (révision 1.6, marquées ⚙️) : un mécanisme déjà posé dans le décor, que l'on règle en touchant ses pièces. Il montre son effet à chaque essai, et sa solvabilité comme son nombre de coups sont vérifiés par test.
 
 ### S1 — Sanctuaire des Fleurs (Prairie) : 2 étapes
 
@@ -682,31 +683,37 @@ Le dragon déploie ses ailes immenses. « Tu crois pouvoir me battre avec tes pe
 
 Fin : la porte s'ouvre, l'œuf apparaît sur un nid de mousse, il éclot, et le joueur choisit entre **Pierre** et **Mousse**.
 
-### S2 — Sanctuaire de Mousse (Forêt) : 3 étapes
+### S2 — Sanctuaire de Mousse (Forêt) : 4 étapes
 
 1. **Pierre** (niveau 2).
 2. **Monde : les trois leviers.** Trois leviers portent les symboles ☀️, 🌙 et ⭐. Une inscription dit : « D'abord ce qui brille le jour, puis ce qui éclaire la nuit, enfin ce qui scintille. » Solution : ☀️, puis 🌙, puis ⭐. Le pont de branches se déploie.
    - Aide : « Le jour, c'est le soleil qui brille… »
-3. **Pierre** (niveau 2).
+3. **Monde ⚙️ : les canaux d'eau.** Une grille de 4×3 morceaux de rigole en bois, droits ou coudés. Toucher un morceau le fait tourner d'un quart de tour. Il faut amener l'eau du ruisseau (à gauche) jusqu'à la roue du moulin (à droite) : l'eau avance dans les rigoles bien reliées et s'arrête là où le chemin est coupé. Quand elle atteint la roue, le moulin tourne et ouvre la porte. La solution demande 4 à 6 rotations.
+   - Aide : « L'eau suit les rigoles comme un chemin. Regarde où elle s'arrête ! »
+4. **Pierre** (niveau 2).
 
 Fin : choix entre **Écorce** et **Champignon**.
 
-### S3 — Temple ensablé (Désert) : 3 étapes
+### S3 — Temple ensablé (Désert) : 4 étapes
 
 1. **Monde : le bloc de grès.** Dans une salle de 5×5 cases, il faut pousser un bloc de grès sur une dalle-pression. Il y a un seul obstacle (une colonne). La solution doit tenir en 6 poussées au maximum, et elle est vérifiée par test.
    - Aide : « Place-toi derrière le bloc pour le pousser dans la bonne direction. »
-2. **Monde : les dalles-symboles.** Au mur : 🌙 ☀️ 🌙 ☀️ 🌙 ❓. Trois dalles sont proposées (☀️, 🌙, ⭐), et la bonne est ☀️. Puis un deuxième mur : 1, 3, 5, ❓, avec les dalles 6, 7 et 8. La bonne est 7.
-3. **Pierre** (niveau 3).
+2. **Monde ⚙️ : les miroirs du soleil.** Un rayon de soleil entre par une fente du temple. Deux miroirs sur pivot ont chacun 4 positions ; toucher un miroir le fait tourner. Il faut envoyer le rayon sur le cristal de la porte, qui s'illumine et l'ouvre. Le rayon est toujours visible et s'arrête sur le premier mur touché. La solution demande 2 à 4 rotations.
+   - Aide : « Un miroir renvoie la lumière comme un ballon qui rebondit contre un mur. »
+3. **Monde : les dalles-symboles.** Au mur : 🌙 ☀️ 🌙 ☀️ 🌙 ❓. Trois dalles sont proposées (☀️, 🌙, ⭐), et la bonne est ☀️. Puis un deuxième mur : 1, 3, 5, ❓, avec les dalles 6, 7 et 8. La bonne est 7.
+4. **Pierre** (niveau 3).
 
 Fin : choix entre **Sable** et **Cuivre**.
 
-### S4 — Sanctuaire gelé (Pics de Givre) : 4 étapes
+### S4 — Sanctuaire gelé (Pics de Givre) : 5 étapes
 
 1. **Pierre** (niveau 4).
 2. **Monde : la glissade.** Une salle de glace de 6×6 cases avec quelques blocs. Le héros glisse tout droit jusqu'à toucher un obstacle et doit atteindre la sortie. La disposition est conçue pour se résoudre en 3 à 5 glissades, et elle est vérifiée par un test (parcours en largeur).
    - Aide : une flèche montre la première glissade.
 3. **Monde : la mémoire de glace.** 4 dalles s'allument dans un ordre (une séquence de 4), et il faut le reproduire. En cas d'erreur, la séquence est rejouée. Après 3 échecs, elle passe à 3 dalles.
-4. **Pierre** (niveau 4).
+4. **Monde ⚙️ : le moulin gelé.** Entre une manivelle et le moulin, il y a trois axes vides : un au milieu et deux de chaque côté de lui. À côté sont posées une grande roue dentée et deux petites. La grande roue, seule sur l'axe du milieu, relie la manivelle au moulin, mais le fait tourner dans le mauvais sens ; les deux petites roues, sur les deux autres axes, le font tourner dans le bon sens. Une plaque rappelle la règle : « Chaque roue tourne dans l'autre sens que sa voisine. » Le moulin doit tourner dans le sens de la flèche gravée. Quand on tourne la manivelle, toutes les roues tournent à l'écran, avec leur sens visible ; si le moulin tourne dans le mauvais sens ou si une roue ne touche pas sa voisine, on voit pourquoi. La glace du passage fond quand le moulin tourne dans le bon sens.
+   - Aide : « Si la première roue tourne à droite, la suivante tourne à gauche. »
+5. **Pierre** (niveau 4).
 
 Fin : choix entre **Glace** et **Cristal**.
 
@@ -714,7 +721,7 @@ Fin : choix entre **Glace** et **Cristal**.
 
 1. **Pierre** (niveau 5).
 2. **Monde : les nuages arc-en-ciel.** Il faut sauter sur 6 nuages colorés dans l'ordre de l'arc-en-ciel : rouge, orange, jaune, vert, bleu, violet. Un vitrail en arc-en-ciel sert d'aide visuelle. Une chute ramène sur la plateforme de départ, sans dégâts.
-3. **Monde : la balance.** Le plateau de gauche porte un poids de **8**. Les poids disponibles sont 1, 2, 3 et 5. Il faut équilibrer avec le plateau de droite, et toute combinaison qui fait 8 est acceptée (5+3, 5+2+1…).
+3. **Monde ⚙️ : la balance à contrepoids.** Une herse ferme le passage ; elle est reliée par une chaîne au plateau de gauche d'une grande balance, qui porte un poids de **8**. Les poids disponibles sont 1, 2, 3 et 5. Il faut équilibrer avec le plateau de droite, et toute combinaison qui fait 8 est acceptée (5+3, 5+2+1…). La balance penche à chaque poids posé et la herse monte ou descend avec elle : on voit si c'est trop ou pas assez. À l'équilibre, la herse reste levée.
    - Aide : « Compte : il faut arriver à 8 de chaque côté. »
 4. **Pierre** (niveau 5).
 

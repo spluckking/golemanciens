@@ -60,7 +60,7 @@ JALON 2 : chapitre 2 complet, et premier système d'évolution.
 - Biome Forêt Murmurante (grands arbres, cabanes reliées par passerelles), Arche des éclats à l'Académie
   pour voyager entre biomes débloqués, et arche de retour.
 - Golems Écorce et Champignon. Monstres de la phase 2. Effets Étourdi et Endormi.
-- Sanctuaire S2 (2 pierres niveau 2 + 3 leviers). Quêtes villageoises de la phase 2. Arène. Quête P2. Reine Araignée. Outro O2.
+- Sanctuaire S2 (2 pierres niveau 2 + 3 leviers + canaux d'eau ⚙️, avec test de solvabilité et du nombre de rotations). Quêtes villageoises de la phase 2. Arène. Quête P2. Reine Araignée. Outro O2.
 - Runes d'éveil (1 cachée + 1 donnée par le boss) : évolution vers le stade 2 (stats, attaque A2 Magie qui déclenche une énigme,
   modèle plus grand avec runes lumineuses, animation). L'interface grise les golems qui ne sont pas au bon stade.
 - Combats libres à l'arène 1 après sa fin (+2 🍎).
@@ -81,7 +81,8 @@ JALON 3 : chapitre 3 complet et évolution vers le stade 3.
 
 À faire :
 - Biome Désert (dunes, oasis, temple ensablé). Golems Sable et Cuivre. Monstres de la phase 3. Effet Aveuglé.
-- Sanctuaire S3 : bloc de grès (avec test de solvabilité par parcours en largeur), dalles-symboles, pierre niveau 3.
+- Sanctuaire S3 : bloc de grès (avec test de solvabilité par parcours en largeur), miroirs du soleil ⚙️ (test du trajet du rayon
+  et du nombre de rotations), dalles-symboles, pierre niveau 3.
 - Quêtes de la phase 3, arène, quête P3, Grand Ver des Sables (il plonge et ressurgit), outro O3.
 - Cristaux de puissance : stade 3, attaque A3 avec effet (décalage de difficulté +1), éléments visuels propres au type.
 - Musique du Désert. Encyclopédie.
@@ -100,7 +101,8 @@ JALON 4 : chapitre 4 complet et évolution vers le stade 4.
 
 À faire :
 - Biome Pics de Givre (neige, lac gelé, igloos, tempête visuelle légère). Golems Glace et Cristal. Monstres de la phase 4. Effet Bouclier.
-- Sanctuaire S4 : glissade (avec test de solvabilité en 3 à 5 coups), mémoire de glace, 2 pierres niveau 4.
+- Sanctuaire S4 : glissade (avec test de solvabilité en 3 à 5 coups), mémoire de glace, moulin gelé ⚙️ (test : seules
+  les deux petites roues donnent le bon sens), 2 pierres niveau 4.
 - Quêtes de la phase 4, arène, quête P4 (braseros dans la tempête), Sorcière du Blizzard, outro O4.
 - Cœurs ancestraux : stade 4, Ultime (une fois par combat, décalage +2, bouton qui brille), aura.
 - Musique des Pics de Givre. Encyclopédie.
@@ -120,7 +122,7 @@ JALON 5 : chapitre 5 complet et évolution Galaxie.
 À faire :
 - Biome Île Céleste (îlots flottants, ponts arc-en-ciel, tours). Golems Nuage et Arc-en-ciel (bonus ×1,5 permanent).
   Monstres de la phase 5. Chutes sans dégâts (retour à la dernière plateforme sûre).
-- Sanctuaire S5 : nuages arc-en-ciel (6 couleurs), balance (toute combinaison égale à 8), 2 pierres niveau 5.
+- Sanctuaire S5 : nuages arc-en-ciel (6 couleurs), balance à contrepoids ⚙️ (toute combinaison égale à 8, herse animée), 2 pierres niveau 5.
 - Quêtes de la phase 5, arène, quête P5, Griffon d'Ombre, outro O5 avec la cérémonie de la Poussière d'étoile :
   choix d'un golem au stade 4, transformation en Galaxie (nouveau modèle étoilé, attaques ✨).
   Garantie : si aucun golem n'est au stade 4, Lumibloc donne les objets manquants.

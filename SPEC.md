@@ -320,13 +320,14 @@ Un court texte de fin de phase, raconté par une cinématique (§ 9.4), avec l'�
 | Phase | Nombre d'étapes | Composition | Niveau des pierres-énigmes |
 |---|---|---|---|
 | 1 | 2 | 1 pierre-énigme + 1 énigme dans le monde | 1 |
-| 2 | 3 | 2 pierres + 1 dans le monde | 2 |
-| 3 | 3 | 1 pierre + 2 dans le monde | 3 |
-| 4 | 4 | 2 pierres + 2 dans le monde | 4 |
+| 2 | 4 | 2 pierres + 2 dans le monde | 2 |
+| 3 | 4 | 1 pierre + 3 dans le monde | 3 |
+| 4 | 5 | 2 pierres + 3 dans le monde | 4 |
 | 5 | 4 | 2 pierres + 2 dans le monde | 5 |
 
 - **Pierre-énigme** : une énigme de la banque, au niveau indiqué. En cas d'erreur, la pierre « tremble », l'explication s'affiche et **une autre énigme** du même niveau est proposée. Ça ne bloque jamais.
 - **Énigmes dans le monde** (dalles, leviers, blocs à pousser, mémoire, glissade) : définies dans `CONTENU.md`. Un bouton « Recommencer » remet l'énigme à zéro. Après 3 échecs, un indice de Lumibloc s'affiche.
+- **Énigmes d'ingénierie** (révision 1.6) : à partir de la Forêt, chaque sanctuaire contient un petit mécanisme déjà posé dans le décor, que l'enfant manipule pour ouvrir le passage : **canaux d'eau** (Forêt), **miroirs et lumière** (Désert), **engrenages** (Pics de Givre), **balance à contrepoids** (Île Céleste). On tourne, on pose ou on choisit des pièces prévues ; ce n'est pas de la construction libre (§ 16). Chaque mécanisme montre son effet à l'écran (l'eau coule, le rayon avance, les roues tournent, la herse monte). Leur solvabilité et leur nombre de coups sont vérifiés par test.
 
 ### 10.2 Quêtes villageoises
 
@@ -393,7 +394,7 @@ Elle est donnée par le chef du village une fois l'arène terminée. C'est un pe
 
 ## 16. Hors périmètre
 
-Pas de construction ni de minage (on ne fait que casser des caisses), pas de multijoueur, pas de réseau en jeu, pas de compte, pas d'achats, pas de pub, pas de télémétrie, pas d'œuf légendaire et pas de créatures autres que celles listées (le golem de maison du § 18 en fait partie).
+Pas de construction ni de minage (on ne fait que casser des caisses ; les mécanismes des énigmes d'ingénierie, § 10.1, sont déjà posés et l'enfant ne fait que les régler), pas de multijoueur, pas de réseau en jeu, pas de compte, pas d'achats, pas de pub, pas de télémétrie, pas d'œuf légendaire et pas de créatures autres que celles listées (le golem de maison du § 18 en fait partie).
 
 ---
 
