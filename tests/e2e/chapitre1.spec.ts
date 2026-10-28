@@ -105,7 +105,7 @@ test('chapitre 1 de bout en bout', async ({ page }) => {
 
   // Quête du boss, piste gluante, Roi Slime.
   await talkTo(page, 'mereBrique', 'Suis la piste gluante');
-  expect(await page.evaluate(() => window.__game!.state().bossQuest)).toBe('active');
+  expect(await page.evaluate(() => window.__game!.state().biomes.prairie.bossQuest)).toBe('active');
   await interactAt(page, 20.5, 112.5, 'Affronter');
   await playFight(page, true, 'combat-victory');
   await expect(page.getByTestId('combat-victory')).toContainText('Le Roi Slime est vaincu');

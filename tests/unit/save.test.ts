@@ -9,11 +9,13 @@ function playedState() {
   s.golems.push({ ...createGolem('mousse', 'Trèfle'), hp: 12, meals: 2 });
   s.food = 17;
   s.shards = 1;
-  s.sanctuary.step = 'hatched';
-  s.quests.R1 = { status: 'done', progress: 3 };
-  s.quests.O2 = { status: 'active', progress: 2 };
-  s.arena = { wins: 2, lessonDone: true };
-  s.bossQuest = 'active';
+  const prairie = s.biomes.prairie;
+  prairie.sanctuary.step = 'hatched';
+  prairie.quests.R1 = { status: 'done', progress: 3 };
+  prairie.quests.O2 = { status: 'active', progress: 2 };
+  prairie.arena = { wins: 2 };
+  prairie.bossQuest = 'active';
+  s.lessonDone = true;
   s.trophies.push('roiSlime');
   s.riddles.seen.push('E1-1', 'E1-4');
   s.levels.calc.level = 3;
@@ -43,8 +45,23 @@ describe('sauvegarde', () => {
     expect(() => parseSave('pas du JSON')).toThrow();
   });
 
+  /** État au format de la version 2 : l'avancement de la Prairie à la racine. */
+  function legacyState(): Record<string, unknown> {
+    const { biome: _biome, biomes, lessonDone, ...rest } = playedState();
+    const p = biomes.prairie;
+    return { ...rest, version: 2, sanctuary: p.sanctuary, quests: p.quests, arena: { ...p.arena, lessonDone }, bossQuest: p.bossQuest };
+  }
+
+  it('migration 2 → 3 : l’avancement existant devient celui de la Prairie, la Forêt commence à zéro', () => {
+    const migrated = parseSave({ format: SAVE_FORMAT, version: 2, savedAt: '', state: legacyState() });
+    expect(migrated).toEqual(playedState());
+    expect(migrated.biome).toBe('prairie');
+    expect(migrated.biomes.foret).toEqual(createGameState().biomes.foret);
+    expect('sanctuary' in migrated).toBe(false);
+  });
+
   it('migration 1 → 2 : repas des golems, réglages, statistiques et temps de jeu ajoutés', () => {
-    const v1 = { ...playedState() } as Record<string, unknown>;
+    const v1 = legacyState();
     delete v1.settings;
     delete v1.stats;
     delete v1.playTimeS;
@@ -57,15 +74,15 @@ describe('sauvegarde', () => {
     expect(migrated.stats).toEqual(createGameState().stats);
     expect(migrated.playTimeS).toBe(0);
     expect(migrated.food).toBe(17);
-    expect(migrated.quests.R1.status).toBe('done');
+    expect(migrated.biomes.prairie.quests.R1.status).toBe('done');
   });
 
   it('les champs manquants (ajoutés plus tard) prennent leur valeur par défaut, sans écraser le reste', () => {
     const file = JSON.parse(exportSave(playedState()));
-    delete file.state.arena;
+    delete file.state.biomes.prairie.arena;
     delete file.state.settings.showFps;
     const s = parseSave(file);
-    expect(s.arena).toEqual({ wins: 0, lessonDone: false });
+    expect(s.biomes.prairie.arena).toEqual({ wins: 0 });
     expect(s.settings.showFps).toBe(false);
     expect(s.settings.pauseMinutes).toBe(30);
   });

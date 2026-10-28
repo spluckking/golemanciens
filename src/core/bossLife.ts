@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { TEXT_FACE_BOSS } from '../data/bossQuest';
 import { CubeModel } from '../entities/cubeModel';
 import { MODELS } from '../entities/models';
-import type { BiomeLayout } from '../world/prairie';
-import type { GameState } from './gameState';
+import type { PrairieLayout } from '../world/prairie';
+import { progress, type GameState } from './gameState';
 import type { Interactable, Interactions } from './interactions';
 
 export interface BossHooks {
@@ -24,7 +24,7 @@ export class BossLife {
   private offered = false;
 
   constructor(
-    private readonly layout: BiomeLayout,
+    private readonly layout: PrairieLayout,
     parent: THREE.Group,
     private readonly state: GameState,
     private readonly interactions: Interactions,
@@ -50,7 +50,7 @@ export class BossLife {
   }
 
   private sync(): void {
-    const step = this.state.bossQuest;
+    const step = progress(this.state).bossQuest;
     for (const p of this.puddles) p.root.visible = step === 'active';
     this.boss.root.visible = step !== 'defeated';
     const offer = step === 'active';

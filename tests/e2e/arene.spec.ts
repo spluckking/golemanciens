@@ -71,7 +71,7 @@ test('arène : 3 victoires, +4 🍎 chacune, soin complet, puis l’arène est t
     await expect(page.getByTestId('combat')).toHaveCount(0);
     await expect(page.getByTestId('btn-jump')).toBeVisible();
     const st = await page.evaluate(() => window.__game!.state());
-    expect(st.arena.wins).toBe(i);
+    expect(st.biomes.prairie.arena.wins).toBe(i);
     expect(st.golems[0].hp).toBe(st.golems[0].maxHp);
   }
   expect(await page.evaluate(() => window.__game!.state().food)).toBe(food0 + 12);
@@ -114,7 +114,8 @@ test('première défaite : réplique de Lumibloc, leçon des faiblesses et quiz,
   }
   await expect(page.getByTestId('combat')).toHaveCount(0);
   const st = await page.evaluate(() => window.__game!.state());
-  expect(st.arena).toEqual({ wins: 0, lessonDone: true });
+  expect(st.biomes.prairie.arena).toEqual({ wins: 0 });
+  expect(st.lessonDone).toBe(true);
   expect(st.golems[0].hp).toBe(st.golems[0].maxHp);
 
   // Au combat suivant, le bouton 📒 ouvre la fiche des faiblesses.

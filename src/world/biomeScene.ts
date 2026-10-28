@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { ATLAS_COLS, ATLAS_ROWS, type TileId } from './blocks';
 import { meshChunk, type MeshData } from './mesher';
 import { CHUNK_SIZE } from './voxelWorld';
-import type { BiomeLayout } from './prairie';
+import type { WorldLayout } from './layout';
 import { createVoxelMaterial } from './voxelMaterial';
 
 /** Ce qu'il faut pour dessiner un monde : les blocs et la végétation (biome ou décor de cinématique). */
-export type SceneLayout = Pick<BiomeLayout, 'world' | 'decorations'>;
+export type SceneLayout = Pick<WorldLayout, 'world' | 'decorations'>;
 
 /** Rendu Three.js d'un biome : chunks opaques, eau et végétation instanciée. */
 export class BiomeScene {

@@ -8,7 +8,23 @@ import { createSanctuaryProgress, type SanctuaryProgress } from '../quests/sanct
 import { createQuestLog, type QuestLog } from '../quests/villageQuests';
 
 /** Version du schéma de sauvegarde (voir save/saveFile.ts pour les migrations). */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
+
+/** Biomes du jeu (un seul en mémoire à la fois). */
+export type BiomeId = 'prairie' | 'foret';
+export const BIOME_IDS: readonly BiomeId[] = ['prairie', 'foret'];
+
+/** Avancement d'une phase dans son biome : œuf, quêtes du village, arène, boss. */
+export interface BiomeProgress {
+  /** Quête de l'œuf (sanctuaire du biome). */
+  sanctuary: SanctuaryProgress;
+  /** Quêtes du village du biome. */
+  quests: QuestLog;
+  /** Arène du biome : victoires (3 pour la terminer). */
+  arena: { wins: number };
+  /** Quête du boss du biome : proposée après l'arène, puis le combat. */
+  bossQuest: BossQuestStep;
+}
 
 /** Golem possédé (enregistré). */
 export interface GolemData {
@@ -75,20 +91,27 @@ export interface GameState {
   tutorialsSeen: string[];
   /** Boss vaincus : leurs statuettes sont sur l'étagère de la maison. */
   trophies: string[];
-  /** Quête de l'œuf du biome en cours (sanctuaire S1). */
-  sanctuary: SanctuaryProgress;
-  /** Quêtes du village du biome en cours. */
-  quests: QuestLog;
-  /** Arène du biome : victoires (3 pour la terminer) et leçon des faiblesses déjà vue. */
-  arena: { wins: number; lessonDone: boolean };
-  /** Quête du boss du biome (P1) : proposée après l'arène, puis le combat. */
-  bossQuest: BossQuestStep;
+  /** Biome où se trouve le héros. */
+  biome: BiomeId;
+  /** Avancement de chaque biome. */
+  biomes: Record<BiomeId, BiomeProgress>;
+  /** Leçon des faiblesses déjà vue (après la première défaite, arène ou boss). */
+  lessonDone: boolean;
   stats: PlayStats;
   settings: Settings;
   /** Temps de jeu total, en secondes. */
   playTimeS: number;
   /** Golems, monstres et boss déjà rencontrés (encyclopédie). */
   seen: string[];
+}
+
+export function createBiomeProgress(): BiomeProgress {
+  return { sanctuary: createSanctuaryProgress(), quests: createQuestLog(), arena: { wins: 0 }, bossQuest: 'locked' };
+}
+
+/** Avancement du biome indiqué (par défaut, celui où se trouve le héros). */
+export function progress(state: GameState, biome: BiomeId = state.biome): BiomeProgress {
+  return state.biomes[biome];
 }
 
 /** Note une rencontre pour l'encyclopédie. */
@@ -122,10 +145,9 @@ export function createGameState(): GameState {
     lastLantern: null,
     tutorialsSeen: [],
     trophies: [],
-    sanctuary: createSanctuaryProgress(),
-    quests: createQuestLog(),
-    arena: { wins: 0, lessonDone: false },
-    bossQuest: 'locked',
+    biome: 'prairie',
+    biomes: { prairie: createBiomeProgress(), foret: createBiomeProgress() },
+    lessonDone: false,
     stats: createStats(),
     settings: createSettings(),
     playTimeS: 0,

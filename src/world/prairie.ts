@@ -1,6 +1,6 @@
 import { createRng, randInt } from '../core/rng';
-import type { MonsterSpecies } from '../data/creatures';
 import { Block, Tile, type TileId } from './blocks';
+import type { Camp, Decoration, Point2, WorldLayout } from './layout';
 import { Noise2D } from './noise';
 import { buildAcademy, buildArena, buildMarsh, buildSanctuary, buildTree, buildVillage, type ArenaPlan, type MarshPlan, type SanctuaryPlan, type VillagePlan } from './structures';
 import { VoxelWorld, WORLD_HEIGHT } from './voxelWorld';
@@ -10,31 +10,17 @@ export const PRAIRIE_SEED = 20261027;
 const WATER_LEVEL = 9;
 const ACADEMY_FLOOR = 16;
 
-export interface Point2 {
-  x: number;
-  z: number;
-}
-
-export interface Decoration {
-  x: number;
-  y: number;
-  z: number;
-  tile: TileId;
-}
+export type { Camp, Decoration, Point2 } from './layout';
 
 export type LandmarkId = 'academy' | 'village' | 'arena' | 'sanctuary' | 'bossLair';
 
-export interface BiomeLayout {
-  world: VoxelWorld;
-  /** Départ de la partie : dans la maison du joueur, près du lit (SPEC.md § 18). */
-  spawn: { x: number; y: number; z: number };
-  /** Angle de départ de la caméra (radians, 0 = regarde vers -Z). */
-  spawnYaw: number;
+/** La Prairie de Cubeterre : le biome commun, plus l'Académie, la ferme, la maison et les lieux du chapitre 1. */
+export interface PrairieLayout extends WorldLayout {
+  id: 'prairie';
   /** Point autour duquel tourne la caméra de l'écran titre : devant l'Académie. */
   titleSpot: { x: number; y: number; z: number };
   /** Emplacements réservés : les structures seront construites aux sous-étapes 1.3 et 1.4. */
   landmarks: Record<LandmarkId, Point2>;
-  decorations: Decoration[];
   academyDoor: { x: number; y: number; z: number };
   village: VillagePlan;
   sanctuary: SanctuaryPlan;
@@ -44,19 +30,8 @@ export interface BiomeLayout {
   slimeTrail: Point2[];
   /** Position de Lumibloc au chapitre 1 : devant la maison du joueur. */
   lumibloc: { x: number; z: number; facing: number };
-  camps: Camp[];
-  crates: { id: string; x: number; y: number; z: number }[];
-  lanterns: { id: string; x: number; y: number; z: number }[];
   /** Emplacements des objets des quêtes du village (sur l'herbe, dégagés). */
   questSpots: { chickens: Point2[]; keyCrate: Point2; flowers: Point2[] };
-}
-
-export interface Camp {
-  id: string;
-  x: number;
-  z: number;
-  monsters: MonsterSpecies[];
-  chest: { x: number; z: number };
 }
 
 interface Pad extends Point2 {
@@ -71,6 +46,9 @@ const PADS: Record<Exclude<LandmarkId, 'academy'>, Pad> = {
   bossLair: { x: 18, z: 114, r: 9 },
 };
 const BRIDGE_Z = 100;
+/** Arche des éclats : sur la place de l'Académie, à l'est du chemin (SPEC.md § 1.3). */
+const ARCH = { x: 73.5, z: 40.5, facing: -Math.PI / 2 };
+const SKY_COLOR = 0x9fd8ff;
 
 /** Camps de monstres de la phase 1 (1 ou 2 monstres chacun). Le camp des slimes est près du champ de blé. */
 const CAMPS: Omit<Camp, 'chest'>[] = [
@@ -99,7 +77,7 @@ function dist(a: Point2, x: number, z: number): number {
 }
 
 /** Génère la Prairie de Cubeterre (graine fixe : le relief est toujours le même). */
-export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
+export function generatePrairie(seed = PRAIRIE_SEED): PrairieLayout {
   const size = PRAIRIE_SIZE;
   const world = new VoxelWorld(size, WORLD_HEIGHT, size);
   const noise = new Noise2D(seed);
@@ -210,6 +188,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     ...Object.values(PADS).map((p) => ({ ...p, r: p.r + 3 })),
     ...CAMPS.map((c) => ({ x: c.x, z: c.z, r: 5 })),
     { x: PADS.village.x - 17, z: PADS.village.z - 1, r: 7 },
+    { x: ARCH.x, z: ARCH.z, r: 5 },
   ];
   const isClear = (x: number, z: number, margin: number): boolean => {
     if (x < 3 || z < 3 || x > size - 4 || z > size - 4) return false;
@@ -265,7 +244,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
   const { home } = village;
 
   // Caisses : la première juste devant la maison (tutoriel), les autres dispersées.
-  const crates: BiomeLayout['crates'] = [];
+  const crates: PrairieLayout['crates'] = [];
   const crateSpots: Point2[] = [{ x: Math.floor(home.door.x) - 3, z: Math.floor(home.door.z) - 2 }];
   for (let attempt = 0; attempt < 2000 && crateSpots.length < CRATE_COUNT; attempt++) {
     const x = randInt(rng, 6, size - 7);
@@ -325,8 +304,19 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     ...Object.entries(LANTERN_SPOTS).map(([id, p]) => ({ id, ...at(p) })),
   ];
 
+  const lumibloc = { x: home.door.x + 2, z: home.door.z - 1.2, facing: Math.PI * 0.8 };
+  // On arrive par l'arche en sortant devant elle, vers l'ouest (l'Académie).
+  const arrival = { x: ARCH.x - 8, z: ARCH.z, facing: Math.PI / 2 };
+
   return {
+    id: 'prairie',
     world,
+    sky: SKY_COLOR,
+    safeZones: [{ x: PADS.village.x, z: PADS.village.z, r: 14 }],
+    npcs: [{ id: 'lumibloc', ...lumibloc }, ...village.npcs],
+    guardians: village.guardians,
+    arch: ARCH,
+    arrival,
     spawn: { x: home.wake.x, y: villageFloor, z: home.wake.z },
     spawnYaw: home.wake.facing,
     titleSpot: { x: titleX + 0.5, y: world.surfaceY(titleX, titleZ), z: titleZ + 0.5 },
@@ -344,7 +334,7 @@ export function generatePrairie(seed = PRAIRIE_SEED): BiomeLayout {
     arena,
     marsh,
     slimeTrail,
-    lumibloc: { x: home.door.x + 2, z: home.door.z - 1.2, facing: Math.PI * 0.8 },
+    lumibloc,
     camps,
     crates,
     lanterns,

@@ -20,6 +20,7 @@ type Json = Record<string, unknown>;
 /**
  * Migrations : migrations[v] transforme un état de la version v en version v + 1.
  * Version 1 → 2 : réglages, statistiques, temps de jeu, repas des golems.
+ * Version 2 → 3 : avancement rangé par biome (la partie existante est celle de la Prairie).
  */
 const MIGRATIONS: Record<number, (state: Json) => Json> = {
   1: (state) => ({
@@ -27,6 +28,16 @@ const MIGRATIONS: Record<number, (state: Json) => Json> = {
     golems: Array.isArray(state.golems) ? state.golems.map((g: Json) => ({ ...g, meals: 0 })) : [],
     // Les réglages, statistiques et le temps de jeu sont complétés par les valeurs par défaut.
   }),
+  2: (state) => {
+    const { sanctuary, quests, arena, bossQuest, ...rest } = state;
+    const a = isObject(arena) ? arena : {};
+    return {
+      ...rest,
+      biome: 'prairie',
+      biomes: { prairie: { sanctuary, quests, arena: { wins: a.wins ?? 0 }, bossQuest } },
+      lessonDone: a.lessonDone === true,
+    };
+  },
 };
 
 export function toSaveFile(state: GameState, now = new Date()): SaveFile {

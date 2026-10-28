@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { audio, type SfxId } from '../../audio/audio';
 import type { TrackId } from '../../audio/music';
+import type { BiomeId } from '../../core/gameState';
 import type { SolidFn } from '../../core/physics';
 import { createRng } from '../../core/rng';
 import { formatText } from '../../core/text';
@@ -47,6 +48,8 @@ export interface Shot {
 
 export interface CinematicScript {
   id: string;
+  /** Biome où se joue la cinématique (Prairie par défaut). */
+  biome?: BiomeId;
   shots: Shot[];
 }
 

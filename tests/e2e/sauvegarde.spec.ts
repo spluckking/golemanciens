@@ -34,9 +34,9 @@ test('fermer en pleine quête puis rouvrir : « Continuer » et la progression e
 
   const st = await page.evaluate(() => window.__game!.state());
   expect(st.playerName).toBe('Testeur');
-  expect(st.sanctuary.step).toBe('hatched');
+  expect(st.biomes.prairie.sanctuary.step).toBe('hatched');
   expect(st.golems.map((g) => g.species)).toEqual(['pierre']);
-  expect(st.quests.R1).toEqual({ status: 'active', progress: 1 });
+  expect(st.biomes.prairie.quests.R1).toEqual({ status: 'active', progress: 1 });
   expect(st.food).toBeGreaterThanOrEqual(0);
   const again = await page.evaluate(() => window.__game!.quests());
   expect(again.chickens[0].mode).toBe('home');

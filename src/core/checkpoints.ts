@@ -1,4 +1,4 @@
-import { createGameState, createGolem, type GameState } from './gameState';
+import { createGameState, createGolem, progress, type GameState } from './gameState';
 
 /**
  * Mode test du menu parent (SPEC.md § 14) : aller à un moment du chapitre 1 avec un état
@@ -25,19 +25,20 @@ export function checkpointState(current: GameState, id: CheckpointId): GameState
   s.tutorialsSeen = ['move', 'crate'];
   if (id === 'start') return s;
 
-  s.sanctuary = { step: 'hatched', tileFails: 0 };
+  progress(s).sanctuary = { step: 'hatched', tileFails: 0 };
   s.golems = [current.golems[0] ? { ...current.golems[0], hp: current.golems[0].maxHp } : createGolem('pierre')];
   s.seen = ['pierre', 'mousse'];
   s.food = 6;
-  for (const q of Object.values(s.quests)) q.status = 'available';
+  for (const q of Object.values(progress(s).quests)) q.status = 'available';
   if (id === 'hatched') return s;
 
-  for (const q of ['R1', 'R2', 'R3'] as const) s.quests[q] = { status: 'done', progress: q === 'R1' ? 3 : q === 'R3' ? 2 : 1 };
+  for (const q of ['R1', 'R2', 'R3'] as const) progress(s).quests[q] = { status: 'done', progress: q === 'R1' ? 3 : q === 'R3' ? 2 : 1 };
   s.food = 20;
   if (id === 'arena') return s;
 
-  s.arena = { wins: 3, lessonDone: true };
-  s.bossQuest = 'active';
+  progress(s).arena = { wins: 3 };
+  s.lessonDone = true;
+  progress(s).bossQuest = 'active';
   s.food = 32;
   s.seen.push('slime', 'zombie', 'spider');
   return s;

@@ -22,7 +22,7 @@ import type { DialogBubble } from '../ui/dialog';
 import type { Cell, SanctuaryPlan } from '../world/structures';
 import type { VoxelWorld } from '../world/voxelWorld';
 import { Block } from '../world/blocks';
-import { createGolem, markSeen, type GameState } from './gameState';
+import { createGolem, markSeen, progress, type GameState } from './gameState';
 import { audio } from '../audio/audio';
 import { recordRiddle } from './stats';
 import type { Interactable, Interactions } from './interactions';
@@ -138,7 +138,7 @@ export class SanctuaryLife {
   }
 
   private get step(): string {
-    return this.state.sanctuary.step;
+    return progress(this.state).sanctuary.step;
   }
 
   /** Accorde les portes, les dalles et les interactions avec l'avancement enregistré. */
@@ -186,7 +186,7 @@ export class SanctuaryLife {
       recordRiddle(this.state.stats, level, res.correct);
       if (res.correct) {
         this.hooks.burst(this.plan.stone.x, this.floorY + 1.2, this.plan.stone.z, 0x9ff0ff, 24);
-        advance(this.state.sanctuary);
+        advance(progress(this.state).sanctuary);
         this.syncWorld();
         for (const c of this.plan.gate) this.hooks.burst(c.x + 0.5, c.y + 0.5, c.z + 0.5, 0x6fae52, 6);
         audio.sfx('door');
@@ -221,7 +221,7 @@ export class SanctuaryLife {
     this.hooks.burst(t.x + 0.5, this.floorY + 0.4, t.z + 0.5, TILE_BURST[t.color], 12);
     audio.sfx('tile');
     if (res === 'done') {
-      advance(this.state.sanctuary);
+      advance(progress(this.state).sanctuary);
       this.syncWorld();
       for (const c of this.plan.door) this.hooks.burst(c.x + 0.5, c.y + 0.5, c.z + 0.5, 0xffe27a, 6);
       audio.sfx('door');
@@ -278,7 +278,7 @@ export class SanctuaryLife {
     golem.root.removeFromParent();
 
     this.state.golems.push(createGolem(species, nickname));
-    advance(this.state.sanctuary);
+    advance(progress(this.state).sanctuary);
     this.syncWorld();
     this.hooks.toast(TEXT_WELCOME_GOLEM.replace('{nom}', nickname || GOLEMS[species].name));
     this.hooks.lock(false);

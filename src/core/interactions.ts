@@ -17,6 +17,11 @@ export class Interactions {
     this.items.push(item);
   }
 
+  /** Tout retirer (changement de biome). */
+  clear(): void {
+    this.items.length = 0;
+  }
+
   remove(id: string): void {
     const i = this.items.findIndex((it) => it.id === id);
     if (i >= 0) this.items.splice(i, 1);

@@ -18,8 +18,8 @@ import { QuestBook } from '../quests/villageQuests';
 import { NPC_NAMES } from '../story/dialogues';
 import type { DialogBubble } from '../ui/dialog';
 import type { WorldLabels } from '../ui/worldLabels';
-import type { BiomeLayout } from '../world/prairie';
-import type { GameState } from './gameState';
+import type { PrairieLayout } from '../world/prairie';
+import { progress, type BiomeProgress, type GameState } from './gameState';
 import type { Interactable, Interactions } from './interactions';
 
 const CATCH_RADIUS = 1.8;
@@ -77,7 +77,7 @@ export class QuestLife {
   private arenaAnnounced: boolean;
 
   constructor(
-    private readonly layout: BiomeLayout,
+    private readonly layout: PrairieLayout,
     parent: THREE.Group,
     private readonly state: GameState,
     private readonly interactions: Interactions,
@@ -87,7 +87,7 @@ export class QuestLife {
     private readonly hooks: QuestHooks,
   ) {
     parent.add(this.group);
-    this.book = new QuestBook(state.quests);
+    this.book = new QuestBook(progress(state).quests);
     this.arenaAnnounced = this.book.mandatoryDone;
     const world = layout.world;
     const ground = (x: number, z: number): number => world.standY(Math.floor(x), Math.floor(z));
@@ -184,9 +184,9 @@ export class QuestLife {
     const line = (text: string): void => this.hooks.dialog.show({ speaker: NPC_NAMES[npc], portrait: PORTRAITS[npc], text });
     if (res.kind === 'none') {
       // Quête du boss (P1) : Mère Brique la donne une fois l'arène terminée.
-      if (npc !== 'mereBrique' || !this.arenaDone() || this.state.bossQuest === 'defeated') return false;
-      if (this.state.bossQuest === 'locked') {
-        this.state.bossQuest = 'active';
+      if (npc !== 'mereBrique' || !this.arenaDone() || progress(this.state).bossQuest === 'defeated') return false;
+      if (progress(this.state).bossQuest === 'locked') {
+        progress(this.state).bossQuest = 'active';
         line(P1_REQUEST);
       } else line(P1_REMINDER);
       this.hooks.onProgress();
@@ -266,7 +266,7 @@ export class QuestLife {
 
   update(dt: number, hero: { x: number; y: number; z: number; facing: number }, playing: boolean): void {
     this.time += dt;
-    if (this.state.sanctuary.step === 'hatched' && !this.book.unlocked) this.book.unlockAll();
+    if (progress(this.state).sanctuary.step === 'hatched' && !this.book.unlocked) this.book.unlockAll();
     if (playing) {
       this.countSlimes();
       this.updateChickens(dt, hero);
@@ -289,7 +289,7 @@ export class QuestLife {
 
     // Marqueurs « ! » au-dessus des villageois.
     for (const npc of ['mereBrique', 'paquerette', 'gaston'] as const) {
-      const bossOffer = npc === 'mereBrique' && this.arenaDone() && this.state.bossQuest === 'locked';
+      const bossOffer = npc === 'mereBrique' && this.arenaDone() && progress(this.state).bossQuest === 'locked';
       const mark = this.book.marker(npc) ?? (bossOffer ? 'give' : null);
       if (!mark) continue;
       const p = this.npcSpots[npc];
@@ -376,14 +376,14 @@ export class QuestLife {
   }
 
   snapshot(): {
-    log: GameState['quests'];
+    log: BiomeProgress['quests'];
     chickens: { x: number; z: number; mode: ChickenMode }[];
     flowers: { x: number; z: number; picked: boolean }[];
     keyCrate: { x: number; z: number };
     pen: { x0: number; z0: number; x1: number; z1: number };
   } {
     return {
-      log: this.state.quests,
+      log: progress(this.state).quests,
       chickens: this.chickens.map((c) => ({ x: c.x, z: c.z, mode: c.mode })),
       flowers: this.flowers.map((f) => ({ x: f.x, z: f.z, picked: f.picked })),
       keyCrate: this.layout.questSpots.keyCrate,

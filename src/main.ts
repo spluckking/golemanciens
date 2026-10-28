@@ -2,7 +2,7 @@ import './style.css';
 import './ui/theme.css';
 import { App, type ScreenId } from './core/app';
 import { Game } from './core/game';
-import { createGameState, createGolem, type GameState } from './core/gameState';
+import { BIOME_IDS, createGameState, createGolem, progress, type BiomeId, type GameState } from './core/gameState';
 import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
@@ -13,6 +13,7 @@ import { applyBlockTheme } from './ui/theme';
 import { loadGame } from './save/store';
 import { audio } from './audio/audio';
 import type { ArenaFight } from './core/arenaFight';
+import type { PrairieLife } from './core/prairieLife';
 
 declare global {
   interface Window {
@@ -23,16 +24,18 @@ declare global {
       frames: () => number;
       screen: () => ScreenId;
       state: () => GameState;
-      life: () => ReturnType<Game['life']['snapshot']>;
+      /** Vie du biome chargé (les champs de la Prairie n'existent que dans la Prairie). */
+      life: () => ReturnType<PrairieLife['snapshot']>;
       teleport: (x: number, z: number, facing?: number) => void;
       drawCalls: () => number;
-      sanctuary: () => ReturnType<Game['life']['sanctuary']['snapshot']>;
-      quests: () => ReturnType<Game['life']['quests']['snapshot']>;
+      sanctuary: () => ReturnType<PrairieLife['sanctuary']['snapshot']>;
+      quests: () => ReturnType<PrairieLife['quests']['snapshot']>;
       interactables: () => string[];
       answer: () => number;
       fight: () => ReturnType<ArenaFight['snapshot']> | null;
       save: () => Promise<boolean>;
       audio: () => { state: string; track: string | null };
+      travel: (biome: BiomeId) => Promise<void>;
     };
   }
 }
@@ -59,23 +62,28 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   const state = (persist ? await loadGame() : null) ?? createGameState();
   // Mode test : « ?test&sanctuary=tiles|open|hatched » avance la quête de l'œuf (avant la construction du monde).
   const step = params.get('sanctuary');
-  if (isTest && step && SANCTUARY_STEPS.includes(step as SanctuaryStep)) state.sanctuary.step = step as SanctuaryStep;
+  if (isTest && step && SANCTUARY_STEPS.includes(step as SanctuaryStep)) progress(state).sanctuary.step = step as SanctuaryStep;
   // Mode test : graine fixe, pour des tirages reproductibles.
   const rng = createRng(isTest ? 12345 : (Date.now() ^ 0x9e3779b9) >>> 0);
   // Mode test : « ?test&fast » divise les attentes par 2,5.
   const timeScale = isTest && params.has('fast') ? 0.4 : 1;
   // Mode test : « ?test&arena=open » termine l'œuf et les 3 quêtes obligatoires ; « &arenaWins=2 », « &lesson=done ».
   if (isTest && params.get('arena') === 'open') {
-    state.sanctuary.step = 'hatched';
-    for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) state.quests[id].status = id.startsWith('R') ? 'done' : 'available';
+    progress(state).sanctuary.step = 'hatched';
+    for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) progress(state).quests[id].status = id.startsWith('R') ? 'done' : 'available';
   }
-  if (isTest && params.has('arenaWins')) state.arena.wins = Number(params.get('arenaWins'));
-  if (isTest && params.get('lesson') === 'done') state.arena.lessonDone = true;
+  if (isTest && params.has('arenaWins')) progress(state).arena.wins = Number(params.get('arenaWins'));
+  if (isTest && params.get('lesson') === 'done') state.lessonDone = true;
   // « ?test&arena=open&boss=active » : arène terminée et quête du boss acceptée.
   if (isTest && params.get('boss') === 'active') {
-    state.arena.wins = 3;
-    state.bossQuest = 'active';
+    progress(state).arena.wins = 3;
+    progress(state).bossQuest = 'active';
   }
+  // « ?test&unlock=foret » débloque la Forêt (comme si T2 était lu) ; « &biome=foret » y commence la partie.
+  const unlock = params.get('unlock') ?? params.get('biome');
+  if (isTest && unlock === 'foret' && !state.storiesRead.includes('T2')) state.storiesRead.push('T2');
+  const biome = params.get('biome');
+  if (isTest && biome && BIOME_IDS.includes(biome as BiomeId)) state.biome = biome as BiomeId;
   const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale, persist });
   const app = new App(game, layer, state, rng, timeScale);
   game.start();
@@ -110,22 +118,27 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     } else {
       void app.start();
     }
+    const prairie = (): PrairieLife => {
+      if (!game.prairie) throw new Error('Le héros n’est pas dans la Prairie');
+      return game.prairie;
+    };
     window.__game = {
       ready: true,
       hero: () => ({ x: game.hero.x, y: game.hero.y, z: game.hero.z, onGround: game.hero.onGround, facing: game.hero.facing }),
       frames: () => game.frameCount,
       screen: () => app.screen,
       state: () => state,
-      life: () => game.life.snapshot(),
+      life: () => game.life.snapshot() as ReturnType<PrairieLife['snapshot']>,
       teleport: (x, z, facing) => game.teleport(x, z, facing),
       drawCalls: () => game.drawCalls,
-      sanctuary: () => game.life.sanctuary.snapshot(),
-      quests: () => game.life.quests.snapshot(),
+      sanctuary: () => prairie().sanctuary.snapshot(),
+      quests: () => prairie().quests.snapshot(),
       interactables: () => game.interactions.ids(),
       answer: () => shownQuestion()?.correctIndex ?? -1,
       fight: () => game.fight?.snapshot() ?? null,
       save: () => game.save(),
       audio: () => ({ state: audio.state, track: audio.track }),
+      travel: (biome) => game.travel(biome),
     };
   } else {
     void app.start();

@@ -946,6 +946,45 @@ function trophyRoiSlimeModel(): ModelDef {
 }
 
 /**
+ * Arche de voyage (Arche des éclats et arches de retour) : deux piliers de pierre, un linteau
+ * avec une étoile, et un portail tourbillonnant qui ne s'affiche que si l'on peut voyager.
+ */
+function archModel(): ModelDef {
+  const stone = 0xa8a8b4;
+  const dark = 0x6e6e7c;
+  const gold = 0xf0c43c;
+  const portal: Cube[] = [];
+  const cell = 0.24;
+  for (let i = -5; i <= 5; i++)
+    for (let j = -5; j <= 5; j++) {
+      const r = Math.hypot(i, j);
+      if (r > 5.2) continue;
+      // Spirale : la couleur dépend de l'angle et de la distance au centre.
+      const k = (Math.atan2(j, i) / (Math.PI * 2) + r / 6 + 1) % 1;
+      const color = r < 1.5 ? 0xf6f0ff : k < 0.33 ? 0x7a5cff : k < 0.66 ? 0x4aa8ff : 0xb07cff;
+      portal.push([cell, cell, 0.06, i * cell, j * cell, 0, color]);
+    }
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.8, 3.6, 0.8, -1.7, 1.8, 0, stone],
+        [0.8, 3.6, 0.8, 1.7, 1.8, 0, stone],
+        [1, 0.3, 1, -1.7, 0.15, 0, dark],
+        [1, 0.3, 1, 1.7, 0.15, 0, dark],
+        [4.4, 0.6, 1, 0, 3.9, 0, dark],
+        [3.6, 0.2, 0.9, 0, 3.5, 0, stone],
+        [0.5, 0.5, 0.2, 0, 3.9, -0.55, gold],
+        [0.2, 0.8, 0.2, 0, 3.9, -0.6, gold],
+        [0.8, 0.2, 0.2, 0, 3.9, -0.6, gold],
+      ],
+    },
+    { name: 'portal', pivot: [0, 1.8, 0], glow: true, cubes: portal },
+  ];
+}
+
+/**
  * Médaille d'or de la fin du jeu (outro O6). Placée au même endroit et avec le même cap que le
  * héros, elle pend sur sa poitrine : ruban bleu et rouge, disque doré, étoile qui brille.
  */
@@ -1079,6 +1118,7 @@ export const MODELS = {
   trophyShelf: trophyShelfModel(),
   trophyRoiSlime: trophyRoiSlimeModel(),
   medal: medalModel(),
+  arch: archModel(),
   rivet: houseGolemModel(),
   gong: gongModel(),
   roiSlime: roiSlimeModel(),

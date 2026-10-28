@@ -52,8 +52,8 @@ test('menu parent : appui long, code, statistiques, réglages, mode test (avec r
   await page.getByTestId('btn-play').tap();
   await waitReady(page);
   const after = await page.evaluate(() => window.__game!.state());
-  expect(after.bossQuest).toBe('active');
-  expect(after.arena.wins).toBe(3);
+  expect(after.biomes.prairie.bossQuest).toBe('active');
+  expect(after.biomes.prairie.arena.wins).toBe(3);
   expect(after.golems).toHaveLength(1);
   expect(after.settings.parentCode).toBe('4321');
   expect(after.settings.pauseMinutes).toBe(35);

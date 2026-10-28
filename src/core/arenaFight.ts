@@ -16,7 +16,7 @@ import { drawRiddle } from '../questions/riddleBank';
 import { CombatHud } from '../ui/combatHud';
 import { askChoice, askQuestion, revealAnswer, showMessage } from '../ui/screens';
 import type { FightStage } from '../world/structures';
-import { markSeen, type GameState } from './gameState';
+import { markSeen, progress, type GameState } from './gameState';
 import { recordCalc, recordRiddle } from './stats';
 import type { Rng } from './rng';
 
@@ -103,7 +103,7 @@ export class ArenaFight {
     }
     host.scene.add(this.group);
     for (const mon of this.combat.monsters) markSeen(state, mon.model);
-    this.hud = new CombatHud(host.uiLayer, state.playerName, state.arena.lessonDone);
+    this.hud = new CombatHud(host.uiLayer, state.playerName, state.lessonDone);
     this.placeActive();
   }
 
@@ -244,13 +244,13 @@ export class ArenaFight {
     if (this.host.kind === 'boss') return this.finishBoss(won);
     if (won) {
       state.food += FOOD_ARENA_WIN;
-      state.arena.wins = Math.min(ARENA_WINS_TO_FINISH, state.arena.wins + 1);
+      progress(state).arena.wins = Math.min(ARENA_WINS_TO_FINISH, progress(state).arena.wins + 1);
       await showMessage(uiLayer, `${TEXT_VICTORY} +${FOOD_ARENA_WIN} 🍎`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
-      if (state.arena.wins === ARENA_WINS_TO_FINISH) await showMessage(uiLayer, TEXT_ARENA_DONE, TEXT_VICTORY_BUTTON, state.playerName, 'arena-done');
+      if (progress(state).arena.wins === ARENA_WINS_TO_FINISH) await showMessage(uiLayer, TEXT_ARENA_DONE, TEXT_VICTORY_BUTTON, state.playerName, 'arena-done');
       return 'won';
     }
     await showMessage(uiLayer, CONTENT.lumibloc.defeat, TEXT_DEFEAT_BUTTON, state.playerName, 'combat-defeat');
-    if (!state.arena.lessonDone) await this.lesson();
+    if (!state.lessonDone) await this.lesson();
     return 'lost';
   }
 
@@ -258,7 +258,7 @@ export class ArenaFight {
   private async finishBoss(won: boolean): Promise<'won' | 'lost' | 'retry'> {
     const { state, uiLayer } = this.host;
     if (won) {
-      state.bossQuest = 'defeated';
+      progress(state).bossQuest = 'defeated';
       state.food += FOOD_BOSS;
       state.shards = Math.max(state.shards, 1);
       if (this.host.boss && !state.trophies.includes(this.host.boss)) state.trophies.push(this.host.boss);
@@ -266,7 +266,7 @@ export class ArenaFight {
       return 'won';
     }
     await showMessage(uiLayer, CONTENT.lumibloc.defeat, TEXT_DEFEAT_BUTTON, state.playerName, 'combat-defeat');
-    if (!state.arena.lessonDone) await this.lesson();
+    if (!state.lessonDone) await this.lesson();
     const again = await askChoice(uiLayer, TEXT_RETRY_QUESTION, [TEXT_RETRY, TEXT_LATER], state.playerName, 'boss-retry');
     return again === 0 ? 'retry' : 'lost';
   }
@@ -281,7 +281,7 @@ export class ArenaFight {
       const chosen = await askQuestion(uiLayer, view, state.playerName);
       if (!quiz.answer(chosen)) await revealAnswer(uiLayer, view, chosen, state.playerName);
     }
-    state.arena.lessonDone = true;
+    state.lessonDone = true;
     this.hud.showSheetButton();
   }
 

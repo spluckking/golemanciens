@@ -29,7 +29,7 @@ test('Roi Slime : golems soignés au départ, défaite, « Réessayer » relance
   await expect(page.getByTestId('combat')).toHaveCount(0);
   await expect(page.getByTestId('btn-jump')).toBeVisible();
   const st = await page.evaluate(() => window.__game!.state());
-  expect(st.bossQuest).toBe('active');
+  expect(st.biomes.prairie.bossQuest).toBe('active');
   expect(st.shards).toBe(0);
   expect(st.golems[0].hp).toBe(8);
 });

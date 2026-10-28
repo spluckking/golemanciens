@@ -4,14 +4,11 @@ import { HeroModel } from '../entities/heroModel';
 import { Sparks } from '../entities/sparks';
 import { CONTENT } from '../data/content';
 import { CINEMATICS, OUTRO_CINEMATICS, outroCaptions, storyCaptions } from '../story/cinematics';
-import { OBJECTIVE_CHAPTER_DONE, P1_TASK, P1_TITLE, TEXT_TROPHY } from '../data/bossQuest';
+import { TEXT_TROPHY } from '../data/bossQuest';
 import { CinematicDirector, type CinematicScript } from '../story/cinematics/director';
-import { OBJECTIVE_GO_ARENA, type QuestNpc } from '../data/quests';
-import { OBJECTIVE_BACK_TO_VILLAGE } from '../data/sanctuaries';
-import { questLine } from '../quests/villageQuests';
-import { JOURNAL_NO_DONE, NPC_NAMES, OBJECTIVE_FIND_EGG } from '../story/dialogues';
+import { JOURNAL_NO_DONE } from '../story/dialogues';
 import { askNickname, chooseGolem } from '../ui/hatching';
-import { askQuestion, revealAnswer } from '../ui/screens';
+import { askChoice, askQuestion, revealAnswer } from '../ui/screens';
 import { DebugOverlay } from '../ui/debugOverlay';
 import { DialogBubble } from '../ui/dialog';
 import { el } from '../ui/dom';
@@ -26,23 +23,26 @@ import { WorldLabels } from '../ui/worldLabels';
 import { paintAtlas } from '../world/atlas';
 import { BiomeScene } from '../world/biomeScene';
 import { Block } from '../world/blocks';
-import { generatePrairie, type BiomeLayout } from '../world/prairie';
+import { BIOME_MUSIC, BIOME_NAMES, buildLayout, unlockedBiomes } from '../world/biomes';
+import type { WorldLayout } from '../world/layout';
+import type { PrairieLayout } from '../world/prairie';
 import { buildVolcanoSet } from '../world/volcanoSet';
 import { createAtlasTexture } from '../world/voxelMaterial';
 import { ArenaFight } from './arenaFight';
-import { BiomeLife } from './biomeLife';
+import { ForestLife } from './forestLife';
+import { PrairieLife } from './prairieLife';
+import type { Objective, WorldHooks, WorldLife } from './worldLife';
 import { saveGame } from '../save/store';
 import { audio } from '../audio/audio';
 import { CameraRig } from './cameraRig';
 import { compassRotation } from './compass';
-import type { GameState } from './gameState';
+import type { BiomeId, GameState } from './gameState';
 import { InputState, attachKeyboard } from './input';
 import { Interactions } from './interactions';
 import type { SolidFn } from './physics';
 import type { Rng } from './rng';
 
 const MAX_PIXEL_RATIO = 1.5;
-const SKY_COLOR = 0x9fd8ff;
 const FOG_NEAR = 30;
 const FOG_FAR = 64;
 const LOOK_YAW_PER_PX = 0.006;
@@ -70,6 +70,11 @@ const AUTOSAVE_EVERY_S = 60;
 const FINAL_OUTRO = 'O6';
 /** Un bruit de pas tous les 1,7 bloc parcourus au sol. */
 const STEP_EVERY = 1.7;
+/** Voyage par une arche (textes nouveaux, à valider par le parent). */
+const TEXT_ARCH_ASLEEP = 'L’arche dort encore. Lumibloc te dira quand elle s’éveillera.';
+const TEXT_ARCH_WHERE = 'Où veux-tu aller ?';
+const TEXT_ARCH_STAY = 'Rester ici';
+const TRAVEL_FADE_MS = 900;
 
 export type GameMode = 'title' | 'play' | 'cinematic' | 'combat';
 
@@ -88,13 +93,14 @@ export class Game {
   readonly camera: THREE.PerspectiveCamera;
   readonly input = new InputState();
   readonly hero: HeroState;
-  readonly layout: BiomeLayout;
+  /** Biome chargé (un seul en mémoire). */
+  layout: WorldLayout;
   readonly interactions = new Interactions();
-  readonly life: BiomeLife;
+  life: WorldLife;
   private readonly rig: CameraRig;
   private readonly heroModel = new HeroModel();
   private readonly shadow: THREE.Mesh;
-  private readonly biome: BiomeScene;
+  private biome: BiomeScene;
   private readonly sparks: Sparks;
   private readonly controls: TouchControls;
   private readonly hud: Hud;
@@ -154,8 +160,8 @@ export class Game {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(this.renderer.domElement);
 
-    this.scene.background = new THREE.Color(SKY_COLOR);
-    this.scene.fog = new THREE.Fog(SKY_COLOR, FOG_NEAR, FOG_FAR);
+    this.scene.background = new THREE.Color();
+    this.scene.fog = new THREE.Fog(0xffffff, FOG_NEAR, FOG_FAR);
     this.hemi = new THREE.HemisphereLight(0xeaf6ff, 0x7a6a50, 1.9);
     this.sun = new THREE.DirectionalLight(0xfff4e0, 1.6);
     this.sun.position.set(0.5, 1, 0.35);
@@ -163,16 +169,16 @@ export class Game {
 
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, FOG_FAR + 20);
 
-    this.layout = generatePrairie();
-    const world = this.layout.world;
-    this.solid = (x, y, z) => world.solidAt(x, y, z);
-    const atlas = createAtlasTexture(paintAtlas());
-    this.atlas = atlas;
-    this.biome = new BiomeScene(this.layout, atlas);
+    this.layout = buildLayout(state.biome);
+    this.solid = (x, y, z) => this.layout.world.solidAt(x, y, z);
+    this.atlas = createAtlasTexture(paintAtlas());
+    this.biome = new BiomeScene(this.layout, this.atlas);
     this.scene.add(this.biome.group);
+    this.applySky();
 
     // Le héros attend devant l'Académie (écran titre), puis se réveille chez lui au début de la partie.
-    const { titleSpot, spawnYaw } = this.layout;
+    const titleSpot = this.layout.id === 'prairie' ? (this.layout as PrairieLayout).titleSpot : this.layout.spawn;
+    const spawnYaw = this.layout.spawnYaw;
     this.hero = createHero(titleSpot.x, titleSpot.y, titleSpot.z, spawnYaw);
     this.scene.add(this.heroModel.root);
     this.shadow = new THREE.Mesh(
@@ -202,33 +208,17 @@ export class Game {
     uiLayer.appendChild(this.debug.root);
     attachKeyboard(this.input, window);
 
-    this.life = new BiomeLife(this.layout, state, atlas, this.solid, rng, this.interactions, {
-      toast: (t) => this.hud.showToast(t),
-      dialog: this.dialog,
-      labels: this.labels,
-      sparks: this.sparks,
-      onAllKO: () => this.recoverFromKO(),
-      onSleep: () => this.sleep(),
-      onProgress: () => void this.save(),
-      onFight: () => void this.startFight('arena'),
-      onBossFight: () => void this.startFight('boss'),
-      sanctuary: {
-        rebuild: (cells) => this.biome.rebuildCells(cells),
-        ask: (view) => askQuestion(this.uiLayer, view, this.state.playerName),
-        reveal: (view, chosen) => revealAnswer(this.uiLayer, view, chosen, this.state.playerName),
-        chooseGolem: (choices) => chooseGolem(this.uiLayer, choices),
-        askNickname: (species) => askNickname(this.uiLayer, species),
-        lock: (locked) => this.lock(locked),
-        placeHero: (x, z, facing) => this.teleport(x, z, facing),
-        onProgress: () => void this.save(),
-      },
-    });
+    this.life = this.createLife(this.layout);
     this.scene.add(this.life.group);
 
+    // Le metteur en scène suit le biome chargé (monde et collisions).
+    const game = this;
     this.director = new CinematicDirector({
       scene: this.scene,
       camera: this.camera,
-      world,
+      get world() {
+        return game.layout.world;
+      },
       hemi: this.hemi,
       sun: this.sun,
       sparks: this.sparks,
@@ -281,7 +271,8 @@ export class Game {
       this.teleport(p.x, p.z, this.layout.spawnYaw);
     }
     if (mode === 'title') audio.music('storyDay');
-    else if (playing) audio.music('prairie');
+    else if (playing) audio.music(BIOME_MUSIC[this.layout.id]);
+    this.life.setArchOpen(this.travelChoices().length > 0);
     const inWorld = mode !== 'cinematic' && mode !== 'combat';
     // Le compteur de FPS (mode test) ne doit pas cacher les sous-titres.
     this.inWorld = inWorld;
@@ -320,7 +311,8 @@ export class Game {
    * on peut réessayer tout de suite ; la victoire lance l'outro O1 et pose le trophée.
    */
   private async startFight(kind: 'arena' | 'boss'): Promise<void> {
-    if (this.fight || this.paused) return;
+    const prairie = this.prairie;
+    if (this.fight || this.paused || !prairie) return;
     this.dialog.close();
     this.setMode('combat');
     audio.music(kind === 'boss' ? 'boss' : 'arena');
@@ -333,7 +325,7 @@ export class Game {
         state: this.state,
         rng: this.rng,
         sparks: this.sparks,
-        plan: kind === 'boss' ? this.layout.marsh : this.layout.arena,
+        plan: kind === 'boss' ? prairie.layout.marsh : prairie.layout.arena,
         kind,
         boss: kind === 'boss' ? 'roiSlime' : undefined,
         timeScale: this.timeScale,
@@ -347,14 +339,15 @@ export class Game {
     if (kind === 'boss' && result === 'won') {
       await this.playOutro('O1');
       this.state.chapter = Math.max(this.state.chapter, 2);
-      const home = this.life.home.wakePoint();
+      const home = prairie.home.wakePoint();
       this.teleport(home.x, home.z, this.layout.spawnYaw);
       this.life.sim.recoverAt(home.x, home.y, home.z);
       this.setMode('play');
       this.hud.showToast(TEXT_TROPHY, 4);
       return;
     }
-    const back = kind === 'boss' ? { x: this.layout.marsh.boss.x + 4, z: this.layout.marsh.boss.z - 3 } : { x: this.layout.arena.gong.x, z: this.layout.arena.gong.z + 2.5 };
+    const { marsh, arena } = prairie.layout;
+    const back = kind === 'boss' ? { x: marsh.boss.x + 4, z: marsh.boss.z - 3 } : { x: arena.gong.x, z: arena.gong.z + 2.5 };
     this.teleport(back.x, back.z, 0);
     this.life.sim.recoverAt(this.hero.x, this.hero.y, this.hero.z);
     this.setMode('play');
@@ -379,9 +372,108 @@ export class Game {
   /** Joue une cinématique, puis revient au mode précédent. */
   async playCinematic(script: CinematicScript, captions: string[], options: { skippable: boolean; timeScale: number; startShot?: number }): Promise<void> {
     const previous = this.mode;
+    // La cinématique se joue dans son biome : on le charge le temps de la regarder (un seul biome en mémoire).
+    const here = this.layout.id;
+    const there = script.biome ?? 'prairie';
+    if (there !== here) this.loadBiome(there);
     this.setMode('cinematic');
     await this.director.play(script, { captions, playerName: this.state.playerName, ...options });
+    if (there !== here) this.loadBiome(here);
     this.setMode(previous);
+  }
+
+  /** La vie de la Prairie, si c'est le biome chargé. */
+  get prairie(): PrairieLife | null {
+    return this.life instanceof PrairieLife ? this.life : null;
+  }
+
+  // ---------- Biomes ----------
+
+  private createLife(layout: WorldLayout): WorldLife {
+    const hooks: WorldHooks = {
+      toast: (t) => this.hud.showToast(t),
+      dialog: this.dialog,
+      labels: this.labels,
+      sparks: this.sparks,
+      onAllKO: () => this.recoverFromKO(),
+      onProgress: () => void this.save(),
+      onArch: () => void this.useArch(),
+    };
+    if (layout.id === 'foret') return new ForestLife(layout, this.state, this.atlas, this.solid, this.rng, this.interactions, hooks);
+    return new PrairieLife(layout as PrairieLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, {
+      ...hooks,
+      onSleep: () => this.sleep(),
+      onFight: () => void this.startFight('arena'),
+      onBossFight: () => void this.startFight('boss'),
+      sanctuary: {
+        rebuild: (cells) => this.biome.rebuildCells(cells),
+        ask: (view) => askQuestion(this.uiLayer, view, this.state.playerName),
+        reveal: (view, chosen) => revealAnswer(this.uiLayer, view, chosen, this.state.playerName),
+        chooseGolem: (choices) => chooseGolem(this.uiLayer, choices),
+        askNickname: (species) => askNickname(this.uiLayer, species),
+        lock: (locked) => this.lock(locked),
+        placeHero: (x, z, facing) => this.teleport(x, z, facing),
+        onProgress: () => void this.save(),
+      },
+    });
+  }
+
+  /** Remplace le biome chargé : l'ancien est libéré (SPEC § 2, un seul biome en mémoire). */
+  private loadBiome(id: BiomeId): void {
+    if (this.layout.id === id) return;
+    this.dialog.close();
+    this.life.dispose();
+    this.biome.dispose();
+    this.interactions.clear();
+    this.layout = buildLayout(id);
+    this.biome = new BiomeScene(this.layout, this.atlas);
+    this.scene.add(this.biome.group);
+    this.life = this.createLife(this.layout);
+    this.scene.add(this.life.group);
+    this.applySky();
+    this.lastSafe = null;
+  }
+
+  private applySky(): void {
+    (this.scene.background as THREE.Color).setHex(this.layout.sky);
+    (this.scene.fog as THREE.Fog).color.setHex(this.layout.sky);
+  }
+
+  /** Biomes où l'arche peut mener depuis ici. */
+  private travelChoices(): BiomeId[] {
+    return unlockedBiomes(this.state).filter((id) => id !== this.layout.id);
+  }
+
+  /** L'arche : choisir une destination parmi les biomes débloqués. */
+  private async useArch(): Promise<void> {
+    if (this.paused) return;
+    const choices = this.travelChoices();
+    if (!choices.length) {
+      this.hud.showToast(TEXT_ARCH_ASLEEP, 3);
+      return;
+    }
+    this.paused = true;
+    this.input.stickX = this.input.stickY = 0;
+    const pick = await askChoice(this.uiLayer, TEXT_ARCH_WHERE, [...choices.map((id) => BIOME_NAMES[id]), TEXT_ARCH_STAY], this.state.playerName, 'arch-choice');
+    this.paused = false;
+    if (pick < choices.length) await this.travel(choices[pick]);
+  }
+
+  /** Voyage : fondu, nouveau biome, arrivée devant son arche ; la partie est enregistrée. */
+  async travel(to: BiomeId): Promise<void> {
+    this.paused = true;
+    this.fade.classList.remove('hidden');
+    audio.sfx('door');
+    await new Promise((r) => setTimeout(r, TRAVEL_FADE_MS * this.timeScale));
+    this.loadBiome(to);
+    this.state.biome = to;
+    const a = this.layout.arrival;
+    this.teleport(a.x, a.z, a.facing);
+    this.life.sim.recoverAt(this.hero.x, this.hero.y, this.hero.z);
+    this.setMode('play');
+    this.fade.classList.add('hidden');
+    this.paused = false;
+    void this.save();
   }
 
   /** Mode test : place le héros (et ses golems suivront). */
@@ -407,52 +499,9 @@ export class Game {
     this.controls.root.classList.toggle('hidden', locked || this.mode !== 'play');
   }
 
-  /** Objectif actif du journal et de la boussole, selon l'avancement du chapitre. */
-  private objective(): { text: string; target: { x: number; z: number }; current: { text: string; active: boolean }[]; done: string[] } {
-    if (this.state.sanctuary.step !== 'hatched') {
-      return { text: OBJECTIVE_FIND_EGG, target: this.layout.landmarks.sanctuary, current: [{ text: OBJECTIVE_FIND_EGG, active: true }], done: [] };
-    }
-    const quests = this.life.quests;
-    const book = quests.book;
-    const name = (id: QuestNpc): string => NPC_NAMES[id];
-    const goal = book.objective();
-    let text = OBJECTIVE_BACK_TO_VILLAGE;
-    let target: { x: number; z: number } = this.layout.landmarks.village;
-    if (goal.kind === 'npc') {
-      text = questLine(goal.quest, book.state(goal.quest.id), name);
-      target = quests.npcSpot(goal.npc);
-    } else if (goal.kind === 'task') {
-      text = questLine(goal.quest, book.state(goal.quest.id), name);
-      target = quests.taskTarget(goal.quest.id, this.hero);
-    } else if (goal.kind === 'arena') {
-      text = OBJECTIVE_GO_ARENA;
-      target = this.layout.landmarks.arena;
-    }
-    // Après l'arène : la quête du boss (P1), puis la fin du chapitre.
-    if (goal.kind === 'arena' && this.life.arena.finished) {
-      const step = this.state.bossQuest;
-      if (step === 'locked') {
-        text = `${NPC_NAMES.mereBrique} a besoin d’aide`;
-        target = quests.npcSpot('mereBrique');
-      } else if (step === 'active') {
-        text = `${P1_TITLE} : ${P1_TASK}`;
-        target = this.life.boss.trailTarget(this.hero);
-      } else {
-        text = OBJECTIVE_CHAPTER_DONE;
-        target = this.layout.landmarks.academy;
-      }
-    }
-    // Journal : l'objectif mis en avant, puis les autres quêtes en cours ; les quêtes terminées.
-    const current = [{ text, active: true }];
-    for (const d of book.defs) {
-      const st = book.state(d.id);
-      if (st.status === 'locked' || st.status === 'done') continue;
-      const line = questLine(d, st, name);
-      if (line !== text && !current.some((c) => c.text === line)) current.push({ text: line, active: false });
-    }
-    const done = [OBJECTIVE_FIND_EGG, ...book.defs.filter((d) => book.state(d.id).status === 'done').map((d) => d.title)];
-    if (this.state.bossQuest === 'defeated') done.push(P1_TITLE);
-    return { text, target, current, done };
+  /** Objectif actif du journal et de la boussole : chaque biome le donne. */
+  private objective(): Objective {
+    return this.life.objective(this.hero);
   }
 
   /** Réglages du menu parent : affichage des FPS, volumes. */
@@ -526,7 +575,8 @@ export class Game {
 
   /** Le héros dort : écran de nuit, golems soignés, la maison devient le point de retour. */
   private sleep(): void {
-    if (this.paused) return;
+    const prairie = this.prairie;
+    if (this.paused || !prairie) return;
     this.paused = true;
     this.input.stickX = this.input.stickY = 0;
     this.sleepFade.classList.remove('hidden');
@@ -534,7 +584,7 @@ export class Game {
     setTimeout(() => {
       audio.music('prairie');
       audio.sfx('chime');
-      const p = this.life.home.wakePoint();
+      const p = prairie.home.wakePoint();
       this.teleport(p.x, p.z, this.layout.spawnYaw);
       this.life.sim.recoverAt(p.x, p.y, p.z);
       this.state.lastLantern = 'home';

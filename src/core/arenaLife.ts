@@ -6,7 +6,7 @@ import { MODELS } from '../entities/models';
 import { Block } from '../world/blocks';
 import type { ArenaPlan, Cell } from '../world/structures';
 import type { VoxelWorld } from '../world/voxelWorld';
-import type { GameState } from './gameState';
+import { progress, type GameState } from './gameState';
 import type { Interactable, Interactions } from './interactions';
 
 /** Textes nouveaux (à valider par le parent). */
@@ -58,7 +58,7 @@ export class ArenaLife {
   }
 
   get finished(): boolean {
-    return this.state.arena.wins >= ARENA_WINS_TO_FINISH;
+    return progress(this.state).arena.wins >= ARENA_WINS_TO_FINISH;
   }
 
   private strike(): void {

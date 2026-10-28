@@ -9,14 +9,9 @@ import { greeting, lumiblocLine } from '../story/dialogues';
 import type { DialogBubble } from '../ui/dialog';
 import type { WorldLabels } from '../ui/worldLabels';
 import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
-import type { BiomeLayout } from '../world/prairie';
-import { markSeen, type GameState } from './gameState';
+import type { Point2, Point3, WorldLayout } from '../world/layout';
 import { audio } from '../audio/audio';
-import { ArenaLife } from './arenaLife';
-import { BossLife } from './bossLife';
-import { HomeLife } from './home';
-import { QuestLife } from './questLife';
-import { SanctuaryLife, type SanctuaryHooks } from './sanctuaryLife';
+import { markSeen, type GameState } from './gameState';
 import type { Interactions } from './interactions';
 import type { SolidFn } from './physics';
 import type { Rng } from './rng';
@@ -24,33 +19,38 @@ import type { Rng } from './rng';
 /** Textes d'interface nouveaux (à valider par le parent). */
 const TEXT_LANTERN_LIT = 'Lanterne allumée';
 const TEXT_CHEST_GUARDED = 'Des monstres gardent ce coffre.';
+const TEXT_TRAVEL = 'Voyager';
 
 const VIEW_DISTANCE = 50;
 /** Distance à laquelle un monstre compte comme rencontré (encyclopédie). */
-const SEEN_RADIUS = 12;
+export const SEEN_RADIUS = 12;
 const NPC_TALK_RADIUS = 2.6;
 const CHEST_RADIUS = 2.2;
 const LANTERN_RADIUS = 3;
+const ARCH_RADIUS = 3;
 const AIM_RANGE = 9;
 const AIM_CONE = Math.cos((40 * Math.PI) / 180);
 const MONSTER_COLORS: Record<MonsterAgent['species'], number> = { slime: 0x6ed46e, zombie: 0x7fae6a, spider: 0x6b4a2e };
 
-export interface LifeHooks {
+/** Ce que le jeu fournit à la vie d'un biome. */
+export interface WorldHooks {
   toast: (text: string) => void;
   dialog: DialogBubble;
   labels: WorldLabels;
   sparks: Sparks;
   onAllKO: () => void;
-  /** Le héros se couche dans son lit. */
-  onSleep: () => void;
-  /** Le gong de l'arène a sonné. */
-  onFight: () => void;
-  /** Le héros affronte le boss du biome. */
-  onBossFight: () => void;
   /** Un progrès à enregistrer (quête, sanctuaire, lanterne, coffre…). */
   onProgress: () => void;
-  /** Interface et monde pour le sanctuaire (énigmes, éclosion, portes). */
-  sanctuary: Omit<SanctuaryHooks, 'dialog' | 'toast' | 'burst'>;
+  /** Le héros touche l'arche du biome (voyage). */
+  onArch: () => void;
+}
+
+/** Objectif actif (boussole) et lignes du journal. */
+export interface Objective {
+  text: string;
+  target: Point2;
+  current: { text: string; active: boolean }[];
+  done: string[];
 }
 
 interface CreatureView {
@@ -94,15 +94,13 @@ interface Lantern {
   z: number;
 }
 
-/** Tout ce qui vit dans un biome : golems, monstres, PNJ, caisses, coffres, lanternes. */
-export class BiomeLife {
+/**
+ * Ce qui vit dans tout biome : golems, monstres des camps, PNJ, caisses, coffres, lanternes,
+ * et l'arche. Chaque biome en hérite et y ajoute son chapitre (sanctuaire, quêtes, arène, boss).
+ */
+export abstract class WorldLife {
   readonly group = new THREE.Group();
   readonly sim: WorldSim;
-  readonly home: HomeLife;
-  readonly sanctuary: SanctuaryLife;
-  readonly quests: QuestLife;
-  readonly arena: ArenaLife;
-  readonly boss: BossLife;
   private readonly golemViews = new Map<GolemAgent, CreatureView>();
   private readonly monsterViews = new Map<MonsterAgent, CreatureView>();
   private readonly npcs: Npc[] = [];
@@ -114,21 +112,21 @@ export class BiomeLife {
   private readonly chests: Chest[] = [];
   private readonly lanterns: Lantern[] = [];
   private readonly shadows: THREE.InstancedMesh;
+  private readonly arch: CubeModel;
   private readonly tmpM = new THREE.Matrix4();
   private dialogNpc: Npc | null = null;
-  private time = 0;
+  protected time = 0;
 
   constructor(
-    private readonly layout: BiomeLayout,
-    private readonly state: GameState,
+    readonly layout: WorldLayout,
+    protected readonly state: GameState,
     atlas: THREE.Texture,
-    private readonly solid: SolidFn,
-    private readonly rng: Rng,
-    interactions: Interactions,
-    private readonly hooks: LifeHooks,
+    protected readonly solid: SolidFn,
+    protected readonly rng: Rng,
+    protected readonly interactions: Interactions,
+    protected readonly hooks: WorldHooks,
   ) {
-    const v = layout.landmarks.village;
-    this.sim = new WorldSim(solid, rng, [{ x: v.x, z: v.z, r: 14 }]);
+    this.sim = new WorldSim(solid, rng, layout.safeZones);
     const surface = (x: number, z: number): number => layout.world.standY(Math.floor(x), Math.floor(z));
 
     // Monstres des camps.
@@ -146,46 +144,8 @@ export class BiomeLife {
       this.chests.push({ campId: camp.id, model: chest, x: camp.chest.x, y: surface(camp.chest.x, camp.chest.z), z: camp.chest.z, opened });
     }
 
-    // Maison du joueur : lit, étagère à trophées, golem de maison.
-    this.home = new HomeLife(layout.village.home, layout.world, this.group, state, interactions, {
-      dialog: hooks.dialog,
-      toast: hooks.toast,
-      onSleep: hooks.onSleep,
-    });
-
-    // Sanctuaire des Fleurs : pierre-énigme, dalles, œuf.
-    this.sanctuary = new SanctuaryLife(layout.sanctuary, layout.world, this.group, state, interactions, rng, {
-      ...hooks.sanctuary,
-      dialog: hooks.dialog,
-      toast: hooks.toast,
-      burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
-      onProgress: hooks.onProgress,
-    });
-
-    // Quêtes du village : poules, panier, camp des slimes, clé, fleurs.
-    this.quests = new QuestLife(layout, this.group, state, interactions, () => this.sim.monsters.filter((m) => m.campId === 'slimes'), () => this.arena.finished, {
-      dialog: hooks.dialog,
-      toast: hooks.toast,
-      labels: hooks.labels,
-      burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
-      gainFood: (amount, x, y, z) => this.gainFood(amount, x, y, z),
-      onProgress: hooks.onProgress,
-    });
-
-    // Arène : ouverte quand les 3 quêtes obligatoires sont faites.
-    this.arena = new ArenaLife(layout.arena, layout.world, this.group, state, interactions, () => this.quests.book.mandatoryDone, {
-      rebuild: hooks.sanctuary.rebuild,
-      burst: (x, y, z, color, count) => hooks.sparks.burst(x, y, z, color, count ?? 12),
-      toast: hooks.toast,
-      onFight: hooks.onFight,
-    });
-
-    // Marais du Roi Slime : piste gluante et boss (quête P1).
-    this.boss = new BossLife(layout, this.group, state, interactions, { onBossFight: hooks.onBossFight });
-
-    // PNJ : Lumibloc devant la maison du joueur et les villageois.
-    const npcSpots = [{ id: 'lumibloc', ...layout.lumibloc }, ...layout.village.npcs];
-    for (const n of npcSpots) {
+    // PNJ : les villageois parlent d'abord de leurs quêtes, sinon ils saluent.
+    for (const n of layout.npcs) {
       const model = this.spawnStatic(n.id as ModelId, n.x, n.z, n.facing);
       const npc: Npc = { id: n.id, model, x: n.x, y: surface(n.x, n.z), z: n.z, baseFacing: n.facing };
       this.npcs.push(npc);
@@ -198,13 +158,24 @@ export class BiomeLife {
         label: 'Parler',
         action: () => {
           this.dialogNpc = npc;
-          // Les villageois parlent d'abord de leurs quêtes, sinon ils saluent.
-          if (this.quests.talk(n.id)) return;
+          if (this.talk(n.id)) return;
           hooks.dialog.show(greeting(n.id), () => (this.dialogNpc = null));
         },
       });
     }
-    for (const g of layout.village.guardians) this.spawnStatic('guardian', g.x, g.z, g.facing, 1.4);
+    for (const g of layout.guardians) this.spawnStatic('guardian', g.x, g.z, g.facing, 1.4);
+
+    // L'arche : « Voyager » (son portail ne brille que si un voyage est possible).
+    this.arch = this.spawnStatic('arch', layout.arch.x, layout.arch.z, layout.arch.facing);
+    interactions.add({
+      id: 'arch',
+      x: layout.arch.x,
+      y: surface(layout.arch.x, layout.arch.z),
+      z: layout.arch.z,
+      radius: ARCH_RADIUS,
+      label: TEXT_TRAVEL,
+      action: () => hooks.onArch(),
+    });
 
     // Lanternes.
     for (const l of layout.lanterns) {
@@ -223,7 +194,7 @@ export class BiomeLife {
         z: c.z,
         radius: CHEST_RADIUS,
         label: 'Ouvrir',
-        action: () => this.openChest(c, interactions),
+        action: () => this.openChest(c),
       });
       if (c.opened) interactions.remove(`chest-${c.campId}`);
     }
@@ -232,7 +203,8 @@ export class BiomeLife {
     this.crateGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
     mapBoxToTile(this.crateGeo, Tile.Crate);
     this.crateMat = new THREE.MeshLambertMaterial({ map: atlas });
-    this.crateMesh = new THREE.InstancedMesh(this.crateGeo, this.crateMat, layout.crates.length);
+    this.crateMesh = new THREE.InstancedMesh(this.crateGeo, this.crateMat, Math.max(1, layout.crates.length));
+    this.crateMesh.count = layout.crates.length;
     layout.crates.forEach((c, index) => {
       const crate: Crate = { ...c, index, broken: state.brokenCrates.includes(c.id) };
       this.crates.push(crate);
@@ -248,6 +220,43 @@ export class BiomeLife {
     this.shadows.frustumCulled = false;
     this.group.add(this.shadows);
   }
+
+  // ---------- Ce que chaque biome précise ----------
+
+  /** Objectif actif (boussole) et journal. */
+  abstract objective(hero: HeroState): Objective;
+
+  /** Un PNJ a une réplique de quête : true si elle a été dite. */
+  protected talk(_npcId: string): boolean {
+    return false;
+  }
+
+  /** Cible de quête pour l'aide à la visée (caisse à clé…). */
+  protected aimTarget(): Point3 | null {
+    return null;
+  }
+
+  /** L'étincelle touche-t-elle un objet de quête ? */
+  protected questHit(_x: number, _y: number, _z: number): boolean {
+    return false;
+  }
+
+  /** Chapitre du biome : appelé à chaque image (playing : le monde avance). */
+  protected updateChapter(_dt: number, _hero: HeroState, _playing: boolean, _controllable: boolean): void {}
+
+  /** Point sûr du biome (maison dans la Prairie, arrivée par l'arche ailleurs). */
+  homePoint(): Point3 {
+    const a = this.layout.arrival;
+    return { x: a.x, y: this.layout.world.standY(Math.floor(a.x), Math.floor(a.z)), z: a.z };
+  }
+
+  /** Le portail de l'arche brille quand un voyage est possible. */
+  setArchOpen(open: boolean): void {
+    const portal = this.arch.part('portal');
+    if (portal) portal.visible = open;
+  }
+
+  // ---------- Golems ----------
 
   /** Crée les agents et modèles des golems de l'équipe, près du héros. */
   syncGolems(hero: HeroState): void {
@@ -266,10 +275,10 @@ export class BiomeLife {
   // ---------- Étincelle ----------
 
   /** Aide à la visée : monstre ou caisse le plus proche devant le héros. */
-  aim(hero: HeroState): { x: number; y: number; z: number } | null {
+  aim(hero: HeroState): Point3 | null {
     const fx = -Math.sin(hero.facing);
     const fz = -Math.cos(hero.facing);
-    let best: { x: number; y: number; z: number } | null = null;
+    let best: Point3 | null = null;
     let bestD = AIM_RANGE;
     const consider = (x: number, y: number, z: number): void => {
       const dx = x - hero.x;
@@ -282,7 +291,7 @@ export class BiomeLife {
     };
     if (this.sim.hasAwakeGolem()) for (const m of this.sim.monsters) if (m.mode !== 'dead') consider(m.body.x, m.body.y + 0.5, m.body.z);
     for (const c of this.crates) if (!c.broken) consider(c.x, c.y + 0.4, c.z);
-    const quest = this.quests.aimTarget();
+    const quest = this.aimTarget();
     if (quest) consider(quest.x, quest.y, quest.z);
     return best;
   }
@@ -298,7 +307,7 @@ export class BiomeLife {
         }
       }
     }
-    if (this.quests.hitTest(x, y, z)) return true;
+    if (this.questHit(x, y, z)) return true;
     for (const c of this.crates) {
       if (c.broken) continue;
       if (Math.hypot(c.x - x, c.z - z) < 0.65 && y > c.y - 0.2 && y < c.y + 1.0) {
@@ -319,13 +328,13 @@ export class BiomeLife {
     if (this.rng() < FOOD_CRATE_CHANCE) this.gainFood(FOOD_CRATE, c.x, c.y + 1, c.z);
   }
 
-  private gainFood(amount: number, x: number, y: number, z: number): void {
+  protected gainFood(amount: number, x: number, y: number, z: number): void {
     this.state.food += amount;
     audio.sfx('food');
     this.hooks.labels.float(`+${amount} 🍎`, x, y, z, 'food');
   }
 
-  private openChest(c: Chest, interactions: Interactions): void {
+  private openChest(c: Chest): void {
     const guarded = this.sim.monsters.some((m) => m.campId === c.campId && m.mode !== 'dead');
     if (guarded) {
       this.hooks.toast(TEXT_CHEST_GUARDED);
@@ -335,7 +344,7 @@ export class BiomeLife {
     this.state.openedChests.push(c.campId);
     c.model.swing('lid', -1.9);
     audio.sfx('chest');
-    interactions.remove(`chest-${c.campId}`);
+    this.interactions.remove(`chest-${c.campId}`);
     this.gainFood(FOOD_CHEST, c.x, c.y + 1.2, c.z);
     this.hooks.onProgress();
   }
@@ -344,22 +353,17 @@ export class BiomeLife {
 
   update(dt: number, hero: HeroState, camera: THREE.Camera, playing: boolean, controllable = playing): void {
     this.time += dt;
-    this.sanctuary.update(dt, hero, controllable);
     if (playing) {
       this.syncGolems(hero);
       const events = this.sim.update(dt, hero);
       for (const e of events) this.handle(e);
       this.updateLanterns(hero);
       this.updateTutorials(hero);
-      this.home.update(dt, hero);
       // Encyclopédie : les monstres croisés de près sont « rencontrés ».
       for (const m of this.sim.monsters) if (m.mode !== 'dead' && Math.hypot(m.body.x - hero.x, m.body.z - hero.z) < SEEN_RADIUS) markSeen(this.state, m.species);
-      if (this.state.bossQuest !== 'locked' && Math.hypot(this.layout.marsh.boss.x - hero.x, this.layout.marsh.boss.z - hero.z) < SEEN_RADIUS + 6) markSeen(this.state, 'roiSlime');
-      this.quests.update(dt, hero, controllable);
-      this.arena.update(dt);
-      this.boss.update(dt);
-      if (this.dialogNpc && Math.hypot(this.dialogNpc.x - hero.x, this.dialogNpc.z - hero.z) > 6) this.hooks.dialog.close();
     }
+    this.updateChapter(dt, hero, playing, controllable);
+    if (playing && this.dialogNpc && Math.hypot(this.dialogNpc.x - hero.x, this.dialogNpc.z - hero.z) > 6) this.hooks.dialog.close();
     this.render(dt, hero, camera);
   }
 
@@ -403,12 +407,11 @@ export class BiomeLife {
     }
   }
 
-  /** Point de retour après un K.O. général : la maison si l'on y a dormi en dernier, sinon la dernière lanterne, sinon la maison. */
-  respawnPoint(): { x: number; y: number; z: number } {
-    if (this.state.lastLantern === 'home') return this.home.wakePoint();
+  /** Point de retour après un K.O. général : la dernière lanterne allumée de ce biome, sinon le point sûr du biome. */
+  respawnPoint(): Point3 {
     const l = this.lanterns.find((x) => x.id === this.state.lastLantern);
     if (l) return { x: l.x + 1.5, y: l.y, z: l.z + 1.5 };
-    return { ...this.layout.spawn };
+    return this.homePoint();
   }
 
   private updateTutorials(hero: HeroState): void {
@@ -485,6 +488,9 @@ export class BiomeLife {
       shadow(n.x, n.y, n.z, 0.9);
     }
     for (const s of this.statics) if (!this.npcs.some((n) => n.model === s)) s.root.visible = near(s.root.position.x, s.root.position.z);
+    // Le portail de l'arche tourne doucement.
+    const portal = this.arch.part('portal');
+    if (portal) portal.rotation.z = this.time * 0.8;
 
     this.shadows.count = shadowCount;
     this.shadows.instanceMatrix.needsUpdate = true;
@@ -496,7 +502,7 @@ export class BiomeLife {
     views.set(agent, { model, phase: Math.random() * 6 });
   }
 
-  private spawnStatic(id: ModelId, x: number, z: number, facing: number, scale = 1): CubeModel {
+  protected spawnStatic(id: ModelId, x: number, z: number, facing: number, scale = 1): CubeModel {
     const model = new CubeModel(MODELS[id], scale);
     model.root.position.set(x, this.layout.world.standY(Math.floor(x), Math.floor(z)), z);
     model.root.rotation.y = facing;
@@ -511,7 +517,7 @@ export class BiomeLife {
       l.lit.root.visible = lit;
       l.unlit.root.visible = !lit;
     }
-    // Les lanternes ne passent pas par le tri de distance (3 objets, toujours utiles comme repères).
+    // Les lanternes ne passent pas par le tri de distance (quelques objets, toujours utiles comme repères).
     for (const l of this.lanterns) {
       const i1 = this.statics.indexOf(l.lit);
       if (i1 >= 0) this.statics.splice(i1, 1);
@@ -526,26 +532,33 @@ export class BiomeLife {
     this.crateMesh.setMatrixAt(c.index, this.tmpM);
   }
 
+  /** Libère ce biome (changement de biome : un seul en mémoire). */
+  dispose(): void {
+    this.group.removeFromParent();
+    this.crateGeo.dispose();
+    this.crateMat.dispose();
+    this.shadows.geometry.dispose();
+    (this.shadows.material as THREE.Material).dispose();
+  }
+
   /** Résumé pour les tests de bout en bout. */
   snapshot(): {
+    biome: string;
     monsters: { id: string; species: string; mode: string; hp: number; x: number; z: number }[];
     golems: { id: string; hp: number; ko: boolean; x: number; z: number }[];
     crates: { id: string; broken: boolean; x: number; z: number }[];
     chests: { campId: string; opened: boolean; x: number; z: number }[];
     npcs: { id: string; x: number; z: number }[];
-    home: ReturnType<HomeLife['snapshot']>;
-    sanctuary: ReturnType<SanctuaryLife['snapshot']>;
-    quests: ReturnType<QuestLife['snapshot']>;
+    arch: { x: number; z: number; open: boolean };
   } {
     return {
+      biome: this.layout.id,
       monsters: this.sim.monsters.map((m) => ({ id: m.id, species: m.species, mode: m.mode, hp: m.hp, x: m.body.x, z: m.body.z })),
       golems: this.sim.golems.map((g) => ({ id: g.data.id, hp: g.data.hp, ko: g.ko, x: g.body.x, z: g.body.z })),
       crates: this.crates.map((c) => ({ id: c.id, broken: c.broken, x: c.x, z: c.z })),
       chests: this.chests.map((c) => ({ campId: c.campId, opened: c.opened, x: c.x, z: c.z })),
       npcs: this.npcs.map((n) => ({ id: n.id, x: n.x, z: n.z })),
-      home: this.home.snapshot(),
-      sanctuary: this.sanctuary.snapshot(),
-      quests: this.quests.snapshot(),
+      arch: { x: this.layout.arch.x, z: this.layout.arch.z, open: this.arch.part('portal')?.visible ?? false },
     };
   }
 }

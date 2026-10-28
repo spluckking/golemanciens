@@ -20,15 +20,15 @@ describe('mode test : points de passage du chapitre 1', () => {
   it('chaque étape est cohérente avec la suivante', () => {
     expect(checkpointState(current, 'start').golems).toEqual([]);
     const hatched = checkpointState(current, 'hatched');
-    expect(hatched.sanctuary.step).toBe('hatched');
+    expect(hatched.biomes.prairie.sanctuary.step).toBe('hatched');
     expect(hatched.golems[0]).toMatchObject({ species: 'mousse', nickname: 'Trèfle', hp: 40 });
-    expect(hatched.quests.R1.status).toBe('available');
+    expect(hatched.biomes.prairie.quests.R1.status).toBe('available');
     const arena = checkpointState(current, 'arena');
-    expect(['R1', 'R2', 'R3'].map((q) => arena.quests[q as 'R1'].status)).toEqual(['done', 'done', 'done']);
-    expect(arena.arena.wins).toBe(0);
+    expect(['R1', 'R2', 'R3'].map((q) => arena.biomes.prairie.quests[q as 'R1'].status)).toEqual(['done', 'done', 'done']);
+    expect(arena.biomes.prairie.arena.wins).toBe(0);
     const boss = checkpointState(current, 'boss');
-    expect(boss.arena.wins).toBe(3);
-    expect(boss.bossQuest).toBe('active');
+    expect(boss.biomes.prairie.arena.wins).toBe(3);
+    expect(boss.biomes.prairie.bossQuest).toBe('active');
     expect(checkpointState(createGameState(), 'hatched').golems[0].species).toBe('pierre');
   });
 });
