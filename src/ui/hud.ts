@@ -1,6 +1,7 @@
 import type { GolemData } from '../core/gameState';
 import { GOLEMS } from '../data/creatures';
 import { el } from './dom';
+import { pixelIcon } from './pixelIcons';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -36,16 +37,15 @@ export class Hud {
   constructor(onJournal: () => void) {
     const buttons = (
       [
-        ['📜', 'Journal', 'btn-journal'],
-        ['🧱', 'Golems', 'btn-golems'],
-        ['📖', 'Encyclopédie', 'btn-encyclopedia'],
-        ['⏸', 'Pause', 'btn-pause'],
+        ['journal', 'Journal', 'btn-journal'],
+        ['golems', 'Golems', 'btn-golems'],
+        ['encyclopedia', 'Encyclopédie', 'btn-encyclopedia'],
+        ['pause', 'Pause', 'btn-pause'],
       ] as const
     ).map(([icon, label, id]) => {
-      const b = el('button', { className: 'btn-top', aria: label, testId: id }, [
-        el('span', { className: 'btn-icon', text: icon }),
-        el('span', { className: 'btn-label', text: label }),
-      ]);
+      // Icône seule, dans une case de la barre du haut ; le nom reste lu par l'accessibilité.
+      const b = el('button', { className: 'btn-top', aria: label, testId: id }, [pixelIcon(icon)]);
+      b.title = label;
       b.type = 'button';
       b.disabled = id !== 'btn-journal';
       b.addEventListener('pointerdown', (e) => e.stopPropagation());

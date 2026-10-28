@@ -1,5 +1,6 @@
 import type { InputState } from '../core/input';
 import { el } from './dom';
+import { pixelIcon, type PixelIconId } from './pixelIcons';
 
 const STICK_RADIUS = 64;
 const LOOK_SPEED = 1;
@@ -26,8 +27,8 @@ export class TouchControls {
     this.stickBase = el('div', { className: 'stick-base', testId: 'stick' }, [this.stickKnob]);
     stickZone.appendChild(this.stickBase);
 
-    const jump = this.button('btn-action btn-jump', '⬆', 'Saut', 'btn-jump');
-    const attack = this.button('btn-action btn-attack', '✦', 'Baguette', 'btn-attack');
+    const jump = this.button('btn-action btn-jump', 'jump', 'Saut', 'btn-jump');
+    const attack = this.button('btn-action btn-attack', 'wand', 'Baguette', 'btn-attack');
     this.interactLabel = el('span', { className: 'btn-label', text: 'Parler' });
     this.interactBtn = el('button', { className: 'btn-action btn-interact hidden', aria: 'Interagir', testId: 'btn-interact' }, [
       el('span', { className: 'btn-icon', text: '✋' }),
@@ -53,11 +54,9 @@ export class TouchControls {
     if (label !== null && this.interactLabel.textContent !== label) this.interactLabel.textContent = label;
   }
 
-  private button(className: string, icon: string, label: string, testId: string): HTMLButtonElement {
-    return el('button', { className, aria: label, testId }, [
-      el('span', { className: 'btn-icon', text: icon }),
-      el('span', { className: 'btn-label', text: label }),
-    ]);
+  /** Bouton d'action en icône seule (le nom reste lu par l'accessibilité). */
+  private button(className: string, icon: PixelIconId, label: string, testId: string): HTMLButtonElement {
+    return el('button', { className, aria: label, testId }, [pixelIcon(icon)]);
   }
 
   private tap(btn: HTMLElement, action: () => void): void {

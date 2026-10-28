@@ -549,3 +549,55 @@
     margin-top: -8px;
   }
 }
+
+/* ---------- Icônes en pixel art ---------- */
+
+.pixel-icon {
+  display: block;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.btn-jump .pixel-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.btn-attack .pixel-icon {
+  width: 60px;
+  height: 60px;
+}
+
+/* Barre du haut : une rangée de cases sur un panneau d'ardoise, comme une barre d'objets. */
+.top-bar {
+  top: 10px;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 3px solid;
+  border-color: #4c5266 #101219 #101219 #4c5266;
+  background: var(--tex-slate) 0 0 / var(--tex-size), #262a36;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 3px var(--outline),
+    0 6px 14px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+.btn-top {
+  width: 76px;
+  height: 76px;
+  border-radius: 4px;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.btn-top .pixel-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.btn-top:disabled {
+  opacity: 1;
+  filter: grayscale(1) brightness(0.65);
+}
