@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { audio, type SfxId } from '../../audio/audio';
 import type { SolidFn } from '../../core/physics';
 import { createRng } from '../../core/rng';
 import { formatText } from '../../core/text';
@@ -151,6 +152,7 @@ export interface ShotContext {
   shake(strength: number, seconds: number): void;
   flash(seconds?: number): void;
   burst(x: number, y: number, z: number, color: number, count?: number, power?: number): void;
+  sound(id: SfxId): void;
 }
 
 export interface DirectorHost {
@@ -274,6 +276,8 @@ export class CinematicDirector implements ShotContext {
     this.skyDuration = seconds;
     this.skyTime = 0;
     if (seconds === 0) this.applySky(this.skyTo);
+    // La musique suit le ciel : calme le jour, inquiétante la nuit, joyeuse au matin.
+    audio.music(preset === 'night' ? 'storyNight' : preset === 'morning' ? 'storyMorning' : 'storyDay');
   }
 
   shake(strength: number, seconds: number): void {
@@ -290,6 +294,10 @@ export class CinematicDirector implements ShotContext {
 
   burst(x: number, y: number, z: number, color: number, count = 12, power = 1): void {
     this.host.sparks.burst(x, y, z, color, count, power);
+  }
+
+  sound(id: SfxId): void {
+    audio.sfx(id);
   }
 
   // ---------- Lecture ----------

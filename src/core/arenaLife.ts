@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { ARENA_WINS_TO_FINISH } from '../data/balance';
+import { audio } from '../audio/audio';
 import { CubeModel } from '../entities/cubeModel';
 import { MODELS } from '../entities/models';
 import { Block } from '../world/blocks';
@@ -66,6 +67,7 @@ export class ArenaLife {
       return;
     }
     this.ring = 1.2;
+    audio.sfx('gong');
     this.hooks.burst(this.plan.gong.x, this.plan.floorY + 1.4, this.plan.gong.z, 0xffe27a, 20);
     this.hooks.onFight();
   }

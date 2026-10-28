@@ -31,6 +31,7 @@ export const O1_CINEMATIC: CinematicScript = {
           boss.root.visible = false;
           c.flash(0.4);
           c.burst(MARSH.x, g + 1.2, MARSH.z, 0x5ec45e, 40, 2);
+          c.sound('split');
         }
         for (let i = 0; i < 8; i++) {
           const d = c.get(`drop${i}`);
@@ -53,6 +54,7 @@ export const O1_CINEMATIC: CinematicScript = {
         c.sky('day');
         c.camera(key([MARSH.x + 1.5, g + 2.4, MARSH.z - 4.2], [MARSH.x, g + 0.9, MARSH.z]), key([MARSH.x + 1, g + 1.8, MARSH.z - 3.2], [MARSH.x, g + 1, MARSH.z]), 5);
         c.actor('puddle', 'puddle', MARSH.x, MARSH.z, 0).root.scale.setScalar(2.4);
+        c.sound('chime');
         c.actor('shard', 'starShard', MARSH.x, MARSH.z, 0, { y: g + 0.5, scale: 1.6 });
         // {prenom} arrive par la gauche de l'image, sans cacher l'éclat.
         c.actor('hero', 'hero', MARSH.x - 4.5, MARSH.z - 3.5, 0).walk([[MARSH.x - 1.6, MARSH.z - 1]], 1.8);
@@ -88,6 +90,7 @@ export const O1_CINEMATIC: CinematicScript = {
           shard.y = hero.y + 2.4 + Math.sin(t * 3) * 0.1;
           return;
         }
+        if (t - dt < launch) c.sound('spark');
         const k = Math.min(1, (t - launch) / 2.2);
         const from: Vec3 = [64.5, hero.y + 2.4, 39];
         const p = bezier(from, [66, 36, 32], [STONE[0], STONE[1] + 0.6, STONE[2]], k);
@@ -96,6 +99,7 @@ export const O1_CINEMATIC: CinematicScript = {
         if (k >= 1 && t - dt < launch + 2.2) {
           c.flash(0.4);
           c.burst(STONE[0], STONE[1] + 0.8, STONE[2], 0xfff3a0, 30, 1.6);
+          c.sound('chime');
         }
       },
     },
@@ -108,6 +112,7 @@ export const O1_CINEMATIC: CinematicScript = {
         c.actor('lumibloc', 'lumibloc', 64.5, 35.4, Math.PI);
         c.actor('hero', 'hero', 63.4, 37.8, -0.4);
         c.actor('shard', 'starShard', STONE[0], STONE[2], 0, { y: STONE[1] + 0.6, scale: 1.4 });
+        c.sound('quest');
       },
       update(c, t, dt) {
         // Lumibloc lève le bras pour féliciter ; {prenom} saute de joie.

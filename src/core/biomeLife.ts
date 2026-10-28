@@ -11,6 +11,7 @@ import type { WorldLabels } from '../ui/worldLabels';
 import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { BiomeLayout } from '../world/prairie';
 import { markSeen, type GameState } from './gameState';
+import { audio } from '../audio/audio';
 import { ArenaLife } from './arenaLife';
 import { BossLife } from './bossLife';
 import { HomeLife } from './home';
@@ -314,11 +315,13 @@ export class BiomeLife {
     this.placeCrate(c);
     this.crateMesh.instanceMatrix.needsUpdate = true;
     this.hooks.sparks.burst(c.x, c.y + 0.4, c.z, 0xc4965c, 14);
+    audio.sfx('crate');
     if (this.rng() < FOOD_CRATE_CHANCE) this.gainFood(FOOD_CRATE, c.x, c.y + 1, c.z);
   }
 
   private gainFood(amount: number, x: number, y: number, z: number): void {
     this.state.food += amount;
+    audio.sfx('food');
     this.hooks.labels.float(`+${amount} 🍎`, x, y, z, 'food');
   }
 
@@ -331,6 +334,7 @@ export class BiomeLife {
     c.opened = true;
     this.state.openedChests.push(c.campId);
     c.model.swing('lid', -1.9);
+    audio.sfx('chest');
     interactions.remove(`chest-${c.campId}`);
     this.gainFood(FOOD_CHEST, c.x, c.y + 1.2, c.z);
     this.hooks.onProgress();
@@ -366,10 +370,12 @@ export class BiomeLife {
         labels.float(`−${Math.round(e.amount)}`, e.x, e.y, e.z, e.target === 'golem' ? 'dmg-golem' : e.superEffective ? 'dmg-super' : 'dmg');
         if (e.superEffective) labels.float('Super efficace !', e.x, e.y + 0.5, e.z, 'super');
         sparks.burst(e.x, e.y - 0.4, e.z, e.target === 'golem' ? 0xff8080 : 0xffffff, 5, 0.6);
+        audio.sfx(e.target === 'golem' ? 'monsterHit' : e.superEffective ? 'super' : 'hitRock');
         break;
       case 'monsterDefeated': {
         const m = e.monster;
         sparks.burst(m.body.x, m.body.y + 0.5, m.body.z, MONSTER_COLORS[m.species], 26, 1.3);
+        audio.sfx('poof');
         break;
       }
       case 'golemKO':
@@ -391,6 +397,7 @@ export class BiomeLife {
         this.refreshLanterns();
         this.hooks.onProgress();
         this.hooks.sparks.burst(l.x, l.y + 1.9, l.z, 0xffe27a, 16);
+        audio.sfx('lantern');
         this.hooks.toast(TEXT_LANTERN_LIT);
       }
     }

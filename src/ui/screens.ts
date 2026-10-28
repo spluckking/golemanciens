@@ -1,3 +1,4 @@
+import { audio } from '../audio/audio';
 import { normalizePlayerName, PLAYER_NAME_MAX } from '../core/playerName';
 import { formatText } from '../core/text';
 import type { StoryText } from '../data/types';
@@ -142,6 +143,7 @@ export function askQuestion(layer: HTMLElement, view: QuestionView, playerName: 
       b.addEventListener('click', () => {
         choices.forEach((c) => (c.disabled = true));
         b.classList.add('chosen');
+        audio.sfx(i === view.correctIndex ? 'correct' : 'wrong');
         setTimeout(() => {
           root.remove();
           shown = null;

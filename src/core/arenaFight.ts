@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { audio, type SfxId } from '../audio/audio';
 import { LESSON_LINES, LessonQuiz, lessonQuiz } from '../combat/turn/lesson';
 import { TurnCombat, arenaOpponents, bossMonster, healAfterCombat, questionCategory, type CombatEvent } from '../combat/turn/turnCombat';
 import { ARENA_WINS_TO_FINISH, FOOD_ARENA_WIN, MONSTER_TURN_DELAY_S } from '../data/balance';
@@ -32,6 +33,9 @@ const TEXT_ARENA_DONE = 'Bravo, {prenom} ! Tu as gagné les 3 combats de l’ar�
 const TEXT_DEFEAT_BUTTON = 'D’accord';
 
 const TYPE_COLORS: Record<AttackType, number> = { rock: 0xa9abb8, plant: 0x6fae52, sun: 0xffc040, star: 0xfff3a0 };
+
+/** Bruitage d'un coup réussi, selon le type d'attaque. */
+const HIT_SFX: Record<AttackType, SfxId> = { rock: 'hitRock', plant: 'hitPlant', sun: 'hitSun', star: 'hitStar' };
 
 export interface FightHost {
   scene: THREE.Scene;
@@ -229,6 +233,7 @@ export class ArenaFight {
     }
     this.refreshHud();
     const won = c.phase === 'won';
+    audio.sfx(won ? 'victory' : 'defeat');
     await wait(this.ms(0.6));
     return this.finish(won);
   }
@@ -291,6 +296,7 @@ export class ArenaFight {
           if (e.hit) {
             const p = this.monsterModel.root.position;
             this.host.sparks.burst(p.x, p.y + 0.8, p.z, TYPE_COLORS[e.attack.type], 18, 1);
+            audio.sfx(HIT_SFX[e.attack.type]);
           }
           break;
         }
@@ -298,6 +304,7 @@ export class ArenaFight {
           if (e.target === 'monster') {
             if (e.armor) this.hud.announce(TEXT_ARMOR);
             else {
+              if (e.superEffective) audio.sfx('super');
               this.hud.float('monster', `−${e.amount}`, e.superEffective ? 'super' : '');
               if (e.superEffective) this.hud.announce(TEXT_SUPER, 1.4, 'super');
             }
@@ -305,6 +312,7 @@ export class ArenaFight {
             await this.shake(this.monsterModel);
           } else {
             this.hud.float('golem', `−${e.amount}`);
+            audio.sfx('monsterHit');
             this.refreshHud();
             await this.shake(this.golemModel);
           }
@@ -319,12 +327,14 @@ export class ArenaFight {
           await wait(this.ms(0.8));
           break;
         case 'ko':
+          audio.sfx('poof');
           if (e.target === 'monster') await this.vanish(this.monsterModels.get(e.id)!, 0x9a8ad0);
           else await this.vanish(this.golemModels.get(e.id)!, 0xdddddd);
           break;
         case 'stage':
           this.placeActive();
           this.split();
+          audio.sfx('split');
           this.hud.announce(TEXT_BOSS_SPLITS, 1.8, 'super');
           await wait(this.ms(0.9));
           break;

@@ -23,6 +23,7 @@ import type { Cell, SanctuaryPlan } from '../world/structures';
 import type { VoxelWorld } from '../world/voxelWorld';
 import { Block } from '../world/blocks';
 import { createGolem, markSeen, type GameState } from './gameState';
+import { audio } from '../audio/audio';
 import { recordRiddle } from './stats';
 import type { Interactable, Interactions } from './interactions';
 import type { Rng } from './rng';
@@ -188,6 +189,7 @@ export class SanctuaryLife {
         advance(this.state.sanctuary);
         this.syncWorld();
         for (const c of this.plan.gate) this.hooks.burst(c.x + 0.5, c.y + 0.5, c.z + 0.5, 0x6fae52, 6);
+        audio.sfx('door');
         this.hooks.toast(TEXT_STONE_SOLVED);
         break;
       }
@@ -207,6 +209,7 @@ export class SanctuaryLife {
     if (res === 'wrong') {
       for (const tile of this.tiles) this.lightTile(tile, false);
       this.hooks.burst(t.x + 0.5, this.floorY + 0.3, t.z + 0.5, 0x888888, 10);
+      audio.sfx('wrong');
       this.hooks.toast(TEXT_TILES_WRONG);
       if (this.puzzle.needsHint && this.hintShownAt !== this.puzzle.fails) {
         this.hintShownAt = this.puzzle.fails;
@@ -216,10 +219,12 @@ export class SanctuaryLife {
     }
     this.lightTile(t, true);
     this.hooks.burst(t.x + 0.5, this.floorY + 0.4, t.z + 0.5, TILE_BURST[t.color], 12);
+    audio.sfx('tile');
     if (res === 'done') {
       advance(this.state.sanctuary);
       this.syncWorld();
       for (const c of this.plan.door) this.hooks.burst(c.x + 0.5, c.y + 0.5, c.z + 0.5, 0xffe27a, 6);
+      audio.sfx('door');
       this.hooks.toast(TEXT_TILES_DONE);
     }
   }
@@ -246,6 +251,7 @@ export class SanctuaryLife {
     await wait(1600);
     this.egg.root.visible = false;
     this.hooks.burst(x, y + 0.8, z, 0xf6efdc, 30);
+    audio.sfx('shatter');
 
     // Silhouettes : à gauche et à droite du nid, vues depuis la porte (gauche = nord).
     const shadows = S1_EGG_CHOICES.map((species, i) => {
@@ -266,6 +272,7 @@ export class SanctuaryLife {
     const chosen = shadows.find((s) => s.species === species)!;
     const golem = this.place(species, chosen.model.root.position.x, chosen.model.root.position.z, Math.PI / 2);
     this.hooks.burst(golem.root.position.x, y + 1, golem.root.position.z, 0xffe27a, 30);
+    audio.sfx('hatch');
     await wait(500);
     const nickname = await this.hooks.askNickname(species);
     golem.root.removeFromParent();

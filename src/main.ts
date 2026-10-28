@@ -11,6 +11,7 @@ import { SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
 import { applyBlockTheme } from './ui/theme';
 import { loadGame } from './save/store';
+import { audio } from './audio/audio';
 import type { ArenaFight } from './core/arenaFight';
 
 declare global {
@@ -31,6 +32,7 @@ declare global {
       answer: () => number;
       fight: () => ReturnType<ArenaFight['snapshot']> | null;
       save: () => Promise<boolean>;
+      audio: () => { state: string; track: string | null };
     };
   }
 }
@@ -46,6 +48,9 @@ applyBlockTheme();
 
 // Pas de menu contextuel ni de zoom au double appui sur tablette.
 window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Le son ne peut démarrer qu'après un geste du joueur (règle des navigateurs).
+for (const type of ['pointerdown', 'keydown'] as const) window.addEventListener(type, () => audio.unlock(), { capture: true });
 
 async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   const isTest = params.has('test');
@@ -118,6 +123,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       answer: () => shownQuestion()?.correctIndex ?? -1,
       fight: () => game.fight?.snapshot() ?? null,
       save: () => game.save(),
+      audio: () => ({ state: audio.state, track: audio.track }),
     };
   } else {
     void app.start();

@@ -30,6 +30,7 @@ import { createAtlasTexture } from '../world/voxelMaterial';
 import { ArenaFight } from './arenaFight';
 import { BiomeLife } from './biomeLife';
 import { saveGame } from '../save/store';
+import { audio } from '../audio/audio';
 import { CameraRig } from './cameraRig';
 import { compassRotation } from './compass';
 import type { GameState } from './gameState';
@@ -63,6 +64,8 @@ const PAUSE_WAIT_S = 10;
 const TEXT_SAVED = 'Bonne nuit ! Partie enregistrée.';
 /** Enregistrement automatique hors combat (SPEC.md § 13). */
 const AUTOSAVE_EVERY_S = 60;
+/** Un bruit de pas tous les 1,7 bloc parcourus au sol. */
+const STEP_EVERY = 1.7;
 
 export type GameMode = 'title' | 'play' | 'cinematic' | 'combat';
 
@@ -128,6 +131,8 @@ export class Game {
   private safeTimer = 0;
   /** Dernier endroit où le héros marchait librement (retour pour « Me débloquer »). */
   private lastSafe: { x: number; z: number } | null = null;
+  /** Distance parcourue depuis le dernier bruit de pas. */
+  private stride = 0;
   frameCount = 0;
 
   constructor(
@@ -260,6 +265,8 @@ export class Game {
       const p = this.life.respawnPoint();
       this.teleport(p.x, p.z, this.layout.spawnYaw);
     }
+    if (mode === 'title') audio.music('storyDay');
+    else if (playing) audio.music('prairie');
     const inWorld = mode !== 'cinematic' && mode !== 'combat';
     // Le compteur de FPS (mode test) ne doit pas cacher les sous-titres.
     this.inWorld = inWorld;
@@ -301,6 +308,7 @@ export class Game {
     if (this.fight || this.paused) return;
     this.dialog.close();
     this.setMode('combat');
+    audio.music(kind === 'boss' ? 'boss' : 'arena');
     let result: 'won' | 'lost' | 'retry';
     do {
       this.fight = new ArenaFight({
@@ -425,9 +433,10 @@ export class Game {
     return { text, target, current, done };
   }
 
-  /** Réglages du menu parent : affichage des FPS (les volumes sont lus par le son). */
+  /** Réglages du menu parent : affichage des FPS, volumes. */
   applySettings(): void {
     this.debug.root.classList.toggle('hidden', !this.inWorld || !(this.forceDebug || this.state.settings.showFps));
+    audio.setVolumes(this.state.settings.musicVolume, this.state.settings.sfxVolume);
   }
 
   /**
@@ -440,8 +449,10 @@ export class Game {
     this.input.stickX = this.input.stickY = 0;
     this.dialog.close();
     const text = reminder ? CONTENT.lumibloc.pause : TEXT_PAUSE;
+    audio.duck(true);
     await openPause(this.uiLayer, text, this.state.playerName, reminder ? PAUSE_WAIT_S * this.timeScale : 0, reminder ? 'pause-reminder' : 'pause');
     this.sincePause = 0;
+    audio.duck(false);
     this.paused = false;
   }
 
@@ -453,7 +464,9 @@ export class Game {
     const seen = this.state.tutorialsSeen;
     const tip = seen.includes('meal') || !this.state.golems.length ? undefined : CONTENT.lumibloc.meal;
     if (tip) seen.push('meal');
+    audio.duck(true);
     await openGolems(this.uiLayer, this.state, () => void this.save(), tip);
+    audio.duck(false);
     this.paused = false;
   }
 
@@ -461,7 +474,9 @@ export class Game {
     if (this.paused) return;
     this.paused = true;
     this.input.stickX = this.input.stickY = 0;
+    audio.duck(true);
     await openEncyclopedia(this.uiLayer, this.state);
+    audio.duck(false);
     this.paused = false;
   }
 
@@ -475,7 +490,9 @@ export class Game {
       ...CONTENT.outros.filter((o) => seen(o.id) && OUTRO_CINEMATICS[o.id]).map((o) => ({ id: o.id, title: o.when.charAt(0).toUpperCase() + o.when.slice(1) })),
     ];
     const goal = this.objective();
+    audio.duck(true);
     const replay = await openJournal(this.uiLayer, goal.current, goal.done, JOURNAL_NO_DONE, this.state.playerName, replays);
+    audio.duck(false);
     const story = CONTENT.stories.find((s) => s.id === replay);
     if (story) {
       // Histoire déjà vue : on peut la passer.
@@ -491,7 +508,10 @@ export class Game {
     this.paused = true;
     this.input.stickX = this.input.stickY = 0;
     this.sleepFade.classList.remove('hidden');
+    audio.music(null);
     setTimeout(() => {
+      audio.music('prairie');
+      audio.sfx('chime');
       const p = this.life.home.wakePoint();
       this.teleport(p.x, p.z, this.layout.spawnYaw);
       this.life.sim.recoverAt(p.x, p.y, p.z);
@@ -507,6 +527,7 @@ export class Game {
   private recoverFromKO(): void {
     this.paused = true;
     this.fade.classList.remove('hidden');
+    audio.sfx('defeat');
     setTimeout(() => {
       const p = this.life.respawnPoint();
       this.teleport(p.x, p.z);
@@ -562,7 +583,15 @@ export class Game {
     const world = this.layout.world;
     const h = this.hero;
     const inWater = world.get(Math.floor(h.x), Math.floor(h.y + 0.3), Math.floor(h.z)) === Block.Water;
+    const wasOnGround = h.onGround;
     stepHero(h, intent, dt, this.solid, inWater);
+    if (h.onGround && !inWater) {
+      this.stride += h.speed * dt;
+      if (this.stride >= STEP_EVERY || !wasOnGround) {
+        this.stride = 0;
+        audio.sfx('step');
+      }
+    }
 
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
     if (this.input.consumeAttack() && playing && this.attackCooldown === 0) this.castSpark();
@@ -619,6 +648,7 @@ export class Game {
     const p = this.lastSafe ?? this.layout.spawn;
     this.teleport(p.x, p.z);
     this.sparks.burst(this.hero.x, this.hero.y + 1, this.hero.z, 0x8ff0ff, 16);
+    audio.sfx('pop');
     this.unstuckOffer = 0;
     this.stuckTime = 0;
   }
@@ -631,6 +661,7 @@ export class Game {
     if (target) h.facing = Math.atan2(-(target.x - h.x), -(target.z - h.z));
     this.heroModel.root.rotation.y = h.facing;
     this.heroModel.playAttack();
+    audio.sfx('spark');
     this.heroModel.root.updateMatrixWorld(true);
     this.heroModel.wandTip.getWorldPosition(this.tipWorld);
     const tip = this.tipWorld;

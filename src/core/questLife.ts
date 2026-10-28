@@ -13,6 +13,7 @@ import {
 import { P1_REMINDER, P1_REQUEST } from '../data/bossQuest';
 import { animateWalk, CubeModel } from '../entities/cubeModel';
 import { MODELS, PORTRAITS, type ModelId } from '../entities/models';
+import { audio } from '../audio/audio';
 import { QuestBook } from '../quests/villageQuests';
 import { NPC_NAMES } from '../story/dialogues';
 import type { DialogBubble } from '../ui/dialog';
@@ -197,6 +198,7 @@ export class QuestLife {
       this.hooks.gainFood(res.reward, p.x, p.y + 2.2, p.z);
       this.hooks.toast(TEXT_QUEST_DONE_TOAST.replace('{titre}', res.quest.title));
       this.hooks.burst(p.x, p.y + 1.6, p.z, 0xffe27a, 20);
+      audio.sfx('quest');
     } else {
       line(res.quest.request);
       if (res.kind === 'request' && res.quest.id === 'R3') this.countSlimes();
@@ -213,12 +215,14 @@ export class QuestLife {
     c.mode = 'following';
     this.interactions.remove(c.talk.id);
     this.hooks.burst(c.x, c.talk.y + 0.5, c.z, 0xffffff, 8);
+    audio.sfx('pop');
   }
 
   private pickFlower(f: Flower): void {
     if (f.picked || !this.book.isActive('O2')) return;
     f.picked = true;
     this.hooks.burst(f.x, f.talk.y + 0.6, f.z, 0xffd23a, 12);
+    audio.sfx('pop');
     this.book.increment('O2');
     const st = this.book.state('O2');
     this.hooks.toast(TEXT_FLOWER_PICKED.replace('{n}', String(st.progress)).replace('{goal}', '5'));
@@ -233,6 +237,8 @@ export class QuestLife {
     if (Math.hypot(p.x - x, p.z - z) > 0.7 || y < p.y - 0.2 || y > p.y + 1.1) return false;
     this.hooks.burst(p.x, p.y + 0.4, p.z, 0xc4965c, 14);
     this.hooks.burst(p.x, p.y + 0.8, p.z, 0xffe27a, 10);
+    audio.sfx('crate');
+    audio.sfx('chime');
     this.book.setProgress('O1', 1);
     this.hooks.toast(TEXT_KEY_FOUND);
     this.syncInteractions();
@@ -316,6 +322,7 @@ export class QuestLife {
           this.book.increment('R1');
           const st = this.book.state('R1');
           this.hooks.burst(c.x, ground(c.x, c.z) + 0.6, c.z, 0xffe27a, 12);
+          audio.sfx('tile');
           this.hooks.toast(TEXT_CHICKEN_HOME.replace('{n}', String(st.progress)).replace('{goal}', '3'));
           this.hooks.onProgress();
         }

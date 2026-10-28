@@ -7,6 +7,9 @@ import type { Actor, CameraKey, CinematicScript, Vec3 } from './director';
  */
 
 const ACADEMY = { x: 64.5, z: 26.5 };
+/** Les coups de Lumibloc à la porte (secondes). */
+const KNOCKS = [0.7, 1.05, 1.4, 1.95];
+
 export const STONE: Vec3 = [64.5, 32, 26.5];
 const HOME_DOOR = { x: 36.5, z: 92.5 };
 const SANCTUARY = { x: 113, z: 100 };
@@ -123,7 +126,10 @@ export const T1_CINEMATIC: CinematicScript = {
       },
       update(c, t, dt) {
         const hero = c.get('hero');
-        if (t > 0.6 && t - dt <= 0.6) c.shake(0.35, 1.4);
+        if (t > 0.6 && t - dt <= 0.6) {
+          c.shake(0.35, 1.4);
+          c.sound('rumble');
+        }
         if (t > 2 && !hero.root.visible) {
           hero.root.visible = true;
           hero.walk([[HOME_DOOR.x, 90.8]], 1.8);
@@ -151,6 +157,8 @@ export const T1_CINEMATIC: CinematicScript = {
         if (t < strike) pos = bezier([96, 30, 30], [84, 42, 40], hit, t / strike);
         else pos = bezier(hit, [48, 40, 40], [26, 42, 22], Math.min(1, (t - strike) / 3.5));
         flyDragon(dragon, before, pos, t);
+        if (t < strike + 2 && Math.floor(t / 0.7) !== Math.floor((t - dt) / 0.7)) c.sound('wings');
+        if (t > strike - 0.8 && t - dt <= strike - 0.8) c.sound('roar');
         const jaw = dragon.model.part('jaw');
         if (jaw) jaw.rotation.x = t > strike - 0.8 && t < strike + 0.4 ? 0.5 : 0;
         const stone = c.get('stone');
@@ -158,6 +166,7 @@ export const T1_CINEMATIC: CinematicScript = {
         if (t > strike && t - dt <= strike) {
           c.flash(0.6);
           c.shake(0.5, 1);
+          c.sound('rumble');
           c.burst(STONE[0], STONE[1] + 1, STONE[2], 0xfff3a0, 30, 2);
           c.burst(STONE[0], STONE[1] + 1, STONE[2], 0xb070ff, 20, 1.6);
         }
@@ -173,6 +182,7 @@ export const T1_CINEMATIC: CinematicScript = {
         for (let i = 0; i < 5; i++) c.actor(`shard${i}`, 'starShard', STONE[0], STONE[2], 0, { y: STONE[1] + 0.6, scale: 1.8 });
         c.flash(0.5);
         c.burst(STONE[0], STONE[1] + 0.8, STONE[2], 0xfff3a0, 40, 2.2);
+        c.sound('shatter');
       },
       update(c, t, dt) {
         for (let i = 0; i < 5; i++) {
@@ -199,9 +209,10 @@ export const T1_CINEMATIC: CinematicScript = {
         const hero = c.actor('hero', 'hero', HOME_DOOR.x, 93.8, 0);
         hero.root.visible = false;
       },
-      update(c, t) {
+      update(c, t, dt) {
         const lumibloc = c.get('lumibloc');
         const knocking = t > 0.5 && t < 2.3;
+        for (const at of KNOCKS) if (t > at && t - dt <= at) c.sound('knock');
         lumibloc.model.swing('armR', knocking ? -1.3 + Math.abs(Math.sin(t * 9)) * 0.45 : 0);
         const hero = c.get('hero');
         if (t > 2.8 && !hero.root.visible) {
@@ -230,6 +241,7 @@ export const T1_CINEMATIC: CinematicScript = {
           g.model.swing('armL', -shrink * 1.2);
           g.model.swing('armR', -shrink * 1.2);
           if (t > 2.1 && t - dt <= 2.1) c.burst(g.x, g.y + 0.8, g.z, 0xfff3a0, 16, 1.2);
+          if (golem === 'pierre' && t > 2.1 && t - dt <= 2.1) c.sound('pop');
           const grow = Math.min(1, Math.max(0, (t - 2.1) / 0.5));
           e.root.scale.setScalar(Math.max(0.001, grow * 1.6));
           e.root.rotation.z = grow >= 1 ? Math.sin(t * 3) * 0.08 : 0;
@@ -252,7 +264,10 @@ export const T1_CINEMATIC: CinematicScript = {
         for (const [id, at] of pops) {
           const m = c.get(id);
           const ground = c.ground(m.x, m.z);
-          if (t > at && t - dt <= at) c.burst(m.x, ground + 0.2, m.z, 0x7a5a3a, 14, 1);
+          if (t > at && t - dt <= at) {
+            c.burst(m.x, ground + 0.2, m.z, 0x7a5a3a, 14, 1);
+            c.sound('poof');
+          }
           const rise = Math.min(1, Math.max(0, (t - at) / 0.6));
           const hop = id === 'slime' && rise >= 1 ? Math.abs(Math.sin((t - at) * 4)) * 0.6 : 0;
           m.y = ground - (1 - rise) * 2 + hop;
