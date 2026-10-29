@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { QUESTS_P1 } from '../../src/data/quests';
+import { QUESTS_P1, QUESTS_P2 } from '../../src/data/quests';
 import { QuestBook, createQuestLog, questLine } from '../../src/quests/villageQuests';
 
-const names = { mereBrique: 'Mère Brique', paquerette: 'Pâquerette', gaston: 'Gaston' } as const;
-const npcName = (id: keyof typeof names): string => names[id];
+const names: Record<string, string> = { mereBrique: 'Mère Brique', paquerette: 'Pâquerette', gaston: 'Gaston' };
+const npcName = (id: string): string => names[id];
 
 function book(): QuestBook {
   const b = new QuestBook(createQuestLog());
@@ -24,6 +24,18 @@ describe('contenu des quêtes de la phase 1', () => {
     }
     expect(md).toContain('ramener 3 poules');
     expect(md).toContain('cueillir 5 fleurs jaunes');
+  });
+
+  it('phase 2 : mêmes règles, titres de CONTENU.md (Cabanes des Cimes)', () => {
+    const md = readFileSync('CONTENU.md', 'utf8');
+    expect(QUESTS_P2.filter((q) => q.mandatory).map((q) => q.id)).toEqual(['R1', 'R2', 'R3']);
+    expect(QUESTS_P2.filter((q) => !q.mandatory).map((q) => q.id)).toEqual(['O1', 'O2']);
+    for (const q of QUESTS_P2) {
+      expect(md).toContain(`**${q.id} ${q.title}**`);
+      expect(['noisette', 'pip', 'tilleul']).toContain(q.giver);
+    }
+    expect(md).toContain('rapporter 3 planches');
+    expect(md).toContain('cueillir 4 champignons **bleus**');
   });
 });
 

@@ -10,7 +10,16 @@ export const P1_REQUEST = 'Des flaques vertes partent du village… C’est sûr
 export const P1_REMINDER = 'Suis les flaques vertes : elles mènent au marais du Roi Slime.';
 export const TEXT_FACE_BOSS = 'Affronter';
 export const TEXT_BOSS_SPLITS = 'Le Roi Slime se divise !';
+/** Changement d'étape et victoire, par boss (textes nouveaux, à valider). */
+export const TEXT_BOSS_STAGE: Record<string, string> = {
+  roiSlime: TEXT_BOSS_SPLITS,
+  reineAraignee: 'La Reine Araignée tisse une toile d’argent !',
+};
 export const TEXT_BOSS_VICTORY = 'Victoire ! Le Roi Slime est vaincu !';
+export const TEXT_BOSS_VICTORIES: Record<string, string> = {
+  roiSlime: TEXT_BOSS_VICTORY,
+  reineAraignee: 'Victoire ! La Reine Araignée est vaincue !',
+};
 export const TEXT_RETRY_QUESTION = 'On réessaie tout de suite ?';
 export const TEXT_RETRY = 'Réessayer';
 export const TEXT_LATER = 'Plus tard';
@@ -22,3 +31,15 @@ export const FOOD_BOSS = 6;
 
 /** Avancement de la quête du boss : proposée après l'arène, puis le combat. */
 export type BossQuestStep = 'locked' | 'active' | 'defeated';
+
+/**
+ * Quête du boss de la phase 2 (CONTENU.md § F, P2 « Les fils d'argent ») : couper les 3 toiles qui
+ * barrent le sentier, puis affronter la Reine Araignée. Titre : CONTENU.md ; répliques nouvelles, à valider.
+ */
+export const P2_TITLE = 'Les fils d’argent';
+export const P2_TASK = 'Couper les toiles du sentier ({n}/3), puis affronter la Reine Araignée';
+export const P2_REQUEST = 'Des toiles d’argent barrent le sentier du nord-ouest. Coupe-les d’un coup de baguette : la Reine Araignée t’attend au bout.';
+export const P2_REMINDER = 'Les toiles barrent toujours le sentier du nord-ouest. Un coup de baguette suffit !';
+export const TEXT_WEB_CUT = 'Toile coupée : {n}/3';
+export const TEXT_WEBS_DONE = 'Le sentier est libre : la Reine Araignée t’attend !';
+export const OBJECTIVE_FOREST_DONE = 'Deuxième éclat retrouvé ! La suite de l’aventure arrive bientôt.';

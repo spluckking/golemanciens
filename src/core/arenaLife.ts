@@ -11,7 +11,7 @@ import type { Interactable, Interactions } from './interactions';
 
 /** Textes nouveaux (à valider par le parent). */
 const TEXT_FIGHT = 'Combattre';
-export const TEXT_ARENA_FINISHED = 'Tu as gagné les 3 combats de l’arène !';
+export const TEXT_ARENA_FINISHED = 'Tu as gagné les 3 combats de l’arène ! Combat libre : +2 🍎 en cas de victoire.';
 
 export interface ArenaHooks {
   rebuild: (cells: Cell[]) => void;
@@ -62,10 +62,8 @@ export class ArenaLife {
   }
 
   private strike(): void {
-    if (this.finished) {
-      this.hooks.toast(TEXT_ARENA_FINISHED);
-      return;
-    }
+    // Arène terminée : combats libres, pour gagner encore un peu de nourriture.
+    if (this.finished) this.hooks.toast(TEXT_ARENA_FINISHED);
     this.ring = 1.2;
     audio.sfx('gong');
     this.hooks.burst(this.plan.gong.x, this.plan.floorY + 1.4, this.plan.gong.z, 0xffe27a, 20);

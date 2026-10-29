@@ -54,6 +54,8 @@ export const FOOD_CRATE = 1;
 export const FOOD_CHEST = 3;
 /** Victoire d'arène (§ 4.4) ; combats pour terminer l'arène (§ 1.2). */
 export const FOOD_ARENA_WIN = 4;
+/** Combat libre dans une arène terminée (SPEC.md § 4.4). */
+export const FOOD_ARENA_FREE = 2;
 export const ARENA_WINS_TO_FINISH = 3;
 /** Pause avant l'attaque du monstre, pour qu'on la voie venir (§ 7.1). */
 export const MONSTER_TURN_DELAY_S = 0.8;

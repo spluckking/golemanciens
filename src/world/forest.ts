@@ -1,4 +1,5 @@
 import { createRng, randInt } from '../core/rng';
+import type { MonsterSpecies } from '../data/creatures';
 import { Block, Tile, type TileId } from './blocks';
 import { buildBridge, buildLair, buildMossRuins, buildTreeVillage, type BrokenBridge, type LairPlan, type MossPlan, type TreeVillagePlan } from './forestStructures';
 import type { Camp, Decoration, Point2, WorldLayout } from './layout';
@@ -26,12 +27,13 @@ const PADS: Record<ForestLandmark, Point2 & { r: number }> = {
   bossLair: { x: 24, z: 20, r: 11 },
 };
 
-/** Camps de la phase 2 : les loups près du ruisseau (quête R3). Espèces posées à la sous-étape 2.5. */
-const CAMP_SPOTS: { id: string; x: number; z: number }[] = [
-  { id: 'foret-loups', x: 70, z: 74 },
-  { id: 'foret-squelettes', x: 84, z: 50 },
-  { id: 'foret-champignons', x: 18, z: 92 },
-  { id: 'foret-mixte', x: 112, z: 64 },
+/** Camps de la phase 2 (1 ou 2 monstres) : les loups près du ruisseau sont ceux de la quête R3. */
+export const WOLVES_CAMP = 'foret-loups';
+const CAMP_SPOTS: { id: string; x: number; z: number; monsters: MonsterSpecies[] }[] = [
+  { id: WOLVES_CAMP, x: 70, z: 74, monsters: ['wolf', 'wolf'] },
+  { id: 'foret-squelettes', x: 84, z: 50, monsters: ['skeleton', 'skeleton'] },
+  { id: 'foret-champignons', x: 18, z: 92, monsters: ['hopper', 'hopper'] },
+  { id: 'foret-mixte', x: 112, z: 64, monsters: ['wolf', 'skeleton'] },
 ];
 const CRATE_COUNT = 20;
 
@@ -50,8 +52,8 @@ export interface ForestLayout extends WorldLayout {
   mushrooms: { blue: Point2[]; red: Point2[] };
   /** Toiles qui barrent le sentier du repaire (quête P2). */
   webs: Point2[];
-  /** Spots des camps (les monstres arrivent à la sous-étape 2.5). */
-  campSpots: { id: string; x: number; z: number }[];
+  /** Vieilles caisses de la quête « Le pont cassé » : chacune cache une planche. */
+  plankCrates: Point2[];
 }
 
 /** Grand arbre : tronc de 2×2, large feuillage étagé. */
@@ -250,7 +252,8 @@ export function generateForest(seed = FOREST_SEED): ForestLayout {
   const at = (p: Point2): { x: number; y: number; z: number } => ({ x: p.x, y: world.surfaceY(Math.floor(p.x), Math.floor(p.z)), z: p.z });
   // On sort de l'arche face à la forêt, assez loin pour que la caméra ne soit pas derrière elle.
   const arrival = { x: ARCH.x, z: ARCH.z - 8, facing: 0 };
-  const camps: Camp[] = [];
+  const camps: Camp[] = CAMP_SPOTS.map((c) => ({ ...c, chest: { x: c.x + 0.5, z: c.z - 2.5 } }));
+  const plankCrates = [near(34, 74), near(60, 100), near(80, 40)];
 
   return {
     id: 'foret',
@@ -263,7 +266,7 @@ export function generateForest(seed = FOREST_SEED): ForestLayout {
     npcs: village.npcs,
     guardians: village.guardians,
     camps,
-    campSpots: CAMP_SPOTS,
+    plankCrates,
     crates,
     lanterns: [
       { id: 'foret-village', ...at(village.lantern) },

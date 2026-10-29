@@ -67,3 +67,22 @@ Textes nouveaux :
 - « La porte du temple s'ouvre ! »
 - Surnoms proposés : Écorce → Brindille, Noyer, Bouleau ; Champignon → Cèpe, Pois, Bolet
 - Attaques des monstres : Squelette archer « Flèche », Loup d'ombre « Morsure d'ombre », Champignon sauteur « Saut piquant » ; Reine Araignée « Crochets d'argent » puis « Toile »
+
+## Sous-étapes 2.5 et 2.6 (quêtes, arène, Reine Araignée, outro O2)
+
+Décisions :
+- Qui donne les quêtes (CONTENU.md ne le précise pas) : Pip → R1 « La lanterne perdue » et O2 « La lettre du hibou » ; Tilleul → R2 « Le pont cassé » ; Sage Noisette → R3 « Les loups du ruisseau », O1 « Les champignons bleus » et la quête de la Reine.
+- R2 : les 3 planches sont dans 3 vieilles caisses (visibles pendant la quête), à casser d'un coup de baguette. Le pont se répare quand on rend la quête.
+- O1 : cueillir un champignon rouge affiche un message, sans rien perdre.
+- Combats libres : une arène terminée relance des combats (+2 🍎 en cas de victoire), comme le prévoit la spec.
+- Reine Araignée, étape 2 : « Toile » fait passer son prochain tour au golem touché. Pour que ce ne soit jamais punitif, un golem qui vient de se dégager ne peut pas être repris tout de suite (il rejoue forcément), et changer de golem le libère.
+- Les éclats suivent les boss : 1 après le Roi Slime, 2 après la Reine.
+- Après la Reine, on reste dans la Forêt ; le chapitre 3 (Désert) arrivera au jalon 3.
+
+Textes nouveaux :
+- Répliques des quêtes de la phase 2 (demande et remerciement) : voir `src/data/quests.ts` (QUESTS_P2).
+- « Ramasser », « Déposer la lettre », « Tu as retrouvé la lanterne de Pip ! », « Une planche ! (n/3) », « Champignon bleu : n/4 », « Celui-ci est rouge : il ne compte pas ! », « La lettre est arrivée à la cabane la plus haute ! », « Le pont du ruisseau est réparé ! », « L'arène de la Forêt est ouverte ! », « Aller à l'arène de la Forêt »
+- Arène terminée : « Tu as gagné les 3 combats de l'arène ! Combat libre : +2 🍎 en cas de victoire. »
+- Quête P2 : « Des toiles d'argent barrent le sentier du nord-ouest. Coupe-les d'un coup de baguette : la Reine Araignée t'attend au bout. » ; rappel : « Les toiles barrent toujours le sentier du nord-ouest. Un coup de baguette suffit ! » ; « Toile coupée : n/3 » ; « Le sentier est libre : la Reine Araignée t'attend ! »
+- Combat : « La Reine Araignée tisse une toile d'argent ! », « {golem} est pris dans la toile ! », « {golem} se débat dans la toile et passe son tour. », « Victoire ! La Reine Araignée est vaincue ! »
+- Fin du chapitre 2 : « Deuxième éclat retrouvé ! La suite de l'aventure arrive bientôt. »

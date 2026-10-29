@@ -92,7 +92,9 @@ describe('déroulé d’un tour', () => {
     expect(miss).toEqual([expect.objectContaining({ type: 'attack', hit: false })]);
     expect(c.monster.hp).toBe(24);
     expect(c.phase).toBe('monster');
-    c.monsterTurn();
+    // Juste après s'être dégagé, il ne peut pas être repris : il rejoue forcément.
+    expect(c.monsterTurn()).not.toContainEqual({ type: 'golemStunned', id: 'champignon' });
+    expect(c.golemStunned).toBe(false);
     expect(c.phase).toBe('player');
     c.attack('a1', true);
     expect(c.monster.hp).toBe(16);
@@ -265,5 +267,26 @@ describe('boss', () => {
 
     c.monster.hp = 1;
     expect(c.attack('a2', true)).toContainEqual({ type: 'end', result: 'won' });
+  });
+
+  it('Reine Araignée : faible contre 🍄 ; à l’étape 2, « Toile » fait passer un tour au golem touché', () => {
+    const champignon = createGolem('champignon');
+    const ecorce = createGolem('ecorce');
+    const c = new TurnCombat({ kind: 'boss', golems: [champignon, ecorce], monsters: [bossMonster('reineAraignee')] }, mid);
+    expect(c.monsterStage.weakness).toBe('spore');
+    c.monster.hp = 1;
+    c.attack('a1', true);
+    expect(c.monster.stage).toBe(1);
+    // Étape 2 : la toile prend le golem actif.
+    const events = c.monsterTurn();
+    expect(events).toContainEqual(expect.objectContaining({ type: 'monsterAttack', attack: 'Toile' }));
+    expect(events).toContainEqual({ type: 'golemStunned', id: 'champignon' });
+    expect(c.golemStunned).toBe(true);
+    expect(c.skipStunned()).toEqual([{ type: 'golemSkip', id: 'champignon' }]);
+    expect(c.phase).toBe('monster');
+    c.monsterTurn();
+    // Changer de golem le dégage de la toile (le changement coûte le tour, comme d'habitude).
+    c.switchTo('ecorce');
+    expect(c.golems[0].stunned).toBe(0);
   });
 });

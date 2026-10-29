@@ -54,6 +54,10 @@ export interface CombatGolem {
   shield: boolean;
   /** Arc-en-ciel : bonus permanent sur toutes ses attaques. */
   allRound: boolean;
+  /** Pris dans une toile (Reine Araignée) : il passe son prochain tour. */
+  stunned: number;
+  /** Vient de se dégager d'une toile : la suivante ne le reprend pas avant qu'il ait rejoué. */
+  freed: boolean;
 }
 
 export interface CombatMonster {
@@ -80,6 +84,9 @@ export type CombatEvent =
   | { type: 'effect'; id: string; effect: AttackEffect }
   | { type: 'wake'; id: string }
   | { type: 'skip'; id: string; reason: 'stun' | 'sleep' }
+  /** Le golem actif est pris dans une toile, puis passe son tour. */
+  | { type: 'golemStunned'; id: string }
+  | { type: 'golemSkip'; id: string }
   | { type: 'monsterAttack'; monsterId: string; targetId: string; attack: string; hit: boolean }
   | { type: 'reflect'; id: string; amount: number }
   | { type: 'stage'; id: string; stage: number }
@@ -127,6 +134,8 @@ export function combatGolem(data: GolemData, startHp: number): CombatGolem {
     ultimateUsed: false,
     shield: false,
     allRound: false,
+    stunned: 0,
+    freed: false,
   };
 }
 
@@ -222,6 +231,7 @@ export class TurnCombat {
     const golem = this.golem;
     const attack = this.attackInfo(slot);
     const events: CombatEvent[] = [{ type: 'attack', golemId: golem.id, attack, hit: correct }];
+    golem.freed = false;
     if (correct) {
       if (attack.slot === 'ultimate') golem.ultimateUsed = true;
       this.hitMonster(golem, attack, events);
@@ -230,12 +240,27 @@ export class TurnCombat {
     return events;
   }
 
+  /** Le golem actif est pris dans une toile : il passe son tour (le monstre rejoue). */
+  get golemStunned(): boolean {
+    return this.phase === 'player' && this.golem.stunned > 0;
+  }
+
+  skipStunned(): CombatEvent[] {
+    this.expect('player');
+    this.golem.stunned = 0;
+    this.golem.freed = true;
+    this.phase = 'monster';
+    return [{ type: 'golemSkip', id: this.golem.id }];
+  }
+
   /** Changement de golem : il coûte le tour, sauf quand le golem actif est K.O. */
   switchTo(golemId: string): CombatEvent[] {
     if (this.phase !== 'player' && this.phase !== 'switch') throw new Error(`Changement impossible en phase ${this.phase}`);
     const index = this.golems.findIndex((g) => g.id === golemId);
     if (index < 0 || index === this.activeGolem || this.golems[index].hp <= 0) throw new Error(`Golem indisponible : ${golemId}`);
     const free = this.phase === 'switch';
+    // Le golem qui sort se dégage de la toile.
+    this.golem.stunned = 0;
     this.activeGolem = index;
     this.phase = free ? 'player' : 'monster';
     return [{ type: 'switch', id: golemId, free }];
@@ -275,6 +300,11 @@ export class TurnCombat {
     }
     target.hp = Math.max(0, target.hp - amount);
     events.push({ type: 'damage', target: 'golem', id: target.id, amount, superEffective: false, armor: false });
+    // « Toile » : le golem touché passe son prochain tour (s'il est encore debout).
+    if (this.monsterStage.stuns && target.hp > 0 && !target.freed) {
+      target.stunned = 1;
+      events.push({ type: 'golemStunned', id: target.id });
+    }
     if (target.hp <= 0) {
       events.push({ type: 'ko', target: 'golem', id: target.id });
       if (this.golems.every((g) => g.hp <= 0)) this.finish('lost', events);

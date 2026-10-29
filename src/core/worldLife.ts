@@ -10,6 +10,8 @@ import type { DialogBubble } from '../ui/dialog';
 import type { WorldLabels } from '../ui/worldLabels';
 import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { Point2, Point3, WorldLayout } from '../world/layout';
+import type { FightStage } from '../world/structures';
+import type { BossId } from '../data/creatures';
 import { audio } from '../audio/audio';
 import { markSeen, type GameState } from './gameState';
 import type { Interactions } from './interactions';
@@ -43,6 +45,19 @@ export interface WorldHooks {
   onProgress: () => void;
   /** Le héros touche l'arche du biome (voyage). */
   onArch: () => void;
+}
+
+/** Un combat au tour par tour du biome : où il se joue, contre quels monstres, et où l'on revient. */
+export interface FightSetup {
+  plan: FightStage;
+  /** Phase des monstres de l'arène. */
+  phase: number;
+  /** Combat de boss : son identité, l'outro qui suit la victoire et le chapitre qui s'ouvre. */
+  boss?: BossId;
+  outro?: string;
+  nextChapter?: number;
+  /** Où le héros revient après le combat. */
+  back: Point2;
 }
 
 /** Objectif actif (boussole) et lignes du journal. */
@@ -243,6 +258,11 @@ export abstract class WorldLife {
 
   /** Chapitre du biome : appelé à chaque image (playing : le monde avance). */
   protected updateChapter(_dt: number, _hero: HeroState, _playing: boolean, _controllable: boolean): void {}
+
+  /** Combats du biome (arène, boss) ; null si le biome n'en a pas. */
+  fightSetup(_kind: 'arena' | 'boss'): FightSetup | null {
+    return null;
+  }
 
   /** Point sûr du biome (maison dans la Prairie, arrivée par l'arche ailleurs). */
   homePoint(): Point3 {

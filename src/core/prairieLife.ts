@@ -16,7 +16,7 @@ import type { SolidFn } from './physics';
 import { QuestLife } from './questLife';
 import type { Rng } from './rng';
 import { SanctuaryLife, type SanctuaryHooks } from './sanctuaryLife';
-import { SEEN_RADIUS, WorldLife, type Objective, type WorldHooks } from './worldLife';
+import { SEEN_RADIUS, WorldLife, type FightSetup, type Objective, type WorldHooks } from './worldLife';
 
 export interface PrairieHooks extends WorldHooks {
   /** Le héros se couche dans son lit. */
@@ -101,6 +101,12 @@ export class PrairieLife extends WorldLife {
     this.quests.update(dt, hero, controllable);
     this.arena.update(dt);
     this.boss.update(dt);
+  }
+
+  override fightSetup(kind: 'arena' | 'boss'): FightSetup {
+    const { marsh, arena } = this.layout;
+    if (kind === 'boss') return { plan: marsh, phase: 1, boss: 'roiSlime', outro: 'O1', nextChapter: 2, back: { x: marsh.boss.x + 4, z: marsh.boss.z - 3 } };
+    return { plan: arena, phase: 1, back: { x: arena.gong.x, z: arena.gong.z + 2.5 } };
   }
 
   /** Dans la Prairie, le point sûr est la maison. */

@@ -72,7 +72,7 @@ export class QuestLife {
   private readonly flowers: Flower[] = [];
   private readonly keyCrate: CubeModel;
   private readonly basket: CubeModel;
-  private readonly npcSpots: Record<QuestNpc, { x: number; y: number; z: number }>;
+  private readonly npcSpots: Partial<Record<QuestNpc, { x: number; y: number; z: number }>>;
   private time = 0;
   private arenaAnnounced: boolean;
 
@@ -194,7 +194,7 @@ export class QuestLife {
     }
     if (res.kind === 'thanks') {
       line(res.quest.thanks);
-      const p = this.npcSpots[npc];
+      const p = this.npcSpots[npc]!;
       this.hooks.gainFood(res.reward, p.x, p.y + 2.2, p.z);
       this.hooks.toast(TEXT_QUEST_DONE_TOAST.replace('{titre}', res.quest.title));
       this.hooks.burst(p.x, p.y + 1.6, p.z, 0xffe27a, 20);
@@ -292,7 +292,7 @@ export class QuestLife {
       const bossOffer = npc === 'mereBrique' && this.arenaDone() && progress(this.state).bossQuest === 'locked';
       const mark = this.book.marker(npc) ?? (bossOffer ? 'give' : null);
       if (!mark) continue;
-      const p = this.npcSpots[npc];
+      const p = this.npcSpots[npc]!;
       this.hooks.labels.text(`quest-${npc}`, '!', p.x, p.y + 2.9 + Math.sin(this.time * 3) * 0.05, p.z, mark === 'return' ? 'quest-mark return' : 'quest-mark');
     }
   }
@@ -367,12 +367,13 @@ export class QuestLife {
     }
     if (id === 'R3') return this.layout.camps.find((c) => c.id === SLIMES_CAMP) ?? this.layout.landmarks.village;
     if (id === 'O1') return this.layout.questSpots.keyCrate;
-    if (id === 'O2') return nearest(this.flowers.filter((f) => !f.picked), hero) ?? this.npcSpots.mereBrique;
+    if (id === 'O2') return nearest(this.flowers.filter((f) => !f.picked), hero) ?? this.npcSpot('mereBrique');
     return this.layout.landmarks.village;
   }
 
   npcSpot(npc: QuestNpc): { x: number; z: number } {
-    return this.npcSpots[npc];
+    const spot = this.npcSpots[npc];
+    return spot ?? this.layout.landmarks.village;
   }
 
   snapshot(): {

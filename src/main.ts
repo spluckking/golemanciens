@@ -29,6 +29,8 @@ declare global {
       /** Vie du biome chargé (les champs de la Prairie n'existent que dans la Prairie). */
       life: () => ReturnType<PrairieLife['snapshot']>;
       teleport: (x: number, z: number, facing?: number) => void;
+      /** Place le héros à une hauteur donnée (plateformes, passerelles). */
+      teleportAt: (x: number, y: number, z: number) => void;
       drawCalls: () => number;
       sanctuary: () => ReturnType<PrairieLife['sanctuary']['snapshot']>;
       forestSanctuary: () => ReturnType<ForestLife['sanctuary']['snapshot']>;
@@ -85,6 +87,14 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     progress(state).arena.wins = 3;
     progress(state).bossQuest = 'active';
   }
+  // « ?test&forestBoss=active » : œuf éclos, quêtes et arène de la Forêt terminées, quête de la Reine acceptée.
+  if (isTest && params.get('forestBoss') === 'active') {
+    const forest = progress(state, 'foret');
+    forest.sanctuary.step = 'hatched';
+    for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) forest.quests[id].status = id.startsWith('R') ? 'done' : 'available';
+    forest.arena.wins = 3;
+    forest.bossQuest = 'active';
+  }
   // « ?test&chapter=2 » : le Roi Slime est vaincu, l'Arche des éclats attend la lecture de T2.
   if (isTest && params.get('chapter') === '2') Object.assign(state, checkpointState(state, 'chapter2'));
   // « ?test&unlock=foret » débloque la Forêt (comme si T2 était lu) ; « &biome=foret » y commence la partie.
@@ -92,7 +102,9 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   if (isTest && unlock === 'foret' && !state.storiesRead.includes('T2')) state.storiesRead.push('T2');
   const biome = params.get('biome');
   if (isTest && biome && BIOME_IDS.includes(biome as BiomeId)) state.biome = biome as BiomeId;
-  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale, persist });
+  // « ?test&bossHp=0.3 » : boss plus fragiles (parcours de bout en bout plus courts).
+  const bossHpScale = isTest && params.has('bossHp') ? Number(params.get('bossHp')) : undefined;
+  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale, persist, bossHpScale });
   const app = new App(game, layer, state, rng, timeScale);
   game.start();
   loading?.remove();
@@ -138,6 +150,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       state: () => state,
       life: () => game.life.snapshot() as ReturnType<PrairieLife['snapshot']>,
       teleport: (x, z, facing) => game.teleport(x, z, facing),
+      teleportAt: (x, y, z) => game.teleportAt(x, y, z),
       drawCalls: () => game.drawCalls,
       sanctuary: () => prairie().sanctuary.snapshot(),
       forestSanctuary: () => {

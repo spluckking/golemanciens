@@ -24,6 +24,8 @@ export interface BiomeProgress {
   arena: { wins: number };
   /** Quête du boss du biome : proposée après l'arène, puis le combat. */
   bossQuest: BossQuestStep;
+  /** Étapes de la quête du boss déjà faites (toiles coupées…). */
+  bossSteps: number;
 }
 
 /** Golem possédé (enregistré). */
@@ -106,7 +108,7 @@ export interface GameState {
 }
 
 export function createBiomeProgress(): BiomeProgress {
-  return { sanctuary: createSanctuaryProgress(), quests: createQuestLog(), arena: { wins: 0 }, bossQuest: 'locked' };
+  return { sanctuary: createSanctuaryProgress(), quests: createQuestLog(), arena: { wins: 0 }, bossQuest: 'locked', bossSteps: 0 };
 }
 
 /** Avancement du biome indiqué (par défaut, celui où se trouve le héros). */

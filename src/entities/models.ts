@@ -1,5 +1,5 @@
 import type { Cube, ModelDef, PartDef } from './cubeModel';
-import { canalModel, champignonModel, ecorceModel, giantWebModel, hopperModel, leverModel, millWheelModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, springModel, steleModel, wolfModel } from './forestModels';
+import { trophyReineModel, canalModel, champignonModel, ecorceModel, giantWebModel, hopperModel, leverModel, millWheelModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, springModel, steleModel, wolfModel } from './forestModels';
 
 /**
  * Modèles en cubes, définis dans le code (aucun fichier externe).
@@ -1149,11 +1149,13 @@ export const MODELS = {
   bed: bedModel(),
   trophyShelf: trophyShelfModel(),
   trophyRoiSlime: trophyRoiSlimeModel(),
+  trophyReine: trophyReineModel(),
   medal: medalModel(),
   arch: archModel(),
   rivet: houseGolemModel(),
   gong: gongModel(),
   roiSlime: roiSlimeModel(),
+  reineAraignee: spiderQueenModel(),
   puddle: puddleModel(),
   chicken: chickenModel(),
   basket: basketModel(),

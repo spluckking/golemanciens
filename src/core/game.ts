@@ -86,6 +86,8 @@ export interface GameOptions {
   debug: boolean;
   /** Mode test : raccourcit les attentes (1 = temps normal). */
   timeScale?: number;
+  /** Mode test : part des PV des boss (combats plus courts). */
+  bossHpScale?: number;
   /** Enregistrer la partie dans IndexedDB (désactivé par défaut en mode test). */
   persist?: boolean;
 }
@@ -135,6 +137,7 @@ export class Game {
   /** Combat d'arène en cours. */
   fight: ArenaFight | null = null;
   private readonly timeScale: number;
+  private readonly bossHpScale: number | undefined;
   private readonly persist: boolean;
   /** Temps depuis le dernier enregistrement automatique. */
   private sinceSave = 0;
@@ -160,6 +163,7 @@ export class Game {
     options: GameOptions,
   ) {
     this.timeScale = options.timeScale ?? 1;
+    this.bossHpScale = options.bossHpScale;
     this.persist = options.persist ?? false;
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
@@ -317,8 +321,8 @@ export class Game {
    * on peut réessayer tout de suite ; la victoire lance l'outro O1 et pose le trophée.
    */
   private async startFight(kind: 'arena' | 'boss'): Promise<void> {
-    const prairie = this.prairie;
-    if (this.fight || this.paused || !prairie) return;
+    const setup = this.life.fightSetup(kind);
+    if (this.fight || this.paused || !setup) return;
     this.dialog.close();
     this.setMode('combat');
     audio.music(kind === 'boss' ? 'boss' : 'arena');
@@ -331,10 +335,12 @@ export class Game {
         state: this.state,
         rng: this.rng,
         sparks: this.sparks,
-        plan: kind === 'boss' ? prairie.layout.marsh : prairie.layout.arena,
+        plan: setup.plan,
         kind,
-        boss: kind === 'boss' ? 'roiSlime' : undefined,
+        phase: setup.phase,
+        boss: setup.boss,
         timeScale: this.timeScale,
+        bossHpScale: this.bossHpScale,
       });
       result = await this.fight.run();
       this.fight.dispose();
@@ -343,18 +349,18 @@ export class Game {
     void this.save();
 
     if (kind === 'boss' && result === 'won') {
-      await this.playOutro('O1');
-      this.state.chapter = Math.max(this.state.chapter, 2);
-      const home = prairie.home.wakePoint();
+      if (setup.outro) await this.playOutro(setup.outro);
+      if (setup.nextChapter) this.state.chapter = Math.max(this.state.chapter, setup.nextChapter);
+      // Dans la Prairie, on se réveille chez soi ; ailleurs, on revient près du repaire.
+      const home = this.prairie ? this.prairie.home.wakePoint() : { ...setup.back, y: 0 };
       this.teleport(home.x, home.z, this.layout.spawnYaw);
-      this.life.sim.recoverAt(home.x, home.y, home.z);
+      this.life.sim.recoverAt(this.hero.x, this.hero.y, this.hero.z);
       this.setMode('play');
       this.hud.showToast(TEXT_TROPHY, 4);
+      void this.save();
       return;
     }
-    const { marsh, arena } = prairie.layout;
-    const back = kind === 'boss' ? { x: marsh.boss.x + 4, z: marsh.boss.z - 3 } : { x: arena.gong.x, z: arena.gong.z + 2.5 };
-    this.teleport(back.x, back.z, 0);
+    this.teleport(setup.back.x, setup.back.z, 0);
     this.life.sim.recoverAt(this.hero.x, this.hero.y, this.hero.z);
     this.setMode('play');
   }
@@ -416,7 +422,8 @@ export class Game {
       placeHero: (x: number, z: number, facing: number) => this.teleport(x, z, facing),
       onProgress: () => void this.save(),
     };
-    if (layout.id === 'foret') return new ForestLife(layout as ForestLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, sanctuary });
+    const fights = { onFight: () => void this.startFight('arena'), onBossFight: () => void this.startFight('boss') };
+    if (layout.id === 'foret') return new ForestLife(layout as ForestLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary });
     return new PrairieLife(layout as PrairieLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, {
       ...hooks,
       onSleep: () => this.sleep(),
@@ -492,6 +499,14 @@ export class Game {
     this.fade.classList.add('hidden');
     this.paused = false;
     void this.save();
+  }
+
+  /** Mode test : place le héros à une hauteur donnée (plateformes des arbres). */
+  teleportAt(x: number, y: number, z: number): void {
+    this.hero.x = x;
+    this.hero.y = y;
+    this.hero.z = z;
+    this.hero.vy = 0;
   }
 
   /** Mode test : place le héros (et ses golems suivront). */

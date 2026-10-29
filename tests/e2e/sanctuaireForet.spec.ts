@@ -1,15 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
-import { answerShown, waitReady } from './helpers';
+import { answerShown, interactAt, waitReady } from './helpers';
 
 const step = (page: Page): Promise<string> => page.evaluate(() => window.__game!.forestSanctuary().step);
 
 /** Se place sur (x, z) et touche l'interaction qui porte ce libellé. */
-async function use(page: Page, x: number, z: number, label: string): Promise<void> {
-  await page.evaluate(([px, pz]) => window.__game!.teleport(px, pz, 0), [x, z]);
-  const interact = page.getByTestId('btn-interact');
-  await expect(interact).toContainText(label, { timeout: 5_000 });
-  await interact.tap();
-}
+const use = (page: Page, x: number, z: number, label: string): Promise<void> => interactAt(page, x, z, label);
 
 test('sanctuaire de Mousse : pierre, leviers, canaux d’eau, deuxième pierre, éclosion de Champignon', async ({ page }) => {
   test.setTimeout(180_000);

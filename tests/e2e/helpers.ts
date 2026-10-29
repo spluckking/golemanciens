@@ -6,13 +6,22 @@ export async function waitReady(page: Page): Promise<void> {
   await page.waitForFunction(() => window.__game?.ready === true && window.__game.frames() > 10, null, { timeout: 30_000 });
 }
 
+/** Attend quelques images : après une téléportation, le jeu recalcule l'objet le plus proche. */
+export async function settle(page: Page, frames = 3): Promise<void> {
+  const start = await page.evaluate(() => window.__game!.frames());
+  await page.waitForFunction((f) => window.__game!.frames() >= f, start + frames);
+}
+
 /** Touche Interagir près de (x, z) et vérifie son libellé. */
 export async function interactAt(page: Page, x: number, z: number, label: string, facing = 0): Promise<void> {
   await page.evaluate(([px, pz, f]) => window.__game!.teleport(px, pz, f), [x, z, facing]);
+  await settle(page);
   const interact = page.getByTestId('btn-interact');
   await expect(interact).toBeVisible({ timeout: 5_000 });
   await expect(interact).toContainText(label);
-  await interact.tap();
+  // Le jeu masque le bouton dès qu'on le touche : sans « force », Playwright pourrait croire le toucher
+  // raté et attendre indéfiniment un bouton disparu.
+  await interact.tap({ force: true });
 }
 
 /** Parle à un villageois (on se place au sud de lui) et vérifie le début de sa réplique. */

@@ -305,3 +305,23 @@ export function steleModel(): ModelDef {
     },
   ];
 }
+
+/** Trophée de la Reine Araignée : statuette dorée d'araignée couronnée, sur son socle. */
+export function trophyReineModel(): ModelDef {
+  const gold = 0xf0c43c;
+  const light = 0xffe27a;
+  const base = 0x6a4424;
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.4, 0.08, 0.32, 0, 0.04, 0, base],
+        [0.24, 0.14, 0.26, 0, 0.18, 0.04, gold],
+        [0.16, 0.12, 0.14, 0, 0.18, -0.12, gold],
+        ...[-1, 1].flatMap((side): Cube[] => [-0.08, 0.02, 0.12].map((z): Cube => [0.16, 0.03, 0.03, side * 0.14, 0.13, z, gold])),
+        ...[-0.05, 0, 0.05].map((x): Cube => [0.03, 0.06, 0.03, x, 0.27, -0.12, light]),
+      ],
+    },
+  ];
+}

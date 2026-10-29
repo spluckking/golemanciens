@@ -76,11 +76,11 @@ test('arène : 3 victoires, +4 🍎 chacune, soin complet, puis l’arène est t
   }
   expect(await page.evaluate(() => window.__game!.state().food)).toBe(food0 + 12);
 
-  // L'arène terminée ne relance plus de combat (les combats libres arrivent au jalon 2).
+  // L'arène terminée propose des combats libres (+2 🍎 en cas de victoire).
   await page.evaluate(() => window.__game!.teleport(24.5, 38.5, 0));
   await page.getByTestId('btn-interact').tap();
-  await expect(page.getByTestId('toast')).toContainText('Tu as gagné les 3 combats de l’arène');
-  await expect(page.getByTestId('combat')).toHaveCount(0);
+  await expect(page.getByTestId('toast')).toContainText('Combat libre');
+  await expect(page.getByTestId('combat')).toBeVisible();
   expect(errors).toEqual([]);
 });
 

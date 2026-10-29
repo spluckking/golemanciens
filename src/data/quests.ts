@@ -5,7 +5,7 @@
  */
 
 export type QuestId = 'R1' | 'R2' | 'R3' | 'O1' | 'O2';
-export type QuestNpc = 'mereBrique' | 'paquerette' | 'gaston';
+export type QuestNpc = 'mereBrique' | 'paquerette' | 'gaston' | 'noisette' | 'pip' | 'tilleul';
 
 export interface QuestDef {
   id: QuestId;
@@ -85,6 +85,80 @@ export const QUESTS_P1: readonly QuestDef[] = [
     thanks: 'Un bouquet pour moi ? Comme c’est gentil ! Merci, {prenom}.',
   },
 ];
+
+/**
+ * Quêtes de la phase 2 (CONTENU.md § E, Cabanes des Cimes). Titres et objectifs : CONTENU.md.
+ * Qui donne chaque quête, et les répliques : nouveaux, à valider par le parent.
+ */
+export const QUESTS_P2: readonly QuestDef[] = [
+  {
+    id: 'R1',
+    title: 'La lanterne perdue',
+    mandatory: true,
+    giver: 'pip',
+    turnIn: 'pip',
+    goal: 1,
+    task: 'Retrouver la lanterne de Pip, au pied d’un grand arbre',
+    request: 'Ma lanterne est tombée de la passerelle ! Elle doit être au pied d’un grand arbre, vers le nord-est. Tu peux la retrouver ?',
+    thanks: 'Ma lanterne ! Ce soir, je pourrai encore lire mes histoires. Merci, {prenom} !',
+  },
+  {
+    id: 'R2',
+    title: 'Le pont cassé',
+    mandatory: true,
+    giver: 'tilleul',
+    turnIn: 'tilleul',
+    goal: 3,
+    task: 'Trouver des planches dans les vieilles caisses ({n}/{goal})',
+    request: 'Le pont du ruisseau est cassé. Il me faut 3 planches : il y en a dans les vieilles caisses de la forêt.',
+    thanks: 'Trois belles planches ! Regarde, le pont est réparé. Merci, {prenom} !',
+  },
+  {
+    id: 'R3',
+    title: 'Les loups du ruisseau',
+    mandatory: true,
+    giver: 'noisette',
+    turnIn: 'noisette',
+    goal: 2,
+    task: 'Vaincre les loups d’ombre près du ruisseau ({n}/{goal})',
+    request: 'Des loups d’ombre rôdent près du ruisseau. Tes golems peuvent les faire fuir ?',
+    thanks: 'Le ruisseau est calme à nouveau. Les Cabanes des Cimes te remercient !',
+  },
+  {
+    id: 'O1',
+    title: 'Les champignons bleus',
+    mandatory: false,
+    giver: 'noisette',
+    turnIn: 'noisette',
+    goal: 4,
+    task: 'Cueillir des champignons bleus ({n}/{goal}), pas les rouges',
+    request: 'Pour ma tisane du soir, il me faut 4 champignons bleus. Attention : les rouges ne comptent pas !',
+    thanks: 'Quatre champignons bien bleus ! Tu as l’œil, {prenom}.',
+  },
+  {
+    id: 'O2',
+    title: 'La lettre du hibou',
+    mandatory: false,
+    giver: 'pip',
+    turnIn: 'pip',
+    goal: 1,
+    task: 'Porter la lettre à la cabane la plus haute',
+    request: 'Un hibou a laissé tomber une lettre ! Elle est pour la cabane la plus haute. Tu peux la porter là-haut ?',
+    thanks: 'La lettre est arrivée là-haut ? Le hibou sera content. Merci !',
+  },
+];
+
+/** Textes d'interface nouveaux (à valider). */
+export const TEXT_PICK_UP = 'Ramasser';
+export const TEXT_DROP_LETTER = 'Déposer la lettre';
+export const TEXT_LANTERN_FOUND = 'Tu as retrouvé la lanterne de Pip !';
+export const TEXT_PLANK_FOUND = 'Une planche ! ({n}/{goal})';
+export const TEXT_MUSHROOM_BLUE = 'Champignon bleu : {n}/{goal}';
+export const TEXT_MUSHROOM_RED = 'Celui-ci est rouge : il ne compte pas !';
+export const TEXT_LETTER_DROPPED = 'La lettre est arrivée à la cabane la plus haute !';
+export const TEXT_BRIDGE_FIXED = 'Le pont du ruisseau est réparé !';
+export const TEXT_FOREST_ARENA_OPEN = 'L’arène de la Forêt est ouverte !';
+export const OBJECTIVE_GO_FOREST_ARENA = 'Aller à l’arène de la Forêt';
 
 /** Textes d'interface nouveaux (à valider). */
 export const TEXT_QUEST_TALK_TO = '{npc} a besoin d’aide';

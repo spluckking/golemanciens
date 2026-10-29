@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { audio, type SfxId } from '../audio/audio';
 import { LESSON_LINES, LessonQuiz, lessonQuiz } from '../combat/turn/lesson';
 import { TurnCombat, arenaOpponents, bossMonster, healAfterCombat, questionCategory, type CombatEvent } from '../combat/turn/turnCombat';
-import { ARENA_WINS_TO_FINISH, FOOD_ARENA_WIN, MONSTER_TURN_DELAY_S } from '../data/balance';
+import { ARENA_WINS_TO_FINISH, FOOD_ARENA_FREE, FOOD_ARENA_WIN, MONSTER_TURN_DELAY_S } from '../data/balance';
 import { CONTENT } from '../data/content';
-import { FOOD_BOSS, TEXT_BOSS_SPLITS, TEXT_BOSS_VICTORY, TEXT_LATER, TEXT_RETRY, TEXT_RETRY_QUESTION } from '../data/bossQuest';
-import type { AttackInfo, AttackType, BossId } from '../data/creatures';
+import { FOOD_BOSS, TEXT_BOSS_STAGE, TEXT_BOSS_VICTORIES, TEXT_LATER, TEXT_RETRY, TEXT_RETRY_QUESTION } from '../data/bossQuest';
+import { BOSSES, type AttackInfo, type AttackType, type BossId } from '../data/creatures';
 import { animateWalk, CubeModel } from '../entities/cubeModel';
 import { MODELS, type ModelId } from '../entities/models';
 import type { Sparks } from '../entities/sparks';
@@ -26,6 +26,8 @@ const TEXT_MONSTER_ATTACKS = '{monstre} attaque : {attaque} !';
 const TEXT_DODGE = '{golem} esquive !';
 const TEXT_SKIP_STUN = '{monstre} est étourdi.';
 const TEXT_SKIP_SLEEP = '{monstre} dort.';
+const TEXT_GOLEM_WEBBED = '{golem} est pris dans la toile !';
+const TEXT_GOLEM_SKIP = '{golem} se débat dans la toile et passe son tour.';
 const TEXT_ARMOR = 'L’armure résiste !';
 const TEXT_VICTORY = 'Victoire ! Tes golems ont gagné.';
 const TEXT_VICTORY_BUTTON = 'Continuer';
@@ -47,10 +49,14 @@ export interface FightHost {
   /** Lieu du combat : l'arène, ou le repaire du boss. */
   plan: FightStage;
   kind: 'arena' | 'boss';
+  /** Phase des monstres de l'arène. */
+  phase: number;
   /** Boss affronté (combat de boss). */
   boss?: BossId;
   /** Mode test : raccourcit les attentes. */
   timeScale: number;
+  /** Mode test : part des PV du boss (1 = normal). */
+  bossHpScale?: number;
 }
 
 interface Tween {
@@ -87,7 +93,9 @@ export class ArenaFight {
     this.dir = Math.sign(plan.monsterSpot.x - plan.golemSpot.x) || 1;
     this.monsterScale = host.kind === 'boss' ? 1 : 1.25;
     const fighters = state.golems.filter((g) => g.hp > 0).length > 0 ? state.golems : state.golems.map((g) => ({ ...g, hp: g.maxHp }));
-    const monsters = host.kind === 'boss' && host.boss ? [bossMonster(host.boss)] : arenaOpponents(1, state.golems.length, rng);
+    const monsters = host.kind === 'boss' && host.boss ? [bossMonster(host.boss)] : arenaOpponents(host.phase, state.golems.length, rng);
+    if (host.kind === 'boss' && host.bossHpScale)
+      for (const m of monsters) m.maxHp = m.hp = Math.max(1, Math.round(m.maxHp * host.bossHpScale));
     this.combat = new TurnCombat({ kind: host.kind, golems: fighters, monsters }, rng);
     for (const g of state.golems) {
       const m = new CubeModel(MODELS[g.species]);
@@ -210,6 +218,11 @@ export class ArenaFight {
 
     while (c.phase !== 'won' && c.phase !== 'lost') {
       this.refreshHud();
+      // Golem pris dans une toile : il passe son tour.
+      if (c.golemStunned) {
+        await this.play(c.skipStunned());
+        continue;
+      }
       if (c.phase === 'monster') {
         await wait(this.ms(MONSTER_TURN_DELAY_S));
         await this.play(c.monsterTurn());
@@ -243,10 +256,13 @@ export class ArenaFight {
     healAfterCombat(state.golems);
     if (this.host.kind === 'boss') return this.finishBoss(won);
     if (won) {
-      state.food += FOOD_ARENA_WIN;
-      progress(state).arena.wins = Math.min(ARENA_WINS_TO_FINISH, progress(state).arena.wins + 1);
-      await showMessage(uiLayer, `${TEXT_VICTORY} +${FOOD_ARENA_WIN} 🍎`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
-      if (progress(state).arena.wins === ARENA_WINS_TO_FINISH) await showMessage(uiLayer, TEXT_ARENA_DONE, TEXT_VICTORY_BUTTON, state.playerName, 'arena-done');
+      // Combat libre (arène déjà terminée) : moins de nourriture, pas de victoire en plus.
+      const free = progress(state).arena.wins >= ARENA_WINS_TO_FINISH;
+      const food = free ? FOOD_ARENA_FREE : FOOD_ARENA_WIN;
+      state.food += food;
+      if (!free) progress(state).arena.wins += 1;
+      await showMessage(uiLayer, `${TEXT_VICTORY} +${food} 🍎`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
+      if (!free && progress(state).arena.wins === ARENA_WINS_TO_FINISH) await showMessage(uiLayer, TEXT_ARENA_DONE, TEXT_VICTORY_BUTTON, state.playerName, 'arena-done');
       return 'won';
     }
     await showMessage(uiLayer, CONTENT.lumibloc.defeat, TEXT_DEFEAT_BUTTON, state.playerName, 'combat-defeat');
@@ -260,9 +276,10 @@ export class ArenaFight {
     if (won) {
       progress(state).bossQuest = 'defeated';
       state.food += FOOD_BOSS;
-      state.shards = Math.max(state.shards, 1);
+      // Un éclat de Pierre-Étoile par boss (le numéro de sa phase).
+      if (this.host.boss) state.shards = Math.max(state.shards, BOSSES[this.host.boss].phase);
       if (this.host.boss && !state.trophies.includes(this.host.boss)) state.trophies.push(this.host.boss);
-      await showMessage(uiLayer, `${TEXT_BOSS_VICTORY} +${FOOD_BOSS} 🍎`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
+      await showMessage(uiLayer, `${TEXT_BOSS_VICTORIES[this.host.boss ?? 'roiSlime']} +${FOOD_BOSS} 🍎`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
       return 'won';
     }
     await showMessage(uiLayer, CONTENT.lumibloc.defeat, TEXT_DEFEAT_BUTTON, state.playerName, 'combat-defeat');
@@ -322,6 +339,17 @@ export class ArenaFight {
           await this.lunge(this.monsterModel, -this.dir);
           if (!e.hit) this.hud.announce(fill(TEXT_DODGE));
           break;
+        case 'golemStunned': {
+          this.hud.announce(fill(TEXT_GOLEM_WEBBED), 1.6, 'super');
+          const g = this.golemModel.root.position;
+          this.host.sparks.burst(g.x, g.y + 1, g.z, 0xe8ecf8, 18, 0.8);
+          await wait(this.ms(0.8));
+          break;
+        }
+        case 'golemSkip':
+          this.hud.announce(fill(TEXT_GOLEM_SKIP), 1.6);
+          await wait(this.ms(1));
+          break;
         case 'skip':
           this.hud.announce(fill(e.reason === 'stun' ? TEXT_SKIP_STUN : TEXT_SKIP_SLEEP));
           await wait(this.ms(0.8));
@@ -333,9 +361,15 @@ export class ArenaFight {
           break;
         case 'stage':
           this.placeActive();
-          this.split();
-          audio.sfx('split');
-          this.hud.announce(TEXT_BOSS_SPLITS, 1.8, 'super');
+          if (this.host.boss === 'roiSlime') {
+            this.split();
+            audio.sfx('split');
+          } else {
+            const p = this.monsterModel.root.position;
+            this.host.sparks.burst(p.x, p.y + 1.5, p.z, 0xe8ecf8, 40, 1.6);
+            audio.sfx('shatter');
+          }
+          this.hud.announce(TEXT_BOSS_STAGE[this.host.boss ?? 'roiSlime'], 1.8, 'super');
           await wait(this.ms(0.9));
           break;
         case 'nextMonster':
