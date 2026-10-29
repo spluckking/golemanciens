@@ -97,3 +97,25 @@ Décisions :
 Textes nouveaux :
 - « Tu as trouvé une Rune d'éveil ! », « Donner », « Pour un golem au stade {n} »
 - Encyclopédie : Écorce « Un golem d'écorce aux épaules feuillues. Ses racines retiennent les monstres. » ; Champignon « Un golem champignon au grand chapeau rouge. Ses spores endorment tout le monde. » ; Squelette archer « Un archer tout en os qui tire entre les troncs. Les cailloux le démontent ! » ; Loup d'ombre « Un loup gris aux yeux violets qui rôde près du ruisseau. Les spores le calment. » ; Champignon sauteur « Un petit champignon violet qui saute partout. Les lianes l'attrapent en plein vol. » ; Reine Araignée « La reine de la forêt, couronnée d'or. Sa toile d'argent attrape les golems ! »
+
+## Jalon 3 (Désert des Sables Chantants)
+
+Décisions :
+- Golem Sable : son attaque A2 est « Sable électrique » (type ⚡), pour qu'il ait aussi une réponse aux Momies et au Grand Ver.
+- Qui donne les quêtes (CONTENU.md ne le précise pas) : Dame Oasia (gardienne de l'oasis) → R1 « L'eau de l'oasis », R3 « Les scorpions du puits », O2 « Le chameau têtu » et la quête du Grand Ver ; Zéphir (le marchand de T3) → R2 « La charrette ensablée » et O1 « La carte déchirée ».
+- Temple ensablé (S3), dans l'ordre : bloc de grès à pousser sur la dalle (solution : sud, sud, est, est ; bouton « Recommencer » dans un coin), deux miroirs à tourner d'un quart de tour pour que le rayon du soleil touche le cristal de la porte, les deux murs de suites (☀️ puis 7), la pierre-énigme de niveau 3, puis l'œuf (Sable ou Cuivre). Lumibloc donne son aide (mot pour mot, CONTENU.md) toutes les 10 tentatives.
+- R2 : 3 caisses autour de la charrette, à casser d'un coup de baguette. O2 : Caramel suit le héros après 1 🍎 et rentre quand il arrive dans l'enclos.
+- P3 : 3 tambours anciens près de la fosse au nord-ouest ; au troisième, l'écran tremble et le Grand Ver surgit.
+- Cristal de puissance caché : au sud-ouest, derrière les cactus. Le Grand Ver en donne un deuxième.
+- Évolution au stade 3 : des éclats de la couleur de l'élément du golem poussent sur ses épaules et sa tête.
+- Équilibrage (simulation) : à partir de la phase 3, les PV des monstres sont multipliés par 0,9 (les PV de la formule de la spec grandissent plus vite que l'ATQ des golems). L'équipe attendue en phase 3 a ses repas au plafond (4 chacun : on gagne environ 38 🍎 dans le Désert avant l'arène), avec le golem de la phase 1 éveillé par la Rune. Sans golem de sable (si on a choisi Cuivre), le Vautour tombe en 3,4 coups en moyenne au lieu de 3.
+- Après le Grand Ver, le chapitre 4 commence ; les Pics de Givre arrivent au jalon 4.
+
+Textes nouveaux :
+- Répliques des quêtes de la phase 3 (demande et remerciement) : voir `src/data/quests.ts` (QUESTS_P3).
+- « Remplir le seau », « Vider le seau », « Seau d'eau : n/3 », « Caisse cassée : n/3 », « Morceau de carte : n/3 », « Donner 1 🍎 », « Il te faut une 🍎 pour Caramel. », « Caramel te suit ! », « Caramel est rentré à l'enclos ! », « L'arène du Désert est ouverte ! », « Aller à l'arène du Désert », « Tu as trouvé un Cristal de puissance ! », « Explore le Désert des Sables Chantants »
+- Temple : « Pousser », « Le bloc ne bouge pas : quelque chose le bloque. », « Le bloc est sur la dalle : une porte s'ouvre ! », « Tourner le miroir », « Le rayon touche le cristal : la porte s'ouvre ! », « Bravo ! Voici une autre suite. », « Ce n'est pas ça. Regarde bien la suite ! », « Les deux suites sont trouvées ! », « Recommencer »
+- Quête P3 « Les tambours des dunes » : « Trois tambours anciens dorment près de la fosse, au nord-ouest. Frappe-les tous : le Grand Ver sortira du sable ! » ; rappel : « Les tambours anciens sont au nord-ouest, près de la fosse. Frappe-les tous les trois ! » ; « Frapper », « Tambour : n/3 », « Le sol tremble… Le Grand Ver surgit de la fosse ! »
+- Fin du chapitre 3 : « Troisième éclat retrouvé ! La suite de l'aventure arrive bientôt. »
+- Encyclopédie : Sable « Un golem de sable doré qui change de forme. Son sable crépite d'éclairs ! » ; Cuivre « Un golem de cuivre brillant, plein d'étincelles. Ses éclairs foudroient les momies. » ; Momie « Elle sort du sable au coucher du soleil, bras tendus. Les éclairs la font fuir ! » ; Scorpion « Il se cache sous le sable, la queue levée. Les cailloux cognent sa carapace. » ; Vautour « Il tourne en rond au-dessus des dunes. Le sable dans ses plumes le fait tomber. » ; Grand Ver des Sables « Un ver géant qui nage dans les dunes. Les éclairs le font replonger ! »
+- Cinématiques T3 (8 plans) et O3 (5 plans) : mises en scène nouvelles sur les textes de CONTENU.md.

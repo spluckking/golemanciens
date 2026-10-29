@@ -22,6 +22,8 @@ export async function interactAt(page: Page, x: number, z: number, label: string
   // Le jeu masque le bouton dès qu'on le touche : sans « force », Playwright pourrait croire le toucher
   // raté et attendre indéfiniment un bouton disparu.
   await interact.tap({ force: true });
+  // Le jeu lit le toucher à l'image suivante : on attend avant de bouger le héros.
+  await settle(page, 2);
 }
 
 /** Parle à un villageois (on se place au sud de lui) et vérifie le début de sa réplique. */

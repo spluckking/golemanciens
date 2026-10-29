@@ -178,7 +178,8 @@ function buildTemple(world: VoxelWorld, cx: number, cz: number, y: number): Temp
     symbolTiles: [{ x: cx + 5.5, z: cz - 3.5 }, { x: cx + 6.5, z: cz - 3.5 }, { x: cx + 7.5, z: cz - 3.5 }],
     stone: { x: cx + 6.5, z: cz + 0.5 },
     nest: { x: cx + 7.5, z: cz + 4.5 },
-    restartPush: { x: pushX + 0.5, z: pushZ + 4.5 },
+    // Le bouton « Recommencer » est dans un coin loin du chemin de la solution.
+    restartPush: { x: pushX + 4.5, z: pushZ + 0.5 },
     restartMirrors: { x: mirX + 0.5, z: mirZ + 4.5 },
   };
 }

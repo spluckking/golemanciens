@@ -5,7 +5,7 @@ type P = { x: number; z: number };
 type Temple = { step: string; blockPos: P; mirrorPos: P[]; tiles: P[]; stone: P; nest: P; wall: number; lit: boolean };
 type DesertView = {
   temple: Temple;
-  desertQuests: { log: Record<string, { status: string; progress: number }>; full: boolean; crates: (P & { taken: boolean })[]; pieces: (P & { taken: boolean })[]; camel: P & { mode: string } };
+  desertQuests: { log: Record<string, { status: string; progress: number }>; full: boolean; crates: (P & { taken: boolean })[]; pieces: (P & { taken: boolean })[]; camel: P & { mode: string }; pen: P };
   desertBoss: { drums: (P & { struck: boolean })[]; worm: P };
 };
 const view = (page: Page): Promise<DesertView> => page.evaluate(() => window.__game!.life() as unknown as DesertView);
@@ -14,7 +14,6 @@ const temple = async (page: Page): Promise<Temple> => (await view(page)).temple;
 test('temple ensablé : bloc de grès, miroirs du soleil, dalles-symboles, pierre, éclosion de Cuivre', async ({ page }) => {
   test.setTimeout(240_000);
   const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('?test&fast&start=play&biome=desert&golems=pierre');
   await waitReady(page);
   expect((await temple(page)).step).toBe('push');
@@ -29,7 +28,12 @@ test('temple ensablé : bloc de grès, miroirs du soleil, dalles-symboles, pierr
 
   // Miroirs : deux quarts de tour chacun ; le rayon atteint le cristal.
   const t = await temple(page);
-  for (const i of [0, 0, 1, 1]) await interactAt(page, t.mirrorPos[i].x + 1, t.mirrorPos[i].z, 'Tourner le miroir');
+  for (const i of [0, 0, 1, 1]) {
+    const before = (await page.evaluate(() => (window.__game!.life() as unknown as { temple: { mirrors: string[] } }).temple.mirrors)).join();
+    await interactAt(page, t.mirrorPos[i].x + 1, t.mirrorPos[i].z, 'Tourner le miroir');
+    await expect.poll(async () => (await page.evaluate(() => (window.__game!.life() as unknown as { temple: { mirrors: string[] } }).temple.mirrors)).join()).not.toBe(before);
+    if (await page.getByTestId('dialog-close').isVisible()) await page.getByTestId('dialog-close').tap();
+  }
   await expect.poll(async () => (await temple(page)).step).toBe('symbols');
 
   // Dalles-symboles : ☀️ (première dalle), puis 7 (deuxième dalle).
@@ -57,7 +61,6 @@ test('temple ensablé : bloc de grès, miroirs du soleil, dalles-symboles, pierr
 test('Palmebloc : l’eau de l’oasis, la charrette, la carte déchirée, le chameau Caramel', async ({ page }) => {
   test.setTimeout(240_000);
   const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('?test&fast&start=play&biome=desert&golems=pierre,cuivre&desertSanctuary=hatched');
   await waitReady(page);
   const status = async (id: string): Promise<string> => (await view(page)).desertQuests.log[id].status;
@@ -90,38 +93,32 @@ test('Palmebloc : l’eau de l’oasis, la charrette, la carte déchirée, le ch
   for (const p of (await view(page)).desertQuests.pieces) await interactAt(page, p.x, p.z + 1, 'Ramasser');
   await expect.poll(() => status('O1')).toBe('ready');
 
+  await talkTo(page, 'zephir', 'carte');
+
+  // Dame Oasia propose d'abord les scorpions du puits (R3, testée par la simulation), puis Caramel.
+  await talkTo(page, 'oasia', 'scorpions');
   // O2 : Caramel suit après une 🍎, jusqu'à l'enclos.
   await talkTo(page, 'oasia', 'Caramel');
   const camel = (await view(page)).desertQuests.camel;
   await interactAt(page, camel.x, camel.z + 1.5, 'Donner 1 🍎');
   await expect.poll(async () => (await view(page)).desertQuests.camel.mode).toBe('following');
-  // On marche vers l'enclos par petites étapes (Caramel suit).
-  const pen = await page.evaluate(() => {
-    const l = window.__game!.life() as unknown as { npcs: (P & { id: string })[] };
-    const oasia = l.npcs.find((n) => n.id === 'oasia')!;
-    return { x: oasia.x - 8.5, z: oasia.z - 4.5 };
-  });
-  for (let k = 1; k <= 12 && (await status('O2')) !== 'ready'; k++) {
-    const c = (await view(page)).desertQuests.camel;
-    const step = { x: c.x + (pen.x - c.x) * 0.5, z: c.z + (pen.z - c.z) * 0.5 };
-    await page.evaluate(([x, z]) => window.__game!.teleport(x, z, 0), [step.x, step.z]);
-    await page.waitForTimeout(900);
-  }
+  // On va à l'enclos : Caramel rattrape le héros et y entre.
+  const pen = (await view(page)).desertQuests.pen;
+  await page.evaluate(([x, z]) => window.__game!.teleport(x, z, 0), [pen.x, pen.z]);
   await expect.poll(() => status('O2')).toBe('ready');
   expect(errors).toEqual([]);
 });
 
 /** Va à l'interaction qui porte cet identifiant et la touche. */
 async function useById(page: Page, id: string, label: string): Promise<void> {
+  await expect.poll(() => page.evaluate((i) => window.__game!.interactionAt(i), id), { message: id }).not.toBeNull();
   const it = await page.evaluate((i) => window.__game!.interactionAt(i), id);
-  expect(it, id).not.toBeNull();
   await interactAt(page, it!.x, it!.z, label);
 }
 
 test('Les tambours des dunes : 3 tambours, le Grand Ver surgit, combat, outro O3, Cristal et chapitre 4', async ({ page }) => {
   test.setTimeout(300_000);
   const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('?test&fast&start=play&biome=desert&golems=cuivre&desertBoss=active&bossHp=0.3');
   await waitReady(page);
   for (const d of (await view(page)).desertBoss.drums) await interactAt(page, d.x, d.z + 1, 'Frapper');

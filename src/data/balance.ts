@@ -28,9 +28,16 @@ export function golemBaseStats(phase: number): { hp: number; atk: number } {
   return { hp: Math.round(GOLEM_BASE_HP * k), atk: Math.round(GOLEM_BASE_ATK * k) };
 }
 
+/**
+ * Correction des PV des monstres par phase, réglée par la simulation (§ 15) : les PV de la formule
+ * grandissent plus vite que l'ATQ des golems (tests/sim/balance3.test.ts).
+ */
+export const MONSTER_HP_PHASE_FACTOR: Readonly<Record<number, number>> = { 3: 0.9 };
+
 /** Monstres (§ 5.3). */
 export function monsterStats(phase: number): { hp: number; atk: number } {
-  return { hp: 24 + 14 * (phase - 1), atk: 5 + 2 * (phase - 1) };
+  const hp = 24 + 14 * (phase - 1);
+  return { hp: Math.round(hp * (MONSTER_HP_PHASE_FACTOR[phase] ?? 1)), atk: 5 + 2 * (phase - 1) };
 }
 
 /** Combat dans le monde (§ 6) et soins (§ 4.5). */

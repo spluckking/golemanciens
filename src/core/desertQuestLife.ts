@@ -336,8 +336,8 @@ export class DesertQuestLife {
     return this.layout.landmarks.village;
   }
 
-  snapshot(): { log: DesertQuestLife['book']['log']; full: boolean; crates: (Point2 & { taken: boolean })[]; pieces: (Point2 & { taken: boolean })[]; camel: Point2 & { mode: string } } {
+  snapshot(): { log: DesertQuestLife['book']['log']; full: boolean; crates: (Point2 & { taken: boolean })[]; pieces: (Point2 & { taken: boolean })[]; camel: Point2 & { mode: string }; pen: Point2 } {
     const at = (i: Item): Point2 & { taken: boolean } => ({ x: i.model.root.position.x, z: i.model.root.position.z, taken: i.taken });
-    return { log: this.book.log, full: this.full, crates: this.crates.map(at), pieces: this.pieces.map(at), camel: { ...this.camelPos, mode: this.camelMode } };
+    return { log: this.book.log, full: this.full, crates: this.crates.map(at), pieces: this.pieces.map(at), camel: { ...this.camelPos, mode: this.camelMode }, pen: { x: this.layout.village.pen.x, z: this.layout.village.pen.z } };
   }
 }
