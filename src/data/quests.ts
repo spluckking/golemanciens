@@ -5,7 +5,7 @@
  */
 
 export type QuestId = 'R1' | 'R2' | 'R3' | 'O1' | 'O2';
-export type QuestNpc = 'mereBrique' | 'paquerette' | 'gaston' | 'noisette' | 'pip' | 'tilleul' | 'oasia' | 'zephir';
+export type QuestNpc = 'mereBrique' | 'paquerette' | 'gaston' | 'noisette' | 'pip' | 'tilleul' | 'oasia' | 'zephir' | 'flocon';
 
 export interface QuestDef {
   id: QuestId;
@@ -248,3 +248,79 @@ export const TEXT_CAMEL_HOME = 'Caramel est rentré à l’enclos !';
 export const TEXT_DESERT_ARENA_OPEN = 'L’arène du Désert est ouverte !';
 export const OBJECTIVE_GO_DESERT_ARENA = 'Aller à l’arène du Désert';
 export const TEXT_CRYSTAL_FOUND = 'Tu as trouvé un Cristal de puissance !';
+
+/**
+ * Quêtes de la phase 4 (CONTENU.md § E, Igloos du Col). Titres et objectifs : CONTENU.md.
+ * Grand-mère Flocon donne toutes les quêtes ; les répliques sont nouvelles, à valider par le parent.
+ */
+export const QUESTS_P4: readonly QuestDef[] = [
+  {
+    id: 'R1',
+    title: 'Du bois pour le feu',
+    mandatory: true,
+    giver: 'flocon',
+    turnIn: 'flocon',
+    goal: 5,
+    task: 'Rapporter des bûches pour le feu ({n}/{goal})',
+    request: 'Brr ! Le feu du village va s’éteindre. Tu peux me rapporter cinq bûches ? Elles sont tombées près des sapins.',
+    thanks: 'Quel bon feu ! Viens te réchauffer les mains, {prenom}.',
+  },
+  {
+    id: 'R2',
+    title: 'Le petit perdu',
+    mandatory: true,
+    giver: 'flocon',
+    turnIn: 'flocon',
+    goal: 1,
+    task: 'Retrouver Nilou dans la tempête et le ramener au village',
+    request: 'Mon petit-fils Nilou est parti voir la neige vers l’est, et il ne revient pas ! Tu peux le ramener ?',
+    thanks: 'Nilou ! Te voilà ! Merci, {prenom}, tu as un cœur grand comme la montagne.',
+  },
+  {
+    id: 'R3',
+    title: 'Les yétis du col',
+    mandatory: true,
+    giver: 'flocon',
+    turnIn: 'flocon',
+    goal: 3,
+    task: 'Vaincre les yétis du col ({n}/{goal})',
+    request: 'Des yétis bloquent le col et lancent des boules de neige sur les voyageurs. Tes golems peuvent les chasser ?',
+    thanks: 'Le col est libre ! Les voyageurs vont pouvoir passer.',
+  },
+  {
+    id: 'O1',
+    title: 'Le poisson du lac',
+    mandatory: false,
+    giver: 'flocon',
+    turnIn: 'flocon',
+    goal: 3,
+    task: 'Pêcher des poissons aux trous du lac gelé ({n}/{goal})',
+    request: 'J’ai une envie de soupe de poisson ! Va pêcher trois poissons aux trous du lac gelé.',
+    thanks: 'Trois beaux poissons ! Ce soir, soupe pour tout le village.',
+  },
+  {
+    id: 'O2',
+    title: 'Les cloches de glace',
+    mandatory: false,
+    giver: 'flocon',
+    turnIn: 'flocon',
+    goal: 3,
+    task: 'Faire sonner les cloches de glace, de la plus petite à la plus grande ({n}/{goal})',
+    request: 'Les trois cloches de glace jouent une jolie musique… si on les fait sonner de la plus petite à la plus grande !',
+    thanks: 'Quelle belle musique ! On l’entend jusqu’en haut de la montagne.',
+  },
+];
+
+/** Textes d'interface nouveaux (à valider). */
+export const TEXT_LOG = 'Bûche : {n}/{goal}';
+export const TEXT_FISH = 'Pêcher';
+export const TEXT_FISH_CAUGHT = 'Un poisson ! ({n}/{goal})';
+export const TEXT_RING_BELL = 'Faire sonner';
+export const TEXT_BELL_RIGHT = 'Ding ! ({n}/3)';
+export const TEXT_BELL_WRONG = 'Ce n’est pas le bon ordre. On recommence, de la plus petite à la plus grande !';
+export const TEXT_CALL_NILOU = 'Viens avec moi !';
+export const TEXT_NILOU_FOLLOWS = 'Nilou te suit !';
+export const TEXT_NILOU_HOME = 'Nilou est rentré au village !';
+export const TEXT_GIVRE_ARENA_OPEN = 'L’arène des Pics de Givre est ouverte !';
+export const OBJECTIVE_GO_GIVRE_ARENA = 'Aller à l’arène des Pics de Givre';
+export const TEXT_HEART_FOUND = 'Tu as trouvé un Cœur ancestral !';

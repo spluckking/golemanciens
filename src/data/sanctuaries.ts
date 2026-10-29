@@ -19,6 +19,8 @@ export const NICKNAME_SUGGESTIONS: Record<GolemSpecies, string[]> = {
   champignon: ['Cèpe', 'Pois', 'Bolet'],
   sable: ['Dune', 'Grain', 'Mirage'],
   cuivre: ['Étincelle', 'Zap', 'Volt'],
+  glace: ['Givre', 'Glaçon', 'Frimas'],
+  cristal: ['Prisme', 'Quartz', 'Améthyste'],
 };
 
 /** Textes d'interface nouveaux (à valider). */
@@ -71,3 +73,36 @@ export const TEXT_SYMBOL_RIGHT = 'Bravo ! Voici une autre suite.';
 export const TEXT_SYMBOLS_DONE = 'Les deux suites sont trouvées !';
 /** Poussées ou rotations sans succès avant l'aide de Lumibloc. */
 export const TEMPLE_HINT_AFTER = 10;
+
+// ---------- S4 : sanctuaire gelé (Pics de Givre) ----------
+
+export const S4_EGG_CHOICES: readonly GolemSpecies[] = ['glace', 'cristal'];
+/** Plaque du moulin et aide de Lumibloc (CONTENU.md, S4, mot pour mot). */
+export const S4_MILL_RULE = "Chaque roue tourne dans l'autre sens que sa voisine.";
+export const S4_MILL_HINT = 'Si la première roue tourne à droite, la suivante tourne à gauche.';
+/** Textes d'interface nouveaux (à valider). */
+export const TEXT_SLIDE_DONE = 'Tu es sorti de la salle de glace !';
+export const TEXT_SLIDE_HINT = 'Le sol glisse ! Pousse ton pouce dans une direction : tu iras tout droit jusqu’au prochain bloc.';
+export const TEXT_MEMORY_WATCH = 'Regarde bien l’ordre des dalles…';
+export const TEXT_MEMORY_GO = 'À toi ! Marche sur les dalles dans le même ordre.';
+export const TEXT_MEMORY_WRONG = 'Oups ! Regarde encore une fois.';
+export const TEXT_MEMORY_EASIER = 'On essaie avec 3 dalles seulement.';
+export const TEXT_MEMORY_DONE = 'Bravo, tu t’en es souvenu ! La glace fond.';
+export const TEXT_MEMORY_REPLAY = 'Revoir l’ordre';
+export const TEXT_MILL_PANEL = 'Régler les roues';
+export const TEXT_MILL_CHOOSE_AXLE = 'Choisis un axe pour y poser une roue, puis tourne la manivelle. La flèche montre le bon sens du moulin.';
+export const TEXT_MILL_CHOOSE_GEAR = 'Quelle roue poses-tu sur cet axe ?';
+export const TEXT_AXLES = ['Axe de gauche', 'Axe du milieu (en haut)', 'Axe de droite'];
+export const TEXT_SMALL_GEAR = 'Une petite roue';
+export const TEXT_BIG_GEAR = 'La grande roue';
+export const TEXT_REMOVE_GEAR = 'Enlever la roue';
+export const TEXT_TURN_CRANK = '⚙️ Tourner la manivelle';
+export const TEXT_CLOSE = 'Fermer';
+export const TEXT_BACK = 'Retour';
+export const TEXT_MILL_RIGHT = 'Le moulin tourne dans le bon sens : la glace fond !';
+export const TEXT_MILL_WRONG = 'Le moulin tourne… mais dans le mauvais sens ! Regarde la flèche.';
+export const TEXT_MILL_GAP = 'Une roue ne touche pas sa voisine : rien ne tourne.';
+export const TEXT_MILL_JAM = 'Trop de roues se touchent : tout se bloque !';
+export const TEXT_ICE_MELTS = 'Le mur de glace fond !';
+/** Essais du moulin sans succès avant l'aide de Lumibloc. */
+export const MILL_HINT_AFTER = 3;

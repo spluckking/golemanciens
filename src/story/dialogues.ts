@@ -18,6 +18,8 @@ export const NPC_NAMES: Record<string, string> = {
   tilleul: 'Tilleul',
   oasia: 'Dame Oasia',
   zephir: 'Zéphir',
+  flocon: 'Grand-mère Flocon',
+  nilou: 'Nilou',
 };
 
 const GREETINGS: Record<string, string> = {
@@ -31,6 +33,8 @@ const GREETINGS: Record<string, string> = {
   tilleul: 'Bonjour ! Je suis charpentier. Les ponts de la forêt, c’est moi.',
   oasia: 'Bienvenue à Palmebloc ! Ici, chaque goutte d’eau est un trésor.',
   zephir: 'Zéphir, marchand du désert ! J’ai des épices, des tapis… et beaucoup de sable.',
+  flocon: 'Bienvenue aux Igloos du Col ! Approche-toi du feu, il fait si froid dehors.',
+  nilou: 'J’ai froid… Je ne sais plus où est le village !',
 };
 
 export function greeting(npcId: string): DialogLine {

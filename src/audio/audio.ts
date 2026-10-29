@@ -41,7 +41,10 @@ export type SfxId =
   | 'knock'
   | 'chime'
   | 'evolve'
-  | 'star';
+  | 'star'
+  | 'slide'
+  | 'bell'
+  | 'fire';
 
 const LOOKAHEAD_S = 0.15;
 const TICK_MS = 25;
@@ -525,6 +528,15 @@ export class AudioEngine {
       case 'lantern':
         this.whoosh(bus, t, 0.35, 0.08, 400, 2000);
         return this.notes([n(79), n(86), n(91)], 0.1, 1.1, 0.1, true);
+      case 'slide':
+        // Glissade sur la glace : un souffle qui file, et un petit tintement.
+        this.whoosh(bus, t, 0.5, 0.09, 1200, 300);
+        return this.notes([n(93)], 0.05, 0.4, 0.05, true);
+      case 'bell':
+        return this.notes([n(84), n(91)], 0.03, 1.6, 0.12, true);
+      case 'fire':
+        this.noiseHit(bus, t, 0.5, 0.12, 900, 'lowpass');
+        return this.notes([n(67), n(74)], 0.08, 0.5, 0.06, true);
       case 'pop':
         return this.sweep(380, 1100, 0.09, 'sine', 0.2);
       case 'quest':

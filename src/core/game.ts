@@ -29,6 +29,8 @@ import type { PrairieLayout } from '../world/prairie';
 import type { ForestLayout } from '../world/forest';
 import type { DesertLayout } from '../world/desert';
 import { DesertLife } from './desertLife';
+import type { GivreLayout } from '../world/givre';
+import { GivreLife } from './givreLife';
 import type { Cell } from '../world/structures';
 import type { QuestionView } from '../questions/present';
 import type { GolemSpecies } from '../data/creatures';
@@ -426,10 +428,13 @@ export class Game {
       askNickname: (species: GolemSpecies) => askNickname(this.uiLayer, species),
       lock: (locked: boolean) => this.lock(locked),
       placeHero: (x: number, z: number, facing: number) => this.teleport(x, z, facing),
+      moveHero: (x: number, z: number) => this.teleport(x, z),
+      choose: (text: string, labels: string[], testId: string) => askChoice(this.uiLayer, text, labels, this.state.playerName, testId),
       onProgress: () => void this.save(),
     };
     const fights = { onFight: () => void this.startFight('arena'), onBossFight: () => void this.startFight('boss') };
     if (layout.id === 'foret') return new ForestLife(layout as ForestLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary });
+    if (layout.id === 'givre') return new GivreLife(layout as GivreLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary });
     if (layout.id === 'desert') return new DesertLife(layout as DesertLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary, shake: () => (this.shakeTime = 1.2) });
     return new PrairieLife(layout as PrairieLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, {
       ...hooks,

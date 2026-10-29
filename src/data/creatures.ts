@@ -6,7 +6,7 @@ import type { AttackSlot } from './balance';
  * Type d'une attaque (révision 1.4) : la faiblesse d'un monstre se compare au type de l'attaque.
  * C'est l'élément du golem par défaut ; certaines attaques ont un autre type (☀️ Soleil).
  */
-export type AttackType = 'rock' | 'plant' | 'sun' | 'spore' | 'sand' | 'thunder' | 'star';
+export type AttackType = 'rock' | 'plant' | 'sun' | 'spore' | 'sand' | 'thunder' | 'ice' | 'crystal' | 'star';
 
 /** Élément d'un golem : le type de ses attaques par défaut. */
 export type Element = AttackType;
@@ -18,6 +18,8 @@ export const TYPE_ICON: Record<AttackType, string> = {
   spore: '🍄',
   sand: '🏜️',
   thunder: '⚡',
+  ice: '❄️',
+  crystal: '💎',
   star: '✨',
 };
 
@@ -28,6 +30,8 @@ export const TYPE_NAME: Record<AttackType, string> = {
   spore: 'Spore',
   sand: 'Sable',
   thunder: 'Foudre',
+  ice: 'Glace',
+  crystal: 'Cristal',
   star: 'Étoile',
 };
 
@@ -45,7 +49,7 @@ export interface AttackInfo {
   effect?: AttackEffect;
 }
 
-export type GolemSpecies = 'pierre' | 'mousse' | 'ecorce' | 'champignon' | 'sable' | 'cuivre';
+export type GolemSpecies = 'pierre' | 'mousse' | 'ecorce' | 'champignon' | 'sable' | 'cuivre' | 'glace' | 'cristal';
 
 export interface GolemInfo {
   name: string;
@@ -126,6 +130,30 @@ export const GOLEMS: Record<GolemSpecies, GolemInfo> = {
       { slot: 'ultimate', name: 'Orage', kind: 'magic', type: 'thunder' },
     ],
   },
+  // Phase 4 : chacun a, dès l'éclosion, une attaque 💎 (faiblesse de la Sorcière du Blizzard).
+  // Glace : A2 « Souffle glacé » est de type 💎, un souffle plein d'éclats de givre (décision du jalon 4, à valider).
+  glace: {
+    name: 'Glace',
+    element: 'ice',
+    phase: 4,
+    attacks: [
+      { slot: 'a1', name: 'Poing gelé', kind: 'force', type: 'ice' },
+      { slot: 'a2', name: 'Souffle glacé', kind: 'magic', type: 'crystal' },
+      { slot: 'a3', name: 'Prison de glace', kind: 'magic', type: 'ice', effect: 'stun' },
+      { slot: 'ultimate', name: 'Blizzard', kind: 'force', type: 'ice' },
+    ],
+  },
+  cristal: {
+    name: 'Cristal',
+    element: 'crystal',
+    phase: 4,
+    attacks: [
+      { slot: 'a1', name: 'Éclat tranchant', kind: 'force', type: 'crystal' },
+      { slot: 'a2', name: 'Rayon prisme', kind: 'magic', type: 'crystal' },
+      { slot: 'a3', name: 'Bouclier miroir', kind: 'magic', type: 'crystal', effect: 'shield' },
+      { slot: 'ultimate', name: 'Pluie de cristaux', kind: 'force', type: 'crystal' },
+    ],
+  },
 };
 
 /** Attaques débloquées par stade (§ 4.3, révision 1.4) : A1 et A2 au stade 1, A3 au stade 2, Ultime au stade 3. */
@@ -135,7 +163,7 @@ export function unlockedAttacks(species: GolemSpecies, stage: number): AttackInf
   return GOLEMS[species].attacks.filter((a) => stage >= UNLOCK_STAGE[a.slot]);
 }
 
-export type MonsterSpecies = 'slime' | 'zombie' | 'spider' | 'skeleton' | 'wolf' | 'hopper' | 'mummy' | 'scorpion' | 'vulture';
+export type MonsterSpecies = 'slime' | 'zombie' | 'spider' | 'skeleton' | 'wolf' | 'hopper' | 'mummy' | 'scorpion' | 'vulture' | 'yeti' | 'iceBat' | 'frostGhost';
 
 export interface MonsterInfo {
   name: string;
@@ -157,9 +185,13 @@ export const MONSTERS: Record<MonsterSpecies, MonsterInfo> = {
   mummy: { name: 'Momie', weakness: 'thunder', phase: 3, attack: 'Bandelettes' },
   scorpion: { name: 'Scorpion', weakness: 'rock', phase: 3, attack: 'Piqûre' },
   vulture: { name: 'Vautour', weakness: 'sand', phase: 3, attack: 'Plongeon' },
+  // Phase 4 (noms d'attaques nouveaux, à valider).
+  yeti: { name: 'Yéti', weakness: 'rock', phase: 4, attack: 'Boule de neige' },
+  iceBat: { name: 'Chauve-souris de glace', weakness: 'thunder', phase: 4, attack: 'Cri glacé' },
+  frostGhost: { name: 'Fantôme gelé', weakness: 'crystal', phase: 4, attack: 'Frisson' },
 };
 
-export type BossId = 'roiSlime' | 'reineAraignee' | 'grandVer';
+export type BossId = 'roiSlime' | 'reineAraignee' | 'grandVer' | 'sorciere';
 
 /** Une étape d'un boss : faiblesse, attaque, et éventuelle armure (seul un type l'entame). */
 export interface BossStage {
@@ -168,6 +200,8 @@ export interface BossStage {
   armorOnly?: AttackType;
   /** Son attaque étourdit le golem actif (il passe son prochain tour). */
   stuns?: boolean;
+  /** Son attaque aveugle le golem actif : sa prochaine attaque est moins forte. */
+  blinds?: boolean;
 }
 
 export interface BossInfo {
@@ -201,6 +235,15 @@ export const BOSSES: Record<BossId, BossInfo> = {
     stages: [
       { weakness: 'thunder', attack: 'Morsure des sables' },
       { weakness: 'thunder', attack: 'Surgissement' },
+    ],
+  },
+  // Étape 2 : « Tempête », qui aveugle (SPEC § 5.1).
+  sorciere: {
+    name: 'Sorcière du Blizzard',
+    phase: 4,
+    stages: [
+      { weakness: 'crystal', attack: 'Flocons tranchants' },
+      { weakness: 'crystal', attack: 'Tempête', blinds: true },
     ],
   },
 };

@@ -7,7 +7,7 @@ import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
 import { CINEMATICS, OUTRO_CINEMATICS, storyCaptions } from './story/cinematics';
-import { S2_STEPS, S3_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
+import { S2_STEPS, S3_STEPS, S4_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
 import { checkpointState } from './core/checkpoints';
 import { applyBlockTheme } from './ui/theme';
@@ -101,7 +101,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   if (isTest && params.get('chapter') === '2') Object.assign(state, checkpointState(state, 'chapter2'));
   // « ?test&unlock=foret,desert » débloque des biomes (comme si T2, T3 étaient lus) ; « &biome=desert » y commence.
   const unlock = (params.get('unlock') ?? params.get('biome') ?? '').split(',');
-  const opening: Record<string, string> = { foret: 'T2', desert: 'T3' };
+  const opening: Record<string, string> = { foret: 'T2', desert: 'T3', givre: 'T4' };
   if (isTest) for (const b of unlock) if (opening[b] && !state.storiesRead.includes(opening[b])) state.storiesRead.push(opening[b]);
   // « &desertSanctuary=mirrors|symbols|stone3|open|hatched » avance le temple ensablé ;
   // « &desertBoss=active » : quêtes et arène du Désert terminées, quête du Grand Ver acceptée.
@@ -113,6 +113,17 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) desert.quests[id].status = id.startsWith('R') ? 'done' : 'available';
     desert.arena.wins = 3;
     desert.bossQuest = 'active';
+  }
+  // « &givreSanctuary=slide|memory|mill|stone4|open|hatched » avance le sanctuaire gelé ;
+  // « &givreBoss=active » : quêtes et arène des Pics de Givre terminées, quête de la Sorcière acceptée.
+  const givreStep = params.get('givreSanctuary');
+  if (isTest && givreStep && S4_STEPS.includes(givreStep as SanctuaryStep)) progress(state, 'givre').sanctuary.step = givreStep as SanctuaryStep;
+  if (isTest && params.get('givreBoss') === 'active') {
+    const givre = progress(state, 'givre');
+    givre.sanctuary.step = 'hatched';
+    for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) givre.quests[id].status = id.startsWith('R') ? 'done' : 'available';
+    givre.arena.wins = 3;
+    givre.bossQuest = 'active';
   }
   const biome = params.get('biome');
   if (isTest && biome && BIOME_IDS.includes(biome as BiomeId)) state.biome = biome as BiomeId;

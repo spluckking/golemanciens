@@ -30,15 +30,17 @@ const TEXT_SKIP_SLEEP = '{monstre} dort.';
 const TEXT_GOLEM_WEBBED = '{golem} est pris dans la toile !';
 const TEXT_GOLEM_SKIP = '{golem} se débat dans la toile et passe son tour.';
 const TEXT_ARMOR = 'L’armure résiste !';
+const TEXT_GOLEM_BLINDED = '{golem} ne voit plus rien dans la tempête !';
+const TEXT_BLIND_HIT = 'Dans la tempête, {golem} frappe moins fort.';
 const TEXT_VICTORY = 'Victoire ! Tes golems ont gagné.';
 const TEXT_VICTORY_BUTTON = 'Continuer';
 const TEXT_ARENA_DONE = 'Bravo, {prenom} ! Tu as gagné les 3 combats de l’arène.';
 const TEXT_DEFEAT_BUTTON = 'D’accord';
 
-const TYPE_COLORS: Record<AttackType, number> = { rock: 0xa9abb8, plant: 0x6fae52, sun: 0xffc040, spore: 0xb07ae0, sand: 0xe0c080, thunder: 0xfff060, star: 0xfff3a0 };
+const TYPE_COLORS: Record<AttackType, number> = { rock: 0xa9abb8, plant: 0x6fae52, sun: 0xffc040, spore: 0xb07ae0, sand: 0xe0c080, thunder: 0xfff060, ice: 0x9fd8ff, crystal: 0xd8b0ff, star: 0xfff3a0 };
 
 /** Bruitage d'un coup réussi, selon le type d'attaque. */
-const HIT_SFX: Record<AttackType, SfxId> = { rock: 'hitRock', plant: 'hitPlant', sun: 'hitSun', spore: 'poof', sand: 'hitPlant', thunder: 'hitSun', star: 'hitStar' };
+const HIT_SFX: Record<AttackType, SfxId> = { rock: 'hitRock', plant: 'hitPlant', sun: 'hitSun', spore: 'poof', sand: 'hitPlant', thunder: 'hitSun', ice: 'hitStar', crystal: 'hitStar', star: 'hitStar' };
 
 export interface FightHost {
   scene: THREE.Scene;
@@ -351,6 +353,16 @@ export class ArenaFight {
           await wait(this.ms(0.8));
           break;
         }
+        case 'golemBlinded': {
+          this.hud.announce(fill(TEXT_GOLEM_BLINDED), 1.6, 'super');
+          const g = this.golemModel.root.position;
+          this.host.sparks.burst(g.x, g.y + 1.2, g.z, 0xffffff, 24, 1);
+          await wait(this.ms(0.8));
+          break;
+        }
+        case 'blindHit':
+          this.hud.announce(fill(TEXT_BLIND_HIT), 1.2);
+          break;
         case 'golemSkip':
           this.hud.announce(fill(TEXT_GOLEM_SKIP), 1.6);
           await wait(this.ms(1));

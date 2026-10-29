@@ -246,6 +246,41 @@ const painters: Record<TileId, (t: PixelTile, rng: Rng) => void> = {
       }
     }
   },
+  [Tile.Snow]: (t, rng) => {
+    t.noise(rng, [240, 246, 252], 0.03);
+    for (let k = 0; k < 8; k++) t.set(Math.floor(rng() * 16), Math.floor(rng() * 16), [214, 228, 246]);
+  },
+  [Tile.SnowSide]: (t, rng) => {
+    t.noise(rng, DIRT, 0.1);
+    // Une couche de neige qui déborde en festons irréguliers.
+    for (let x = 0; x < 16; x++) {
+      const depth = 4 + Math.floor(rng() * 3);
+      for (let y = 0; y < depth; y++) t.set(x, y, jitter([240, 246, 252], rng, 0.03));
+    }
+  },
+  [Tile.Ice]: (t, rng) => {
+    t.noise(rng, [170, 214, 244], 0.04);
+    // Reflets en diagonale et quelques fissures blanches.
+    for (let i = 0; i < 16; i++) {
+      t.set(i, 15 - i, [214, 238, 255]);
+      if (i < 10) t.set(i + 4, 15 - i, [200, 230, 252]);
+    }
+    for (let k = 0; k < 6; k++) t.set(2 + Math.floor(rng() * 12), 2 + Math.floor(rng() * 12), [245, 250, 255]);
+  },
+  [Tile.IceBrick]: (t, rng) => {
+    t.noise(rng, [214, 234, 250], 0.03);
+    // Joints des briques de glace (rangées décalées).
+    for (const y of [0, 5, 10, 15]) for (let x = 0; x < 16; x++) t.set(x, y, [176, 206, 232]);
+    for (let row = 0; row < 3; row++) for (let y = row * 5 + 1; y < row * 5 + 5; y++) t.set(row % 2 === 0 ? 7 : 3, y, [176, 206, 232]);
+    for (let row = 0; row < 3; row++) for (let y = row * 5 + 1; y < row * 5 + 5; y++) if (row % 2 === 1) t.set(11, y, [176, 206, 232]);
+  },
+  [Tile.FrostGrass]: (t, rng) => {
+    // Petite touffe d'herbe givrée qui dépasse de la neige.
+    for (let k = 0; k < 6; k++) {
+      const x = 3 + Math.floor(rng() * 10);
+      for (let y = 15; y > 8 + Math.floor(rng() * 4); y--) t.set(x, y, y < 11 ? [232, 244, 252] : [130, 170, 150]);
+    }
+  },
   [Tile.FlowerRed]: (t) => flower(t, [230, 60, 60], [255, 220, 80]),
   [Tile.FlowerYellow]: (t) => flower(t, [250, 215, 50], [200, 120, 30]),
   [Tile.FlowerBlue]: (t) => flower(t, [80, 130, 240], [255, 255, 255]),

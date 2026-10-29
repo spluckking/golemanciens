@@ -22,6 +22,26 @@ import {
   trophyVerModel,
   vultureModel,
 } from './desertModels';
+import {
+  bellModel,
+  brazierModel,
+  crankModel,
+  cristalModel,
+  fishingHoleModel,
+  fishModel,
+  frostGhostModel,
+  frozenMillModel,
+  gearAxleModel,
+  gearModel,
+  glaceModel,
+  heartItemModel,
+  iceBatModel,
+  logModel,
+  memoryTileModel,
+  sorciereModel,
+  trophySorciereModel,
+  yetiModel,
+} from './givreModels';
 import { runeItemModel, trophyReineModel, canalModel, champignonModel, ecorceModel, giantWebModel, hopperModel, leverModel, millWheelModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, springModel, steleModel, wolfModel } from './forestModels';
 
 /**
@@ -503,6 +523,9 @@ export const VILLAGER_LOOKS: Record<string, VillagerLook> = {
   // Désert : Dame Oasia (cheffe de l'oasis, longue robe turquoise), Zéphir (marchand au foulard).
   oasia: { skin: 0x9a6648, hair: 0x2a1a10, hairStyle: 'long', hat: 'kerchief', hatColor: 0xf0c43c, top: 0x2a9a9a, bottom: 0x1e6e6e, shoes: 0x8a5a2c, outfit: 'dress', outfitColor: 0x2a9a9a },
   zephir: { skin: 0xc68a62, hair: 0x5a3a22, hairStyle: 'short', hat: 'kerchief', hatColor: 0xe8e2d0, top: 0xc0392b, bottom: 0x8a5a2c, shoes: 0x5a3a20, outfit: 'robe', outfitColor: 0xf0c43c, beard: 0x5a3a22 },
+  // Pics de Givre : Grand-mère Flocon (la vieille pêcheuse, manteau de laine), Nilou (le petit perdu).
+  flocon: { skin: 0xf0c8a8, hair: 0xf4f4f4, hairStyle: 'bun', hat: 'beanie', hatColor: 0xc0392b, top: 0x8a5a9a, bottom: 0x5a3a6a, shoes: 0x4a3426, outfit: 'dress', outfitColor: 0xe8d8c0 },
+  nilou: { skin: 0xd8a882, hair: 0x2a1a10, hairStyle: 'short', hat: 'beanie', hatColor: 0x2a8a9a, top: 0xf0c43c, bottom: 0x3a3a48, shoes: 0x2a2a2a, outfit: 'plain', outfitColor: 0 },
 };
 
 // ---------- Dragon d'Ombre (finale) ----------
@@ -1103,6 +1126,8 @@ export const PORTRAITS: Record<string, PortraitColors> = {
   tilleul: { skin: 0xb07a52, hair: 0x2a1a10, hat: 0x8a5a2c, eye: EYE_DARK },
   oasia: { skin: 0x9a6648, hair: 0x2a1a10, hat: 0xf0c43c, eye: EYE_DARK },
   zephir: { skin: 0xc68a62, hair: 0x5a3a22, hat: 0xe8e2d0, beard: 0x5a3a22, eye: EYE_DARK },
+  flocon: { skin: 0xf0c8a8, hair: 0xf4f4f4, hat: 0xc0392b, eye: EYE_DARK },
+  nilou: { skin: 0xd8a882, hair: 0x2a1a10, hat: 0x2a8a9a, eye: EYE_DARK },
 };
 
 /** Définitions construites une seule fois : la géométrie de chaque pièce est partagée entre instances. */
@@ -1136,6 +1161,34 @@ export const MODELS = {
   symbolStar: symbolTileModel(0xfff3a0),
   symbolNumber: symbolTileModel(0x8a5a2c),
   trophyVer: trophyVerModel(),
+  glace: glaceModel(),
+  cristal: cristalModel(),
+  yeti: yetiModel(),
+  iceBat: iceBatModel(),
+  frostGhost: frostGhostModel(),
+  sorciere: sorciereModel(),
+  logItem: logModel(),
+  fish: fishModel(),
+  fishingHole: fishingHoleModel(),
+  bellSmall: bellModel(0),
+  bellMid: bellModel(1),
+  bellBig: bellModel(2),
+  brazier: brazierModel(),
+  memoryBlue: memoryTileModel(0x4a9ae8, false),
+  memoryGreen: memoryTileModel(0x5ac85a, false),
+  memoryPink: memoryTileModel(0xe86aa8, false),
+  memoryYellow: memoryTileModel(0xf0c43c, false),
+  memoryBlueLit: memoryTileModel(0x4a9ae8, true),
+  memoryGreenLit: memoryTileModel(0x5ac85a, true),
+  memoryPinkLit: memoryTileModel(0xe86aa8, true),
+  memoryYellowLit: memoryTileModel(0xf0c43c, true),
+  gearBig: gearModel(true),
+  gearSmall: gearModel(false),
+  gearAxle: gearAxleModel(),
+  crank: crankModel(),
+  frozenMill: frozenMillModel(),
+  heartItem: heartItemModel(),
+  trophySorciere: trophySorciereModel(),
   guardian: guardianModel(),
   slime: slimeModel(),
   zombie: zombieModel(),
@@ -1171,6 +1224,7 @@ export const MODELS = {
   eggPrairie: eggModel(0x8d8f9c, 0x5aa04a),
   eggForet: eggModel(0x7a5232, 0xd8402e),
   eggDesert: eggModel(0xe0c080, 0xc8743c),
+  eggGivre: eggModel(0x9fd8ff, 0xb48aff),
   riddleStone: riddleStoneModel(),
   tileRed: floorTileModel(TILE_COLORS.red, false),
   tileYellow: floorTileModel(TILE_COLORS.yellow, false),
@@ -1190,6 +1244,8 @@ export const MODELS = {
   shadowChampignon: silhouette(champignonModel()),
   shadowSable: silhouette(sableModel()),
   shadowCuivre: silhouette(cuivreModel()),
+  shadowGlace: silhouette(glaceModel()),
+  shadowCristal: silhouette(cristalModel()),
   villagerFarmer: villagerModel(VILLAGER_LOOKS.farmer),
   villagerBaker: villagerModel(VILLAGER_LOOKS.baker),
   noisette: villagerModel(VILLAGER_LOOKS.noisette),
@@ -1197,6 +1253,8 @@ export const MODELS = {
   tilleul: villagerModel(VILLAGER_LOOKS.tilleul),
   oasia: villagerModel(VILLAGER_LOOKS.oasia),
   zephir: villagerModel(VILLAGER_LOOKS.zephir),
+  flocon: villagerModel(VILLAGER_LOOKS.flocon),
+  nilou: villagerModel(VILLAGER_LOOKS.nilou),
   villagerGrandpa: villagerModel(VILLAGER_LOOKS.grandpa),
   villagerGirl: villagerModel(VILLAGER_LOOKS.girl),
   villagerFisher: villagerModel(VILLAGER_LOOKS.fisher),
@@ -1224,7 +1282,7 @@ export type ModelId = keyof typeof MODELS;
 
 /** Couleur des éclats de chaque élément (stade 3) et élément de chaque golem. */
 const ELEMENT_COLOR: Record<string, number> = { rock: 0xc8ccd8, plant: 0x7ad05a, spore: 0xc08af0, sand: 0xf4dca0, thunder: 0xfff060, ice: 0xbfe8ff, crystal: 0xd8b0ff, wind: 0xf0f6ff, rainbow: 0xff9ad0, star: 0xfff3a0 };
-const GOLEM_ELEMENT: Record<string, string> = { pierre: 'rock', mousse: 'plant', ecorce: 'plant', champignon: 'spore', sable: 'sand', cuivre: 'thunder' };
+const GOLEM_ELEMENT: Record<string, string> = { pierre: 'rock', mousse: 'plant', ecorce: 'plant', champignon: 'spore', sable: 'sand', cuivre: 'thunder', glace: 'ice', cristal: 'crystal' };
 
 /** Taille d'un golem selon son stade (SPEC.md § 4.1 : chaque stade le rend plus grand). */
 export function golemScale(stage: number): number {
@@ -1234,8 +1292,8 @@ export function golemScale(stage: number): number {
 const evolvedCache = new Map<string, ModelDef>();
 
 /**
- * Modèle d'un golem à son stade : au stade 2, des runes lumineuses sur la poitrine (les éléments
- * de son type au stade 3 et l'aura au stade 4 arrivent avec leurs jalons).
+ * Modèle d'un golem à son stade : au stade 2, des runes lumineuses sur la poitrine, au stade 3 des
+ * éclats de son élément, au stade 4 une aura lumineuse (anneau au sol et étincelles qui flottent).
  */
 export function golemModel(species: GolemSpecies, stage: number): ModelDef {
   const base = MODELS[species];
@@ -1274,6 +1332,20 @@ export function golemModel(species: GolemSpecies, stage: number): ModelDef {
         [0.12, 0.34, 0.12, 0.1, top + 0.16, 0, c],
       ],
     });
+  }
+  // Stade 4 : l'aura, un anneau lumineux au sol et quelques étincelles autour du golem.
+  if (stage >= 4) {
+    const c = ELEMENT_COLOR[GOLEM_ELEMENT[species]] ?? 0xffffff;
+    const ring: Cube[] = [];
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      ring.push([0.16, 0.04, 0.16, Math.cos(a) * 0.75, 0.03, Math.sin(a) * 0.75, c]);
+    }
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + 0.4;
+      ring.push([0.08, 0.08, 0.08, Math.cos(a) * 0.7, 0.6 + (i % 2) * 0.5, Math.sin(a) * 0.7, 0xffffff]);
+    }
+    def.push({ name: 'aura', pivot: [0, 0, 0], glow: true, cubes: ring });
   }
   evolvedCache.set(key, def);
   return def;

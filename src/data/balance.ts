@@ -79,6 +79,11 @@ export const MONSTER_DAMAGE_MIN = 0.8;
 export const MONSTER_DAMAGE_MAX = 1.2;
 export const MONSTER_MISS_CHANCE = 0.15;
 export const BLIND_MISS_CHANCE = 0.5;
+/**
+ * Golem aveuglé par la « Tempête » de la Sorcière : sa prochaine attaque juste touche quand même,
+ * à moitié de sa force (rien de punitif : une bonne réponse n'est jamais perdue).
+ */
+export const BLINDED_GOLEM_DAMAGE = 0.5;
 export const SLEEP_MIN_TURNS = 1;
 export const SLEEP_MAX_TURNS = 2;
 export const SHIELD_DAMAGE_TAKEN = 0.5;
@@ -94,12 +99,14 @@ export const BOSS_HP_FACTOR = 2.25;
  * pour rester entre 8 et 15 questions (réglé par la simulation, tests/sim/balance2.test.ts).
  */
 export const BOSS_HP_FACTOR_TEAM = 1.5;
+/** Réglage par phase quand l'équipe grandit encore (tests/sim/balance4.test.ts). */
+export const BOSS_HP_PHASE_FACTOR: Readonly<Record<number, number>> = { 4: 1.3 };
 export const BOSS_ATK_FACTOR = 1.3;
 export const DRAGON_HP_FACTOR = 3;
 
 export function bossStats(phase: number): { hp: number; atk: number } {
   const m = monsterStats(phase);
-  const hpFactor = phase >= 6 ? DRAGON_HP_FACTOR : phase >= 2 ? BOSS_HP_FACTOR_TEAM : BOSS_HP_FACTOR;
+  const hpFactor = phase >= 6 ? DRAGON_HP_FACTOR : (BOSS_HP_PHASE_FACTOR[phase] ?? (phase >= 2 ? BOSS_HP_FACTOR_TEAM : BOSS_HP_FACTOR));
   return { hp: Math.round(m.hp * hpFactor), atk: m.atk * BOSS_ATK_FACTOR };
 }
 

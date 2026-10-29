@@ -5,6 +5,7 @@ import {
   ARENA_MONSTER_DAMAGE_FACTOR,
   ATTACK_POWER,
   BLIND_MISS_CHANCE,
+  BLINDED_GOLEM_DAMAGE,
   BOSS_DAMAGE_FACTOR,
   GOLEM_DAMAGE_VARIANCE,
   MONSTER_DAMAGE_MAX,
@@ -58,6 +59,8 @@ export interface CombatGolem {
   stunned: number;
   /** Vient de se dégager d'une toile : la suivante ne le reprend pas avant qu'il ait rejoué. */
   freed: boolean;
+  /** Aveuglé par la Tempête (Sorcière du Blizzard) : sa prochaine attaque est moins forte. */
+  blinded: boolean;
 }
 
 export interface CombatMonster {
@@ -87,6 +90,9 @@ export type CombatEvent =
   /** Le golem actif est pris dans une toile, puis passe son tour. */
   | { type: 'golemStunned'; id: string }
   | { type: 'golemSkip'; id: string }
+  /** Le golem actif est aveuglé par la tempête ; sa prochaine attaque touche moins fort. */
+  | { type: 'golemBlinded'; id: string }
+  | { type: 'blindHit'; id: string }
   | { type: 'monsterAttack'; monsterId: string; targetId: string; attack: string; hit: boolean }
   | { type: 'reflect'; id: string; amount: number }
   | { type: 'stage'; id: string; stage: number }
@@ -136,6 +142,7 @@ export function combatGolem(data: GolemData, startHp: number): CombatGolem {
     allRound: false,
     stunned: 0,
     freed: false,
+    blinded: false,
   };
 }
 
@@ -232,10 +239,13 @@ export class TurnCombat {
     const attack = this.attackInfo(slot);
     const events: CombatEvent[] = [{ type: 'attack', golemId: golem.id, attack, hit: correct }];
     golem.freed = false;
+    const blinded = golem.blinded;
     if (correct) {
       if (attack.slot === 'ultimate') golem.ultimateUsed = true;
       this.hitMonster(golem, attack, events);
     }
+    // La tempête se dissipe après l'attaque, juste ou non.
+    if (blinded) golem.blinded = false;
     if (this.phase === 'player') this.phase = 'monster';
     return events;
   }
@@ -259,8 +269,9 @@ export class TurnCombat {
     const index = this.golems.findIndex((g) => g.id === golemId);
     if (index < 0 || index === this.activeGolem || this.golems[index].hp <= 0) throw new Error(`Golem indisponible : ${golemId}`);
     const free = this.phase === 'switch';
-    // Le golem qui sort se dégage de la toile.
+    // Le golem qui sort se dégage de la toile et retrouve la vue.
     this.golem.stunned = 0;
+    this.golem.blinded = false;
     this.activeGolem = index;
     this.phase = free ? 'player' : 'monster';
     return [{ type: 'switch', id: golemId, free }];
@@ -305,6 +316,11 @@ export class TurnCombat {
       target.stunned = 1;
       events.push({ type: 'golemStunned', id: target.id });
     }
+    // « Tempête » : le golem touché n'y voit plus rien jusqu'à sa prochaine attaque.
+    if (this.monsterStage.blinds && target.hp > 0 && !target.blinded) {
+      target.blinded = true;
+      events.push({ type: 'golemBlinded', id: target.id });
+    }
     if (target.hp <= 0) {
       events.push({ type: 'ko', target: 'golem', id: target.id });
       if (this.golems.every((g) => g.hp <= 0)) this.finish('lost', events);
@@ -318,6 +334,10 @@ export class TurnCombat {
   private hitMonster(golem: CombatGolem, attack: AttackInfo, events: CombatEvent[]): void {
     const m = this.monster;
     const dmg = golemAttackDamage(golem, attack, this.monsterStage, this.rng);
+    if (golem.blinded && dmg.amount > 0) {
+      dmg.amount = Math.max(1, Math.round(dmg.amount * BLINDED_GOLEM_DAMAGE));
+      events.push({ type: 'blindHit', id: golem.id });
+    }
     m.hp -= dmg.amount;
     events.push({ type: 'damage', target: 'monster', id: m.id, ...dmg });
     if (m.asleep > 0 && dmg.amount > 0) {

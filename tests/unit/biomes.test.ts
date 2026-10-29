@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createGameState, progress } from '../../src/core/gameState';
-import { BIOME_NAMES, buildLayout, unlockedBiomes } from '../../src/world/biomes';
+import { BIOME_NAMES, buildLayout, pendingStory, unlockedBiomes } from '../../src/world/biomes';
 import type { WorldLayout } from '../../src/world/layout';
 
 /** Hauteur de sol (premier vide de 2 blocs) au centre d'une case. */
@@ -19,6 +19,17 @@ describe('biomes et voyages', () => {
     expect(BIOME_NAMES.foret).toBe('Forêt Murmurante');
   });
 
+  it('au chapitre 4, l’Arche raconte T4 puis mène aux Pics de Givre', () => {
+    const s = createGameState();
+    s.storiesRead.push('T1', 'T2', 'T3');
+    s.chapter = 4;
+    expect(pendingStory(s)).toEqual({ story: 'T4', biome: 'givre' });
+    s.storiesRead.push('T4');
+    expect(pendingStory(s)).toBeNull();
+    expect(unlockedBiomes(s)).toEqual(['prairie', 'foret', 'desert', 'givre']);
+    expect(BIOME_NAMES.givre).toBe('Pics de Givre');
+  });
+
   it('chaque biome a son avancement, la partie commence dans la Prairie', () => {
     const s = createGameState();
     expect(s.biome).toBe('prairie');
@@ -28,7 +39,7 @@ describe('biomes et voyages', () => {
     expect(progress(s).arena.wins).toBe(0);
   });
 
-  for (const id of ['prairie', 'foret'] as const) {
+  for (const id of ['prairie', 'foret', 'desert', 'givre'] as const) {
     it(`${id} : l’arche et le point d’arrivée sont sur un sol libre, à 8 blocs l’un de l’autre`, () => {
       const l = buildLayout(id);
       expect(l.id).toBe(id);

@@ -4,6 +4,7 @@ import {
   arenaMonster,
   arenaOpponents,
   bossMonster,
+  combatGolem,
   golemAttackDamage,
   healAfterCombat,
   questionCategory,
@@ -288,5 +289,37 @@ describe('boss', () => {
     // Changer de golem le dégage de la toile (le changement coûte le tour, comme d'habitude).
     c.switchTo('ecorce');
     expect(c.golems[0].stunned).toBe(0);
+  });
+
+  it('Sorcière du Blizzard : faible contre 💎 ; à l’étape 2, « Tempête » aveugle : la prochaine attaque juste touche à moitié', () => {
+    const cristal = createGolem('cristal');
+    const glace = createGolem('glace');
+    const c = new TurnCombat({ kind: 'boss', golems: [cristal, glace], monsters: [bossMonster('sorciere')] }, mid);
+    expect(c.monsterStage.weakness).toBe('crystal');
+    c.monster.hp = 1;
+    c.attack('a1', true);
+    expect(c.monster.stage).toBe(1);
+    const events = c.monsterTurn();
+    expect(events).toContainEqual(expect.objectContaining({ type: 'monsterAttack', attack: 'Tempête' }));
+    expect(events).toContainEqual({ type: 'golemBlinded', id: 'cristal' });
+    // L'attaque suivante touche quand même (rien n'est perdu), à moitié de sa force.
+    const full = golemAttackDamage(c.golem, c.attackInfo('a1'), c.monsterStage, () => 0.5).amount;
+    const hp = c.monster.hp;
+    const hit = c.attack('a1', true);
+    expect(hit).toContainEqual({ type: 'blindHit', id: 'cristal' });
+    expect(hp - c.monster.hp).toBe(Math.max(1, Math.round(full * 0.5)));
+    expect(c.golems[0].blinded).toBe(false);
+    // Changer de golem rend la vue.
+    c.monsterTurn();
+    expect(c.golems[0].blinded).toBe(true);
+    c.switchTo('glace');
+    expect(c.golems[0].blinded).toBe(false);
+  });
+
+  it('Glace et Cristal ont chacun une attaque 💎 dès l’éclosion ; le Bouclier miroir protège au stade 2', () => {
+    for (const s of ['glace', 'cristal'] as const) expect(combatGolem(createGolem(s), 1).attacks.some((a) => a.type === 'crystal')).toBe(true);
+    const g = createGolem('cristal');
+    g.stage = 2;
+    expect(combatGolem(g, g.maxHp).attacks.find((a) => a.slot === 'a3')?.effect).toBe('shield');
   });
 });

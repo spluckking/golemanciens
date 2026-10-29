@@ -15,12 +15,14 @@ export const TEXT_BOSS_STAGE: Record<string, string> = {
   roiSlime: TEXT_BOSS_SPLITS,
   reineAraignee: 'La Reine Araignée tisse une toile d’argent !',
   grandVer: 'Le Grand Ver plonge sous le sable… et surgit !',
+  sorciere: 'La Sorcière du Blizzard lève les bras : la tempête se déchaîne !',
 };
 export const TEXT_BOSS_VICTORY = 'Victoire ! Le Roi Slime est vaincu !';
 export const TEXT_BOSS_VICTORIES: Record<string, string> = {
   roiSlime: TEXT_BOSS_VICTORY,
   reineAraignee: 'Victoire ! La Reine Araignée est vaincue !',
   grandVer: 'Victoire ! Le Grand Ver des Sables est vaincu !',
+  sorciere: 'Victoire ! La Sorcière du Blizzard est vaincue !',
 };
 export const TEXT_RETRY_QUESTION = 'On réessaie tout de suite ?';
 export const TEXT_RETRY = 'Réessayer';
@@ -55,3 +57,13 @@ export const TEXT_STRIKE_DRUM = 'Frapper';
 export const TEXT_DRUM = 'Tambour : {n}/3';
 export const TEXT_WORM_RISES = 'Le sol tremble… Le Grand Ver surgit de la fosse !';
 export const OBJECTIVE_DESERT_DONE = 'Troisième éclat retrouvé ! La suite de l’aventure arrive bientôt.';
+
+/** Quête du boss de la phase 4 (CONTENU.md § F, P4 « Le sentier du blizzard »). Répliques nouvelles, à valider. */
+export const P4_TITLE = 'Le sentier du blizzard';
+export const P4_TASK = 'Allumer les braseros du sentier ({n}/3) jusqu’à la Sorcière du Blizzard';
+export const P4_REQUEST = 'La tempête cache le sentier du sommet. Allume les trois braseros : leur lumière te montrera le chemin jusqu’à la Sorcière.';
+export const P4_REMINDER = 'Les braseros du sentier attendent leur flamme. Allume-les tous les trois pour voir le chemin !';
+export const TEXT_LIGHT_BRAZIER = 'Allumer';
+export const TEXT_BRAZIER = 'Brasero : {n}/3';
+export const TEXT_PATH_LIT = 'Le chemin brille dans la tempête : la Sorcière t’attend au sommet !';
+export const OBJECTIVE_GIVRE_DONE = 'Quatrième éclat retrouvé ! La suite de l’aventure arrive bientôt.';

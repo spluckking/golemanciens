@@ -15,6 +15,8 @@ const SHADOWS: Record<GolemSpecies, ModelId> = {
   champignon: 'shadowChampignon',
   sable: 'shadowSable',
   cuivre: 'shadowCuivre',
+  glace: 'shadowGlace',
+  cristal: 'shadowCristal',
 };
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));

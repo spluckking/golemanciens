@@ -7,7 +7,7 @@
  * pour que la boucle ne revienne qu'au bout de 30 s à 1 min.
  */
 
-export type TrackId = 'prairie' | 'foret' | 'desert' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
+export type TrackId = 'prairie' | 'foret' | 'desert' | 'givre' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
 
 export interface Song {
   bpm: number;
@@ -180,6 +180,39 @@ export const SONGS: Record<TrackId, Song> = {
       },
     },
     'A B A C',
+  ),
+  // Pics de Givre : mi mineur, des notes claires comme des cloches de glace sur un rythme lent ;
+  // un passage plus chaud au coin du feu (B), une reprise plus haute (A2) et le vent qui siffle (C).
+  givre: compose(
+    88,
+    0.7,
+    {
+      A: {
+        lead: 'E5 . G5 B5 - A5 G5 - F#5 . A5 B5 - - . . G5 . B5 E6 - D6 B5 - A5 G5 F#5 G5 E5 - - .',
+        bass: 'E2 . B2 . E3 . B2 . C2 . G2 . C3 . G2 . G2 . D3 . G2 . D3 . B1 . F#2 . B2 . E2 .',
+        drums: 'k . . . h . . . s . . . h . . . k . . . h . . . s . . . h . h .',
+        pad: 'E3+G3+B3 - - - - - - - C3+E3+G3 - - - - - - - G3+B3+D4 - - - - - - - B2+D#3+F#3 - - - - - - -',
+      },
+      B: {
+        lead: 'G5 - A5 B5 C6 - B5 A5 G5 - - . E5 F#5 G5 - A5 - G5 F#5 E5 - D5 - E5 - F#5 G5 F#5 - - .',
+        bass: 'C2 . G2 . C3 . G2 . G2 . D3 . G2 . D3 . A1 . E2 . A2 . E2 . B1 . F#2 . B2 . F#2 .',
+        drums: 'k . . h s . . h k . . h s . . h k . . h s . . h k . . h s . h h',
+        pad: 'C3+E3+G3 - - - - - - - G3+B3+D4 - - - - - - - C3+E3+A3 - - - - - - - B2+D#3+F#3 - - - - - - -',
+      },
+      A2: {
+        lead: 'B5 . E6 F#6 - E6 D6 - C6 . D6 E6 - - . . G5 . B5 E6 - F#6 E6 - D6 C6 B5 C6 B5 - - .',
+        bass: 'E2 . B2 . E3 . B2 . C2 . G2 . C3 . G2 . G2 . D3 . G2 . D3 . B1 . F#2 . B2 . E2 .',
+        drums: 'k . . h h . . . s . . h h . . . k . . h h . . . s . . h h . h .',
+        pad: 'E3+G3+B3 - - - - - - - C3+E3+G3 - - - - - - - G3+B3+D4 - - - - - - - B2+D#3+F#3 - - - - - - -',
+      },
+      C: {
+        lead: 'E5 - - - B5 - - - G5 - - - F#5 - - - E5 - - - D5 - - - E5 - - - - - . .',
+        bass: 'E2 - - - - - - - C2 - - - - - - - A1 - - - - - - - B1 - - - - - - -',
+        drums: 'h . . . . . . . h . . . . . . . h . . . . . . . h . . . h . h .',
+        pad: 'E3+G3+B3 - - - - - - - C3+E3+G3 - - - - - - - C3+E3+A3 - - - - - - - B2+D#3+F#3 - - - - - - -',
+      },
+    },
+    'A B A2 C',
   ),
   // Arène : la mineur, entraînant.
   arena: compose(

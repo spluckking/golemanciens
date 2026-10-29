@@ -107,7 +107,7 @@ export class CombatHud {
       if (!forcedSwitch) {
         for (const a of attacks) {
           const super_ = a.type === stage.weakness;
-          const b = el('button', { className: `combat-attack type-${a.type}`, testId: `attack-${a.slot}` }, [
+          const b = el('button', { className: `combat-attack type-${a.type} slot-${a.slot}`, testId: `attack-${a.slot}` }, [
             el('span', { className: 'combat-attack-type', text: TYPE_ICON[a.type] }),
             el('span', { className: 'combat-attack-name', text: a.name }),
             el('span', { className: 'combat-attack-badge', text: a.kind === 'force' ? '🔢' : '🧩' }),

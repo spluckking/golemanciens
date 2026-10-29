@@ -24,6 +24,10 @@ export const Block = {
   /** Désert : grès (temple, maisons) et cactus. */
   Sandstone: 19,
   Cactus: 20,
+  /** Pics de Givre : neige, glace (lac, sanctuaire), briques de glace (igloos). */
+  Snow: 21,
+  Ice: 22,
+  IceBrick: 23,
 } as const;
 export type BlockId = (typeof Block)[keyof typeof Block];
 
@@ -66,6 +70,11 @@ export const Tile = {
   CactusSide: 34,
   CactusTop: 35,
   DeadBush: 36,
+  Snow: 37,
+  SnowSide: 38,
+  Ice: 39,
+  IceBrick: 40,
+  FrostGrass: 41,
 } as const;
 export type TileId = (typeof Tile)[keyof typeof Tile];
 
@@ -103,6 +112,9 @@ const defs: Record<number, BlockDef> = {
   [Block.MossStone]: { top: Tile.MossStone, side: Tile.MossStone, bottom: Tile.Stone },
   [Block.Sandstone]: { top: Tile.SandstoneTop, side: Tile.Sandstone, bottom: Tile.SandstoneTop },
   [Block.Cactus]: { top: Tile.CactusTop, side: Tile.CactusSide, bottom: Tile.CactusTop },
+  [Block.Snow]: { top: Tile.Snow, side: Tile.SnowSide, bottom: Tile.Dirt },
+  [Block.Ice]: uniform(Tile.Ice),
+  [Block.IceBrick]: uniform(Tile.IceBrick),
 };
 
 function uniform(t: TileId): BlockDef {
