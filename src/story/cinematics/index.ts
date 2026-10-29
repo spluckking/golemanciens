@@ -12,6 +12,7 @@ import { T2_CINEMATIC } from './t2';
 import { T3_CINEMATIC } from './t3';
 import { T4_CINEMATIC } from './t4';
 import { T5_CINEMATIC } from './t5';
+import { T6_CINEMATIC } from './t6';
 
 /** Cinématiques des textes d'histoire, par identifiant (les autres arrivent avec leur jalon). */
 export const CINEMATICS: Record<string, CinematicScript> = {
@@ -20,6 +21,7 @@ export const CINEMATICS: Record<string, CinematicScript> = {
   T3: T3_CINEMATIC,
   T4: T4_CINEMATIC,
   T5: T5_CINEMATIC,
+  T6: T6_CINEMATIC,
 };
 
 /** Cinématiques des outros (fin de phase, sans questions). */

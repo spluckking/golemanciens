@@ -62,7 +62,7 @@ export function arcEnCielModel(): ModelDef {
 
 /** Galaxie : golem bleu nuit semé de points d'étoiles, une étoile dorée sur la poitrine et un anneau de planète. */
 export function galaxieModel(): ModelDef {
-  const night = 0x1e1e5a;
+  const night = 0x2a2a7a;
   const deep = 0x12123a;
   const star = 0xfff3a0;
   const dots: Cube[] = [

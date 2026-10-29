@@ -54,6 +54,7 @@ export async function playFight(page: Page, correct: boolean, endId: string): Pr
   // Pas de limite serrée : sur un serveur lent, un combat peut demander beaucoup d'étapes.
   for (let step = 0; step < 3000; step++) {
     if (await end.isVisible()) return;
+    if (endId !== 'combat-defeat' && (await page.getByTestId('combat-defeat').isVisible())) throw new Error('Défaite inattendue pendant le combat');
     for (const id of ['combat-lumibloc-ok', 'btn-understood']) {
       if (await page.getByTestId(id).isVisible()) {
         await page.getByTestId(id).tap();

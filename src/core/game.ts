@@ -34,7 +34,9 @@ import { GivreLife } from './givreLife';
 import type { CielLayout } from '../world/ciel';
 import { CielLife } from './cielLife';
 import { runStarCeremony, TEXT_STAR_TRIAL } from './starCeremony';
-import { OBJECTIVE_STAR_TRIAL } from '../data/bossQuest';
+import { OBJECTIVE_GAME_DONE, OBJECTIVE_STAR_TRIAL, TEXT_GAME_DONE } from '../data/bossQuest';
+import type { VolcanLayout } from '../world/volcan';
+import { VolcanLife } from './volcanLife';
 import type { Cell } from '../world/structures';
 import type { QuestionView } from '../questions/present';
 import type { GolemSpecies } from '../data/creatures';
@@ -337,7 +339,7 @@ export class Game {
     if (this.fight || this.paused || !setup) return;
     this.dialog.close();
     this.setMode('combat');
-    audio.music(kind === 'boss' ? 'boss' : 'arena');
+    audio.music(kind === 'boss' ? (setup.boss === 'dragon' ? 'dragon' : 'boss') : 'arena');
     let result: 'won' | 'lost' | 'retry';
     do {
       this.fight = new ArenaFight({
@@ -363,6 +365,14 @@ export class Game {
     if (kind === 'boss' && result === 'won') {
       if (setup.outro) await this.playOutro(setup.outro);
       if (setup.nextChapter) this.state.chapter = Math.max(this.state.chapter, setup.nextChapter);
+      // Fin du jeu (après O6 et le générique) : retour à la Prairie, tout reste ouvert.
+      if (setup.boss === 'dragon') {
+        await this.travel('prairie');
+        this.setMode('play');
+        this.hud.showToast(TEXT_GAME_DONE, 6);
+        void this.save();
+        return;
+      }
       // Dans la Prairie, on se réveille chez soi ; ailleurs, on revient près du repaire.
       const home = this.prairie ? this.prairie.home.wakePoint() : { ...setup.back, y: 0 };
       this.teleport(home.x, home.z, this.layout.spawnYaw);
@@ -439,6 +449,7 @@ export class Game {
     };
     const fights = { onFight: () => void this.startFight('arena'), onBossFight: () => void this.startFight('boss') };
     if (layout.id === 'foret') return new ForestLife(layout as ForestLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary });
+    if (layout.id === 'volcan') return new VolcanLife(layout as VolcanLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, onBossFight: fights.onBossFight, moveHero: (x: number, z: number) => this.teleport(x, z) });
     if (layout.id === 'ciel') return new CielLife(layout as CielLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary, moveHero: (x: number, z: number) => this.teleport(x, z) });
     if (layout.id === 'givre') return new GivreLife(layout as GivreLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary });
     if (layout.id === 'desert') return new DesertLife(layout as DesertLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary, shake: () => (this.shakeTime = 1.2) });
@@ -554,6 +565,8 @@ export class Game {
   /** Objectif actif du journal et de la boussole : chaque biome le donne. */
   private objective(): Objective {
     const goal = this.life.objective(this.hero);
+    // Aventure terminée : on va où l'on veut.
+    if (this.state.trophies.includes('dragon') && this.layout.id !== 'volcan') return { ...goal, text: OBJECTIVE_GAME_DONE, target: this.layout.arch, current: [{ text: OBJECTIVE_GAME_DONE, active: true }] };
     // Les cinq éclats sont réunis : l'Épreuve des Étoiles attend au sommet de l'Académie.
     if (this.starTrialPending) {
       const target = this.prairie ? (this.layout as PrairieLayout).academyDoor : this.layout.arch;

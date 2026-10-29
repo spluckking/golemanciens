@@ -170,3 +170,19 @@ Textes nouveaux :
 - Surnoms : Nuage « Cumulus, Brise, Plume » ; Arc-en-ciel « Iris, Prisma, Aurore ».
 - Encyclopédie : Nuage « Un golem tout rond et doux comme un nuage. Ses rafales font tout voler ! » ; Arc-en-ciel « Un golem aux six couleurs. Toutes ses attaques brillent un peu plus fort. » ; Galaxie « Né de la Poussière d'étoile, il brille de mille étoiles. Il perce l'armure du dragon ! » ; Harpie « Une femme-oiseau aux plumes grises qui tourne autour des tours. La glace la ralentit. » ; Méduse céleste « Elle flotte dans le ciel comme dans la mer. Les éclairs la font fuir ! » ; Chevalier d'ombre « Une armure noire aux yeux violets qui garde les ponts. Les arcs-en-ciel l'éblouissent. » ; Griffon d'Ombre « Le serviteur du dragon, mi-lion mi-aigle. Le vent le fait tomber du ciel ! »
 - Cinématiques T5 (7 plans) et O5 (5 plans, dont le Griffon qui s'enfuit vers le volcan) : mises en scène nouvelles sur les textes de CONTENU.md. Musique de l'Île Céleste (ré majeur, aérienne).
+
+## Jalon 6 (Volcan d'Ombre, Dragon, fin du jeu)
+
+Décisions :
+- Le Volcan d'Ombre est un biome qu'on visite : une plaine de cendre coupée de deux rivières de lave, trois groupes de « gardiens du chemin » (monstres de la phase 5, PV et ATQ × 1,25), un lac de lave qu'on franchit par le pont de pierre noire, puis le cratère. Le Dragon n'est accessible qu'une fois les trois groupes vaincus (ils ne reviennent pas).
+- La lave ne blesse jamais : marcher dessus fait reculer jusqu'au dernier sol sûr (« Aïe, c'est chaud ! Tu recules d'un pas. »). De la fumée et des braises montent partout (particules instanciées, un seul appel de dessin).
+- Dragon d'Ombre en 3 étapes : (1) « Coup de queue », armure que seul ✨ entame ; (2) « Souffle d'ombre », tout le monde le touche et ✨ fait double dégât ; (3) « Colère du dragon », ses coups sont 1,3 fois plus forts, ✨ fait toujours double dégât. La simulation tient la cible de 15 à 25 questions et 8 victoires sur 10, sans réglage.
+- Après le Dragon : outro O6, puis le générique (avec le prénom), puis retour à la Prairie en mode « jeu terminé » (toutes les arènes et tous les biomes restent ouverts, les combats libres aussi).
+- Musique du volcan : celle du Dragon (déjà composée).
+
+Textes nouveaux :
+- Objectifs : « Le pont de pierre noire : Traverser le volcan : vaincre les gardiens du chemin (n/8) », « Le pont de pierre noire : Traverser le pont jusqu'au cratère et affronter le Dragon d'Ombre », « Aventure terminée ! Va où tu veux : les arènes et les biomes sont ouverts. »
+- « Le chemin est libre : le Dragon t'attend au fond du cratère ! », « Bravo ! Tu as terminé l'aventure. Les biomes et les arènes t'attendent toujours. »
+- Combat : « Le Dragon d'Ombre perd son armure et s'envole ! », « Victoire ! Le Dragon d'Ombre est vaincu ! » ; attaques : « Coup de queue », « Souffle d'ombre », « Colère du dragon ».
+- Encyclopédie : Dragon d'Ombre « Il vit dans le Volcan d'Ombre. Seule la lumière des étoiles perce son armure ! »
+- Cinématique T6 (8 plans) : mise en scène nouvelle sur le texte de CONTENU.md.

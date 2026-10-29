@@ -1,5 +1,6 @@
 import type { GolemData } from '../core/gameState';
 import { GOLEMS } from '../data/creatures';
+import { frenchTypography } from '../core/text';
 import { el } from './dom';
 import { pixelIcon } from './pixelIcons';
 
@@ -69,7 +70,7 @@ export class Hud {
 
   /** Bulle d'information brève, au centre en haut. */
   showToast(text: string, seconds = 2.5): void {
-    this.toast.textContent = text;
+    this.toast.textContent = frenchTypography(text);
     this.toast.classList.remove('hidden');
     this.toastTimer = seconds;
   }

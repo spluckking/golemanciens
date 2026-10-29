@@ -1,4 +1,6 @@
 import './style.css';
+import { EVOLUTION_MULT } from './data/balance';
+import { makeGalaxy } from './quests/starTrial';
 import './ui/theme.css';
 import { App, type ScreenId } from './core/app';
 import { Game } from './core/game';
@@ -38,6 +40,8 @@ declare global {
       interactables: () => string[];
       /** Position d'une interaction (mode test). */
       interactionAt: (id: string) => { x: number; z: number } | null;
+      /** Vide tous les camps de monstres du biome (mode test : parcours plus courts). */
+      clearCamps: () => void;
       answer: () => number;
       fight: () => ReturnType<ArenaFight['snapshot']> | null;
       save: () => Promise<boolean>;
@@ -101,7 +105,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   if (isTest && params.get('chapter') === '2') Object.assign(state, checkpointState(state, 'chapter2'));
   // « ?test&unlock=foret,desert » débloque des biomes (comme si T2, T3 étaient lus) ; « &biome=desert » y commence.
   const unlock = (params.get('unlock') ?? params.get('biome') ?? '').split(',');
-  const opening: Record<string, string> = { foret: 'T2', desert: 'T3', givre: 'T4', ciel: 'T5' };
+  const opening: Record<string, string> = { foret: 'T2', desert: 'T3', givre: 'T4', ciel: 'T5', volcan: 'T6' };
   if (isTest) for (const b of unlock) if (opening[b] && !state.storiesRead.includes(opening[b])) state.storiesRead.push(opening[b]);
   // « &desertSanctuary=mirrors|symbols|stone3|open|hatched » avance le temple ensablé ;
   // « &desertBoss=active » : quêtes et arène du Désert terminées, quête du Grand Ver acceptée.
@@ -139,6 +143,8 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   // « &shards=5&stage=4 » : les cinq éclats (l'Épreuve des Étoiles attend), golems au stade donné.
   if (isTest && params.has('shards')) state.shards = Number(params.get('shards'));
   if (isTest && params.has('stars')) state.starTrial.lit = Number(params.get('stars'));
+  // « &galaxy=pierre » : ce golem (donné par « golems= ») est déjà devenu Galaxie.
+  const galaxyOf = params.get('galaxy');
   const biome = params.get('biome');
   if (isTest && biome && BIOME_IDS.includes(biome as BiomeId)) state.biome = biome as BiomeId;
   // « ?test&bossHp=0.3 » : boss plus fragiles (parcours de bout en bout plus courts).
@@ -155,7 +161,24 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     }
     // « &stage=4 » : les golems donnés sont à ce stade (Épreuve des Étoiles, Galaxie).
     const stage = Number(params.get('stage') ?? 1);
-    for (const g of state.golems) g.stage = Math.max(g.stage, Math.min(4, stage));
+    const evolveTo = (g: (typeof state.golems)[number], to: number): void => {
+      while (g.stage < Math.min(4, to)) {
+        g.stage++;
+        g.maxHp = Math.round(g.maxHp * EVOLUTION_MULT);
+        g.atk = Math.round(g.atk * EVOLUTION_MULT);
+        g.hp = g.maxHp;
+      }
+    };
+    for (const g of state.golems) evolveTo(g, stage);
+    if (galaxyOf) {
+      const g = state.golems.find((k) => k.id === galaxyOf);
+      if (g) {
+        evolveTo(g, 4);
+        makeGalaxy(state, g.id);
+      }
+      state.shards = 5;
+      state.chapter = Math.max(state.chapter, 6);
+    }
     // « ?test&trophies=roiSlime » pose des trophées sur l'étagère de la maison.
     for (const id of (params.get('trophies') ?? '').split(',')) if (id) state.trophies.push(id);
     // « ?test&start=play » saute l'introduction (prénom fictif, tutoriel de déplacement déjà vu).
@@ -202,6 +225,13 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       quests: () => prairie().quests.snapshot(),
       interactables: () => game.interactions.ids(),
       interactionAt: (id) => game.interactions.find(id),
+      clearCamps: () => {
+        for (const m of game.life.sim.monsters) {
+          m.mode = 'dead';
+          m.hp = 0;
+          m.cleared = true;
+        }
+      },
       answer: () => shownQuestion()?.correctIndex ?? -1,
       fight: () => game.fight?.snapshot() ?? null,
       save: () => game.save(),

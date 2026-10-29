@@ -54,7 +54,7 @@ export const ENCYCLOPEDIA: readonly EncyclopediaEntry[] = [
   { id: 'grandVer', kind: 'boss', name: 'Grand Ver des Sables', phase: 3, icon: '⚡', color: '#c8a060', description: 'Un ver géant qui nage dans les dunes. Les éclairs le font replonger !' },
   { id: 'sorciere', kind: 'boss', name: 'Sorcière du Blizzard', phase: 4, icon: '💎', color: '#7ec8f0', description: 'Elle a apporté la tempête sur la montagne. Les cristaux brisent sa magie !' },
   { id: 'griffon', kind: 'boss', name: 'Griffon d’Ombre', phase: 5, icon: '☁️', color: '#3d2f55', description: 'Le serviteur du dragon, mi-lion mi-aigle. Le vent le fait tomber du ciel !' },
-  { id: 'dragon', kind: 'boss', name: 'Dragon d’Ombre', phase: 6, icon: '✨', color: '#2a2238' },
+  { id: 'dragon', kind: 'boss', name: 'Dragon d’Ombre', phase: 6, icon: '✨', color: '#2a2238', description: 'Il vit dans le Volcan d’Ombre. Seule la lumière des étoiles perce son armure !' },
 ];
 
 /** Textes d'interface nouveaux (à valider). */

@@ -45,7 +45,7 @@ export const O5_CINEMATIC: CinematicScript = {
       sentences: 1,
       setup(c) {
         c.set(null);
-        c.sky('night');
+        c.sky('dusk');
         c.music('storyMorning');
         c.camera(key([PLAZA.x + 4, PLAZA.y + 3, PLAZA.z + 6], [PLAZA.x, PLAZA.y + 4, PLAZA.z]), key([PLAZA.x + 3.5, PLAZA.y + 2.4, PLAZA.z + 5], [PLAZA.x, PLAZA.y + 1.6, PLAZA.z]), 6);
         c.actor('hero', 'hero', PLAZA.x + 1.2, PLAZA.z + 1.5, -Math.PI * 0.2);
@@ -65,7 +65,7 @@ export const O5_CINEMATIC: CinematicScript = {
     {
       sentences: 2,
       setup(c) {
-        c.sky('night');
+        c.sky('dusk');
         c.camera(key([PLAZA.x + 3, PLAZA.y + 2.2, PLAZA.z + 4], [PLAZA.x, PLAZA.y + 1.6, PLAZA.z]), key([PLAZA.x + 2.6, PLAZA.y + 2.6, PLAZA.z + 3.4], [PLAZA.x, PLAZA.y + 2, PLAZA.z]), 7);
         for (let i = 0; i < 5; i++) c.actor(`shard${i}`, 'starShard', PLAZA.x, PLAZA.z, 0, { y: PLAZA.y + 1.6, scale: 0.9 });
       },
@@ -94,7 +94,7 @@ export const O5_CINEMATIC: CinematicScript = {
     {
       sentences: 1,
       setup(c) {
-        c.sky('night');
+        c.sky('dusk');
         c.camera(key([PLAZA.x + 3.4, PLAZA.y + 2, PLAZA.z + 3.6], [PLAZA.x - 0.4, PLAZA.y + 1.2, PLAZA.z]), key([PLAZA.x + 3, PLAZA.y + 1.8, PLAZA.z + 3.2], [PLAZA.x - 0.4, PLAZA.y + 1.2, PLAZA.z]), 6);
         c.actor('hero', 'hero', PLAZA.x + 0.8, PLAZA.z + 0.8, Math.PI * 0.75);
         c.actor('golem', 'shadowGalaxie', PLAZA.x - 0.8, PLAZA.z - 0.4, Math.PI * 0.2);
@@ -110,11 +110,11 @@ export const O5_CINEMATIC: CinematicScript = {
     {
       sentences: 1,
       setup(c) {
-        c.sky('night');
+        c.sky('dusk');
         c.music('finale');
-        c.camera(key([PLAZA.x + 2.8, PLAZA.y + 1.6, PLAZA.z + 3.4], [PLAZA.x - 0.8, PLAZA.y + 1.2, PLAZA.z - 0.4]), key([PLAZA.x + 3.6, PLAZA.y + 2.4, PLAZA.z + 4.4], [PLAZA.x - 0.8, PLAZA.y + 1.4, PLAZA.z - 0.4]), 7);
-        c.actor('golem', 'galaxie', PLAZA.x - 0.8, PLAZA.z - 0.4, Math.PI * 0.2, { scale: 0.01 });
-        c.actor('hero', 'hero', PLAZA.x + 0.8, PLAZA.z + 0.8, Math.PI * 0.75);
+        c.camera(key([PLAZA.x - 2.6, PLAZA.y + 1.6, PLAZA.z + 3.6], [PLAZA.x - 0.8, PLAZA.y + 1.3, PLAZA.z - 0.4]), key([PLAZA.x - 3.4, PLAZA.y + 2.2, PLAZA.z + 4.6], [PLAZA.x - 0.8, PLAZA.y + 1.5, PLAZA.z - 0.4]), 7);
+        c.actor('golem', 'galaxie', PLAZA.x - 0.8, PLAZA.z - 0.4, Math.PI * 0.9, { scale: 0.01 });
+        c.actor('hero', 'hero', PLAZA.x + 1.6, PLAZA.z + 0.6, Math.PI * 0.6);
       },
       update(c, t, dt) {
         const g = c.get('golem');

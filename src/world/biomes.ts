@@ -4,6 +4,7 @@ import { generateDesert } from './desert';
 import { generateCiel } from './ciel';
 import { generateForest } from './forest';
 import { generateGivre } from './givre';
+import { generateVolcan } from './volcan';
 import type { WorldLayout } from './layout';
 import { generatePrairie } from './prairie';
 
@@ -15,6 +16,7 @@ export const BIOME_NAMES: Record<BiomeId, string> = {
   desert: 'Désert des Sables Chantants',
   givre: 'Pics de Givre',
   ciel: 'Île Céleste',
+  volcan: 'Volcan d’Ombre',
 };
 
 /** Musique de chaque biome. */
@@ -24,6 +26,7 @@ export const BIOME_MUSIC: Record<BiomeId, TrackId> = {
   desert: 'desert',
   givre: 'givre',
   ciel: 'ciel',
+  volcan: 'dragon',
 };
 
 /** Texte d'histoire qui ouvre chaque biome : une fois lu, l'Arche des éclats y mène. */
@@ -33,6 +36,7 @@ const OPENING_STORY: Record<BiomeId, string | null> = {
   desert: 'T3',
   givre: 'T4',
   ciel: 'T5',
+  volcan: 'T6',
 };
 
 /**
@@ -59,5 +63,6 @@ export function buildLayout(id: BiomeId): WorldLayout {
   if (id === 'prairie') return generatePrairie();
   if (id === 'givre') return generateGivre();
   if (id === 'ciel') return generateCiel();
+  if (id === 'volcan') return generateVolcan();
   return id === 'foret' ? generateForest() : generateDesert();
 }

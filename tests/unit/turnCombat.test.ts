@@ -45,6 +45,30 @@ describe('attaques et types', () => {
     });
   }
 
+  it('Dragon d’Ombre en 3 étapes : armure, puis ✨ fait double dégât, puis la colère frappe plus fort', () => {
+    const [s1, s2, s3] = BOSSES.dragon.stages;
+    const star: AttackInfo = { slot: 'a1', name: 'Étoile filante', kind: 'force', type: 'star' };
+    const rock: AttackInfo = { slot: 'a1', name: 'Coup de poing', kind: 'force', type: 'rock' };
+    const g = { atk: 20, allRound: false };
+    expect(golemAttackDamage(g, rock, s1, () => 0.5).amount).toBe(0);
+    expect(golemAttackDamage(g, star, s1, () => 0.5).amount).toBe(30);
+    expect(golemAttackDamage(g, rock, s2, () => 0.5).amount).toBe(20);
+    expect(golemAttackDamage(g, star, s2, () => 0.5).amount).toBe(40);
+    expect(golemAttackDamage(g, star, s3, () => 0.5).amount).toBe(40);
+    expect(s3.power).toBeGreaterThan(1);
+    // La colère : à tirage égal, l'étape 3 frappe plus fort que l'étape 2.
+    const hit = (stage: number): number => {
+      const golem = createGolem('pierre');
+      const c = new TurnCombat({ kind: 'boss', golems: [golem], monsters: [bossMonster('dragon')] }, () => 0.5);
+      c.monster.stage = stage;
+      c.attack('a1', false);
+      const before = c.golem.hp;
+      c.monsterTurn();
+      return before - c.golem.hp;
+    };
+    expect(hit(2)).toBeGreaterThan(hit(1));
+  });
+
   it('Dragon d’Ombre : armure ✨ à l’étape 1 ; seul le Galaxie a des attaques ✨', () => {
     expect(BOSSES.dragon.stages).toHaveLength(3);
     expect(BOSSES.dragon.stages[0].armorOnly).toBe('star');

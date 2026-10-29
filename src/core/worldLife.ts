@@ -161,6 +161,10 @@ export abstract class WorldLife {
         const x = camp.x + 0.5 + Math.cos(a) * 1.5;
         const z = camp.z + 0.5 + Math.sin(a) * 1.5;
         const m = this.sim.addMonster(`${camp.id}-${i}`, species, camp.id, x, surface(x, z), z);
+        if (camp.strength) {
+          m.maxHp = m.hp = Math.round(m.maxHp * camp.strength);
+          m.atk = Math.round(m.atk * camp.strength);
+        }
         this.addView(this.monsterViews, m, species);
       });
       const chest = this.spawnStatic('chest', camp.chest.x, camp.chest.z, 0);

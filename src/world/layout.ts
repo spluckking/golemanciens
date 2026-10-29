@@ -36,6 +36,8 @@ export interface Camp {
   z: number;
   monsters: MonsterSpecies[];
   chest: { x: number; z: number };
+  /** Monstres renforcés (PV et ATQ multipliés) : les gardiens du Volcan d'Ombre. */
+  strength?: number;
 }
 
 export interface NpcSpot extends Spot {

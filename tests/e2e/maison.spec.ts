@@ -23,7 +23,7 @@ test('la partie commence dans la maison ; le lit soigne les golems et devient le
   await page.evaluate(([x, z]) => window.__game!.teleport(x + 1.2, z, Math.PI / 2), [home.bed.x, home.bed.z]);
   const interact = page.getByTestId('btn-interact');
   await expect(interact).toContainText('Dormir', { timeout: 5_000 });
-  await interact.tap();
+  await interact.tap({ force: true });
   await expect(page.getByTestId('sleep-fade')).toBeVisible();
   await expect(page.getByTestId('sleep-fade')).toBeHidden({ timeout: 6_000 });
   await expect(page.getByTestId('toast')).toHaveText('Tu as bien dormi ! Tes golems sont en pleine forme.');
