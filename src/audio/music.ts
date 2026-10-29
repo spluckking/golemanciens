@@ -7,7 +7,7 @@
  * pour que la boucle ne revienne qu'au bout de 30 s à 1 min.
  */
 
-export type TrackId = 'prairie' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
+export type TrackId = 'prairie' | 'foret' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
 
 export interface Song {
   bpm: number;
@@ -124,6 +124,35 @@ export const SONGS: Record<TrackId, Song> = {
         bass: 'C3 - - - - - - - A2 - - - - - - - F2 - - - - - - - G2 - - - - - - -',
         drums: 'h . . . h . . . h . . . h . . . h . . . h . . . h . h . h . h .',
         pad: 'C4+E4+G4 - - - - - - - A3+C4+E4 - - - - - - - F3+A3+C4 - - - - - - - G3+B3+D4 - - - - - - -',
+      },
+    },
+    'A B A2 C',
+  ),
+  // Forêt Murmurante : la mineur, une mélodie qui coule entre les arbres ; un passage plus clair (B),
+  // une reprise en écho (A2) et un murmure presque sans percussions (C) (environ 40 s).
+  foret: compose(
+    96,
+    0.7,
+    {
+      A: {
+        lead: 'A4 C5 E5 - D5 C5 B4 - C5 E5 A5 - G5 E5 D5 . E5 G5 A5 - G5 E5 D5 - C5 D5 E5 - A4 - - .',
+        bass: 'A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . C3 . G2 . C3 . G2 . E2 . B2 . E2 . A2 .',
+        drums: 'k . . h . . h . k . . h . . h . k . . h . . h . k . . h . h h .',
+      },
+      B: {
+        lead: 'F5 - A5 - G5 - E5 - D5 - F5 - E5 - C5 - D5 - E5 F5 G5 - A5 - G5 - E5 - D5 - - .',
+        bass: 'F2 . C3 . F2 . C3 . G2 . D3 . G2 . D3 . C3 . G2 . E2 . B2 . A2 . E3 . A2 . E2 .',
+        drums: 'k . . h . . h . k . . h . . h . k . . h . . h . k . . h . h h .',
+      },
+      A2: {
+        lead: 'E5 A5 C6 - B5 A5 G5 - A5 C6 E6 - D6 C6 B5 . C6 B5 A5 - G5 E5 D5 - E5 G5 A5 - - - - .',
+        bass: 'A2 . E3 . A2 . E3 . F2 . C3 . F2 . C3 . C3 . G2 . C3 . G2 . E2 . B2 . E2 . A2 .',
+        drums: 'k . h h . . h . k . h h . . h . k . h h . . h . k . h h k . h .',
+      },
+      C: {
+        lead: 'A4 - - - C5 - - - E5 - - - D5 - - - C5 - - - B4 - - - A4 - - - - - . .',
+        bass: 'A2 - - - - - - - F2 - - - - - - - G2 - - - - - - - E2 - - - - - - -',
+        drums: 'h . . . . . . . h . . . . . . . h . . . . . . . h . . . h . h .',
       },
     },
     'A B A2 C',

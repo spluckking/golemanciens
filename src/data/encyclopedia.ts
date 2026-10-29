@@ -1,8 +1,8 @@
 /**
  * Encyclopédie (SPEC.md § 11, CONTENU.md § H) : les golems, les monstres et les boss du jeu,
  * dévoilés à mesure qu'on les rencontre. Noms et types : SPEC.md § 4.1 et § 5.1.
- * Les descriptions (15 mots au plus) sont écrites jalon par jalon ; celles du chapitre 1
- * sont des textes nouveaux, à valider par le parent.
+ * Les descriptions (15 mots au plus) sont écrites jalon par jalon ; ce sont des textes nouveaux,
+ * à valider par le parent.
  */
 
 export type EntryKind = 'golem' | 'monster' | 'boss';
@@ -23,8 +23,8 @@ export const ENCYCLOPEDIA: readonly EncyclopediaEntry[] = [
   // Golems (SPEC § 4.1).
   { id: 'pierre', kind: 'golem', name: 'Pierre', phase: 1, icon: '🪨', color: '#8d8f9c', description: 'Un golem de roche costaud. Son coup de poing fait trembler le sol !' },
   { id: 'mousse', kind: 'golem', name: 'Mousse', phase: 1, icon: '🌿', color: '#5aa04a', description: 'Un golem couvert de mousse et de fleurs. Ses lianes attrapent tout.' },
-  { id: 'ecorce', kind: 'golem', name: 'Écorce', phase: 2, icon: '🌿', color: '#8a5a32' },
-  { id: 'champignon', kind: 'golem', name: 'Champignon', phase: 2, icon: '🍄', color: '#b05aa0' },
+  { id: 'ecorce', kind: 'golem', name: 'Écorce', phase: 2, icon: '🌿', color: '#8a5a32', description: 'Un golem d’écorce aux épaules feuillues. Ses racines retiennent les monstres.' },
+  { id: 'champignon', kind: 'golem', name: 'Champignon', phase: 2, icon: '🍄', color: '#b05aa0', description: 'Un golem champignon au grand chapeau rouge. Ses spores endorment tout le monde.' },
   { id: 'sable', kind: 'golem', name: 'Sable', phase: 3, icon: '🏜️', color: '#e0c080' },
   { id: 'cuivre', kind: 'golem', name: 'Cuivre', phase: 3, icon: '⚡', color: '#c8743c' },
   { id: 'glace', kind: 'golem', name: 'Glace', phase: 4, icon: '❄️', color: '#9fd8ff' },
@@ -36,9 +36,9 @@ export const ENCYCLOPEDIA: readonly EncyclopediaEntry[] = [
   { id: 'slime', kind: 'monster', name: 'Slime', phase: 1, icon: '☀️', color: '#6ed46e', description: 'Un cube de gelée verte qui rebondit partout. Le soleil le dessèche.' },
   { id: 'zombie', kind: 'monster', name: 'Zombie', phase: 1, icon: '🪨', color: '#7fae6a', description: 'Il marche tout lentement, les bras tendus. Les cailloux le font tomber !' },
   { id: 'spider', kind: 'monster', name: 'Araignée', phase: 1, icon: '🌿', color: '#6b4a2e', description: 'Huit pattes et quatre yeux rouges ! Les lianes l’empêchent de filer.' },
-  { id: 'skeleton', kind: 'monster', name: 'Squelette archer', phase: 2, icon: '🪨', color: '#e8e4d8' },
-  { id: 'wolf', kind: 'monster', name: 'Loup d’ombre', phase: 2, icon: '🍄', color: '#4a4a5a' },
-  { id: 'hopper', kind: 'monster', name: 'Champignon sauteur', phase: 2, icon: '🌿', color: '#9a5ad0' },
+  { id: 'skeleton', kind: 'monster', name: 'Squelette archer', phase: 2, icon: '🪨', color: '#e8e4d8', description: 'Un archer tout en os qui tire entre les troncs. Les cailloux le démontent !' },
+  { id: 'wolf', kind: 'monster', name: 'Loup d’ombre', phase: 2, icon: '🍄', color: '#4a4a5a', description: 'Un loup gris aux yeux violets qui rôde près du ruisseau. Les spores le calment.' },
+  { id: 'hopper', kind: 'monster', name: 'Champignon sauteur', phase: 2, icon: '🌿', color: '#9a5ad0', description: 'Un petit champignon violet qui saute partout. Les lianes l’attrapent en plein vol.' },
   { id: 'mummy', kind: 'monster', name: 'Momie', phase: 3, icon: '⚡', color: '#e0d0a8' },
   { id: 'scorpion', kind: 'monster', name: 'Scorpion', phase: 3, icon: '🪨', color: '#c8743c' },
   { id: 'vulture', kind: 'monster', name: 'Vautour', phase: 3, icon: '🏜️', color: '#8a5a32' },
@@ -50,7 +50,7 @@ export const ENCYCLOPEDIA: readonly EncyclopediaEntry[] = [
   { id: 'darkKnight', kind: 'monster', name: 'Chevalier d’ombre', phase: 5, icon: '🌈', color: '#2a2238' },
   // Boss (SPEC § 5.1).
   { id: 'roiSlime', kind: 'boss', name: 'Roi Slime', phase: 1, icon: '☀️', color: '#5ec45e', description: 'Le plus gros slime du marais, avec une couronne d’or. Il peut se diviser !' },
-  { id: 'reineAraignee', kind: 'boss', name: 'Reine Araignée', phase: 2, icon: '🍄', color: '#4a321e' },
+  { id: 'reineAraignee', kind: 'boss', name: 'Reine Araignée', phase: 2, icon: '🍄', color: '#4a321e', description: 'La reine de la forêt, couronnée d’or. Sa toile d’argent attrape les golems !' },
   { id: 'grandVer', kind: 'boss', name: 'Grand Ver des Sables', phase: 3, icon: '⚡', color: '#c8a060' },
   { id: 'sorciere', kind: 'boss', name: 'Sorcière du Blizzard', phase: 4, icon: '💎', color: '#7ec8f0' },
   { id: 'griffon', kind: 'boss', name: 'Griffon d’Ombre', phase: 5, icon: '☁️', color: '#3d2f55' },

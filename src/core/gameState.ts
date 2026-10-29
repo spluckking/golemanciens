@@ -1,5 +1,6 @@
 import { golemBaseStats } from '../data/balance';
 import type { BossQuestStep } from '../data/bossQuest';
+import type { EvolutionItem } from '../data/items';
 import { GOLEMS, type GolemSpecies } from '../data/creatures';
 import { createAdaptiveLevel, type AdaptiveLevel } from '../questions/difficulty';
 import type { ReadingStats } from '../questions/readingLoop';
@@ -105,6 +106,10 @@ export interface GameState {
   playTimeS: number;
   /** Golems, monstres et boss déjà rencontrés (encyclopédie). */
   seen: string[];
+  /** Objets d'évolution en poche (SPEC.md § 4.3). */
+  items: Record<EvolutionItem, number>;
+  /** Objets cachés déjà ramassés (ils ne réapparaissent pas). */
+  itemsFound: string[];
 }
 
 export function createBiomeProgress(): BiomeProgress {
@@ -154,6 +159,8 @@ export function createGameState(): GameState {
     settings: createSettings(),
     playTimeS: 0,
     seen: [],
+    items: { rune: 0, crystal: 0, heart: 0 },
+    itemsFound: [],
   };
 }
 

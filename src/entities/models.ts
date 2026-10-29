@@ -1,5 +1,6 @@
+import type { GolemSpecies } from '../data/creatures';
 import type { Cube, ModelDef, PartDef } from './cubeModel';
-import { trophyReineModel, canalModel, champignonModel, ecorceModel, giantWebModel, hopperModel, leverModel, millWheelModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, springModel, steleModel, wolfModel } from './forestModels';
+import { runeItemModel, trophyReineModel, canalModel, champignonModel, ecorceModel, giantWebModel, hopperModel, leverModel, millWheelModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, springModel, steleModel, wolfModel } from './forestModels';
 
 /**
  * Modèles en cubes, définis dans le code (aucun fichier externe).
@@ -1150,6 +1151,7 @@ export const MODELS = {
   trophyShelf: trophyShelfModel(),
   trophyRoiSlime: trophyRoiSlimeModel(),
   trophyReine: trophyReineModel(),
+  runeItem: runeItemModel(),
   medal: medalModel(),
   arch: archModel(),
   rivet: houseGolemModel(),
@@ -1163,3 +1165,38 @@ export const MODELS = {
   goldFlower: goldFlowerModel(),
 } as const satisfies Record<string, ModelDef>;
 export type ModelId = keyof typeof MODELS;
+
+/** Taille d'un golem selon son stade (SPEC.md § 4.1 : chaque stade le rend plus grand). */
+export function golemScale(stage: number): number {
+  return 1 + 0.12 * (stage - 1);
+}
+
+const evolvedCache = new Map<string, ModelDef>();
+
+/**
+ * Modèle d'un golem à son stade : au stade 2, des runes lumineuses sur la poitrine (les éléments
+ * de son type au stade 3 et l'aura au stade 4 arrivent avec leurs jalons).
+ */
+export function golemModel(species: GolemSpecies, stage: number): ModelDef {
+  const base = MODELS[species];
+  if (stage < 2) return base;
+  const key = `${species}-${stage}`;
+  const cached = evolvedCache.get(key);
+  if (cached) return cached;
+  const body = base.find((p) => p.name === 'body');
+  const torso = body?.cubes[0];
+  if (!body || !torso) return base;
+  const [, h, d, x, y, z] = torso;
+  const front = z - d / 2 - 0.02;
+  const rune = 0x7ae0ff;
+  const runes: Cube[] = [
+    [0.1, 0.1, 0.03, x - 0.17, y + h * 0.15, front, rune],
+    [0.1, 0.1, 0.03, x + 0.17, y + h * 0.15, front, rune],
+    [0.06, 0.18, 0.03, x, y - h * 0.1, front, rune],
+    [0.18, 0.05, 0.03, x, y - h * 0.1, front, rune],
+  ];
+  const def: ModelDef = [...base, { name: 'runes', pivot: body.pivot, glow: true, cubes: runes }];
+  evolvedCache.set(key, def);
+  return def;
+}
+

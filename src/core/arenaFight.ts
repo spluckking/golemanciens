@@ -6,8 +6,9 @@ import { ARENA_WINS_TO_FINISH, FOOD_ARENA_FREE, FOOD_ARENA_WIN, MONSTER_TURN_DEL
 import { CONTENT } from '../data/content';
 import { FOOD_BOSS, TEXT_BOSS_STAGE, TEXT_BOSS_VICTORIES, TEXT_LATER, TEXT_RETRY, TEXT_RETRY_QUESTION } from '../data/bossQuest';
 import { BOSSES, type AttackInfo, type AttackType, type BossId } from '../data/creatures';
+import { BOSS_ITEM, ITEMS } from '../data/items';
 import { animateWalk, CubeModel } from '../entities/cubeModel';
-import { MODELS, type ModelId } from '../entities/models';
+import { MODELS, golemModel, golemScale, type ModelId } from '../entities/models';
 import type { Sparks } from '../entities/sparks';
 import { generateCalc } from '../questions/calc';
 import { levelForAttack, recordAnswer } from '../questions/difficulty';
@@ -98,7 +99,7 @@ export class ArenaFight {
       for (const m of monsters) m.maxHp = m.hp = Math.max(1, Math.round(m.maxHp * host.bossHpScale));
     this.combat = new TurnCombat({ kind: host.kind, golems: fighters, monsters }, rng);
     for (const g of state.golems) {
-      const m = new CubeModel(MODELS[g.species]);
+      const m = new CubeModel(golemModel(g.species, g.stage), golemScale(g.stage));
       m.root.visible = false;
       this.golemModels.set(g.id, m);
       this.group.add(m.root);
@@ -278,8 +279,12 @@ export class ArenaFight {
       state.food += FOOD_BOSS;
       // Un éclat de Pierre-Étoile par boss (le numéro de sa phase).
       if (this.host.boss) state.shards = Math.max(state.shards, BOSSES[this.host.boss].phase);
+      // L'objet d'évolution du boss (une Rune d'éveil après la Reine Araignée…).
+      const item = this.host.boss ? BOSS_ITEM[BOSSES[this.host.boss].phase] : undefined;
+      if (item) state.items[item] = (state.items[item] ?? 0) + 1;
       if (this.host.boss && !state.trophies.includes(this.host.boss)) state.trophies.push(this.host.boss);
-      await showMessage(uiLayer, `${TEXT_BOSS_VICTORIES[this.host.boss ?? 'roiSlime']} +${FOOD_BOSS} 🍎`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
+      const gift = item ? ` + ${ITEMS[item].icon} ${ITEMS[item].name}` : '';
+      await showMessage(uiLayer, `${TEXT_BOSS_VICTORIES[this.host.boss ?? 'roiSlime']} +${FOOD_BOSS} 🍎${gift}`, TEXT_VICTORY_BUTTON, state.playerName, 'combat-victory');
       return 'won';
     }
     await showMessage(uiLayer, CONTENT.lumibloc.defeat, TEXT_DEFEAT_BUTTON, state.playerName, 'combat-defeat');

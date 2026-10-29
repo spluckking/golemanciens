@@ -325,3 +325,29 @@ export function trophyReineModel(): ModelDef {
     },
   ];
 }
+
+/** Rune d'éveil cachée : une pierre bleue gravée qui flotte au-dessus d'un nid de racines. */
+export function runeItemModel(): ModelDef {
+  return [
+    {
+      name: 'body',
+      pivot: [0, 0, 0],
+      cubes: [
+        [0.7, 0.12, 0.7, 0, 0.06, 0, 0x553820],
+        [0.14, 0.2, 0.5, -0.3, 0.16, 0, 0x7a5232],
+        [0.5, 0.2, 0.14, 0, 0.16, 0.3, 0x7a5232],
+      ],
+    },
+    {
+      name: 'gem',
+      pivot: [0, 0.75, 0],
+      glow: true,
+      cubes: [
+        [0.34, 0.44, 0.12, 0, 0, 0, 0x4a8ae8],
+        [0.2, 0.3, 0.13, 0, 0, 0, 0x9fd8ff],
+        [0.04, 0.24, 0.14, 0, 0, 0, 0xffffff],
+        [0.16, 0.04, 0.14, 0, 0.04, 0, 0xffffff],
+      ],
+    },
+  ];
+}

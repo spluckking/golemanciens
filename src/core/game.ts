@@ -33,6 +33,7 @@ import type { GolemSpecies } from '../data/creatures';
 import { buildVolcanoSet } from '../world/volcanoSet';
 import { createAtlasTexture } from '../world/voxelMaterial';
 import { ArenaFight } from './arenaFight';
+import { itemTip } from './evolution';
 import { ForestLife } from './forestLife';
 import { PrairieLife } from './prairieLife';
 import type { Objective, WorldHooks, WorldLife } from './worldLife';
@@ -357,6 +358,7 @@ export class Game {
       this.life.sim.recoverAt(this.hero.x, this.hero.y, this.hero.z);
       this.setMode('play');
       this.hud.showToast(TEXT_TROPHY, 4);
+      if (Object.values(this.state.items).some((n) => n > 0)) itemTip(this.state, this.dialog);
       void this.save();
       return;
     }
@@ -569,7 +571,7 @@ export class Game {
     const tip = seen.includes('meal') || !this.state.golems.length ? undefined : CONTENT.lumibloc.meal;
     if (tip) seen.push('meal');
     audio.duck(true);
-    await openGolems(this.uiLayer, this.state, () => void this.save(), tip);
+    await openGolems(this.uiLayer, this.state, () => void this.save(), tip, () => void this.save());
     audio.duck(false);
     this.paused = false;
   }

@@ -82,12 +82,17 @@ export const BOSS_DAMAGE_FACTOR = 0.5;
 
 /** Boss et dragon (§ 5.3) : PV par étape et ATQ, à partir d'un monstre de leur phase (boss : 2,5 → 2,25, révision 1.4). */
 export const BOSS_HP_FACTOR = 2.25;
+/**
+ * À partir de la phase 2, l'équipe compte plusieurs golems : le boss a un peu moins de PV par étape
+ * pour rester entre 8 et 15 questions (réglé par la simulation, tests/sim/balance2.test.ts).
+ */
+export const BOSS_HP_FACTOR_TEAM = 1.5;
 export const BOSS_ATK_FACTOR = 1.3;
 export const DRAGON_HP_FACTOR = 3;
 
 export function bossStats(phase: number): { hp: number; atk: number } {
   const m = monsterStats(phase);
-  const hpFactor = phase >= 6 ? DRAGON_HP_FACTOR : BOSS_HP_FACTOR;
+  const hpFactor = phase >= 6 ? DRAGON_HP_FACTOR : phase >= 2 ? BOSS_HP_FACTOR_TEAM : BOSS_HP_FACTOR;
   return { hp: Math.round(m.hp * hpFactor), atk: m.atk * BOSS_ATK_FACTOR };
 }
 
@@ -96,3 +101,6 @@ export const MEAL_COST = 3;
 export const MEAL_HP = 4;
 export const MEAL_ATK = 1;
 export const MEALS_PER_STAGE = 4;
+
+/** Évolution (SPEC.md § 4.3) : chaque stade multiplie les PV max et l'ATQ. */
+export const EVOLUTION_MULT = 1.35;

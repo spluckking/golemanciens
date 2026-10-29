@@ -150,6 +150,7 @@ export const QUESTS_P2: readonly QuestDef[] = [
 
 /** Textes d'interface nouveaux (à valider). */
 export const TEXT_PICK_UP = 'Ramasser';
+export const TEXT_RUNE_FOUND = 'Tu as trouvé une Rune d’éveil !';
 export const TEXT_DROP_LETTER = 'Déposer la lettre';
 export const TEXT_LANTERN_FOUND = 'Tu as retrouvé la lanterne de Pip !';
 export const TEXT_PLANK_FOUND = 'Une planche ! ({n}/{goal})';

@@ -3,7 +3,7 @@ import { WorldSim, groundY, type GolemAgent, type MonsterAgent, type WorldEvent 
 import { FOOD_CHEST, FOOD_CRATE, FOOD_CRATE_CHANCE } from '../data/balance';
 import { animateWalk, CubeModel } from '../entities/cubeModel';
 import type { HeroState } from '../entities/heroController';
-import { MODELS, type ModelId } from '../entities/models';
+import { MODELS, golemModel, golemScale, type ModelId } from '../entities/models';
 import type { Sparks } from '../entities/sparks';
 import { greeting, lumiblocLine } from '../story/dialogues';
 import type { DialogBubble } from '../ui/dialog';
@@ -71,7 +71,15 @@ export interface Objective {
 interface CreatureView {
   model: CubeModel;
   phase: number;
+  /** Stade affiché (golems) : quand il change, le golem évolue sous nos yeux. */
+  stage?: number;
+  /** Animation d'évolution en cours (secondes restantes) et rotation ajoutée. */
+  evolving?: number;
+  spin?: number;
 }
+
+/** Durée de l'animation d'évolution (SPEC.md § 4.3 : moins de 4 s). */
+const EVOLVE_S = 2.4;
 
 interface Npc {
   id: string;
@@ -284,7 +292,9 @@ export abstract class WorldLife {
       if (this.sim.golems.some((g) => g.data === data)) continue;
       const g = this.sim.addGolem(data, hero.x + 1, hero.y, hero.z + 2);
       g.body.y = groundY(this.solid, g.body.x, g.body.z, hero.y + 2);
-      this.addView(this.golemViews, g, data.species);
+      const model = new CubeModel(golemModel(data.species, data.stage), golemScale(data.stage));
+      this.group.add(model.root);
+      this.golemViews.set(g, { model, phase: 0, stage: data.stage });
     }
   }
 
@@ -463,10 +473,11 @@ export abstract class WorldLife {
     };
 
     for (const [g, view] of this.golemViews) {
+      this.animateEvolution(g, view, dt);
       const r = view.model.root;
       r.visible = near(g.body.x, g.body.z);
       r.position.set(g.body.x, g.body.y, g.body.z);
-      r.rotation.y = g.facing;
+      r.rotation.y = g.facing + (view.spin ?? 0);
       if (g.ko) {
         r.rotation.z = Math.PI / 2;
         r.position.y += 0.45;
@@ -514,6 +525,35 @@ export abstract class WorldLife {
 
     this.shadows.count = shadowCount;
     this.shadows.instanceMatrix.needsUpdate = true;
+  }
+
+  /**
+   * Évolution sous nos yeux : le golem tourne de plus en plus vite dans les étincelles, un éclair,
+   * puis il réapparaît plus grand avec son nouveau modèle (son ascendant).
+   */
+  private animateEvolution(g: GolemAgent, view: CreatureView, dt: number): void {
+    if (view.stage !== undefined && view.stage !== g.data.stage && view.evolving === undefined) {
+      view.evolving = EVOLVE_S;
+      audio.sfx('evolve');
+    }
+    if (view.evolving === undefined) return;
+    const before = view.evolving;
+    view.evolving -= dt;
+    const t = EVOLVE_S - view.evolving;
+    view.spin = (view.spin ?? 0) + dt * (4 + t * 10);
+    if (Math.floor(t * 10) !== Math.floor((t - dt) * 10)) this.hooks.sparks.burst(g.body.x, g.body.y + 1, g.body.z, 0x9ff0ff, 4, 0.8);
+    // À mi-chemin : éclair et nouveau modèle.
+    if (before > EVOLVE_S / 2 && view.evolving <= EVOLVE_S / 2) {
+      view.model.root.removeFromParent();
+      view.model = new CubeModel(golemModel(g.data.species, g.data.stage), golemScale(g.data.stage));
+      this.group.add(view.model.root);
+      view.stage = g.data.stage;
+      this.hooks.sparks.burst(g.body.x, g.body.y + 1.2, g.body.z, 0xfff3a0, 40, 1.8);
+    }
+    if (view.evolving <= 0) {
+      view.evolving = undefined;
+      view.spin = 0;
+    }
   }
 
   private addView<T>(views: Map<T, CreatureView>, agent: T, id: ModelId): void {

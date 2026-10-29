@@ -1,6 +1,8 @@
 import type * as THREE from 'three';
 import { OBJECTIVE_FOREST_DONE, P2_REMINDER, P2_REQUEST, P2_TASK, P2_TITLE } from '../data/bossQuest';
-import { OBJECTIVE_GO_FOREST_ARENA, type QuestNpc } from '../data/quests';
+import { OBJECTIVE_GO_FOREST_ARENA, TEXT_PICK_UP, TEXT_RUNE_FOUND, type QuestNpc } from '../data/quests';
+import { audio } from '../audio/audio';
+import { itemTip } from './evolution';
 import { PORTRAITS } from '../entities/models';
 import type { HeroState } from '../entities/heroController';
 import { questLine } from '../quests/villageQuests';
@@ -17,6 +19,9 @@ import type { SolidFn } from './physics';
 import type { Rng } from './rng';
 import type { SanctuaryHooks } from './sanctuaryLife';
 import { SEEN_RADIUS, WorldLife, type FightSetup, type Objective, type WorldHooks } from './worldLife';
+
+/** Identifiant de la Rune cachée de la Forêt (objets déjà ramassés). */
+const RUNE_ID = 'foret-rune';
 
 /** Objectif quand tout est fait dans la Forêt, en attendant la Reine Araignée (texte nouveau, à valider). */
 export const OBJECTIVE_EXPLORE_FOREST = 'Explore la Forêt Murmurante';
@@ -69,6 +74,31 @@ export class ForestLife extends WorldLife {
       onFight: hooks.onFight,
     });
     this.boss = new ForestBossLife(layout, this.group, state, interactions, { onBossFight: hooks.onBossFight, toast: hooks.toast, burst, onProgress: hooks.onProgress });
+
+    // Rune d'éveil cachée (SPEC.md § 4.3) : au fond de la forêt, entre les racines.
+    if (!state.itemsFound.includes(RUNE_ID)) {
+      const rune = this.spawnStatic('runeItem', layout.rune.x, layout.rune.z, 0);
+      const y = layout.world.standY(Math.floor(layout.rune.x), Math.floor(layout.rune.z));
+      interactions.add({
+        id: RUNE_ID,
+        x: layout.rune.x,
+        y,
+        z: layout.rune.z,
+        radius: 1.8,
+        label: TEXT_PICK_UP,
+        action: () => {
+          state.items.rune = (state.items.rune ?? 0) + 1;
+          state.itemsFound.push(RUNE_ID);
+          interactions.remove(RUNE_ID);
+          rune.root.visible = false;
+          burst(layout.rune.x, y + 1, layout.rune.z, 0x7ac0ff, 30);
+          audio.sfx('star');
+          hooks.toast(TEXT_RUNE_FOUND);
+          itemTip(state, hooks.dialog);
+          hooks.onProgress();
+        },
+      });
+    }
   }
 
   /** Sage Noisette donne la quête du boss (P2) une fois l'arène terminée. */
@@ -163,7 +193,9 @@ export class ForestLife extends WorldLife {
     forestSanctuary: ReturnType<ForestSanctuaryLife['snapshot']>;
     forestQuests: ReturnType<ForestQuestLife['snapshot']>;
     forestBoss: ReturnType<ForestBossLife['snapshot']>;
+    rune: { x: number; z: number; found: boolean };
   } {
-    return { ...super.snapshot(), forestSanctuary: this.sanctuary.snapshot(), forestQuests: this.quests.snapshot(), forestBoss: this.boss.snapshot() };
+    const rune = { ...this.layout.rune, found: this.state.itemsFound.includes(RUNE_ID) };
+    return { ...super.snapshot(), forestSanctuary: this.sanctuary.snapshot(), forestQuests: this.quests.snapshot(), forestBoss: this.boss.snapshot(), rune };
   }
 }

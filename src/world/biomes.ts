@@ -11,10 +11,10 @@ export const BIOME_NAMES: Record<BiomeId, string> = {
   foret: 'Forêt Murmurante',
 };
 
-/** Musique de chaque biome (la musique de la Forêt arrive à la sous-étape 2.7). */
+/** Musique de chaque biome. */
 export const BIOME_MUSIC: Record<BiomeId, TrackId> = {
   prairie: 'prairie',
-  foret: 'prairie',
+  foret: 'foret',
 };
 
 /** Texte d'histoire qui ouvre chaque biome : une fois lu, l'Arche des éclats y mène. */

@@ -86,3 +86,14 @@ Textes nouveaux :
 - Quête P2 : « Des toiles d'argent barrent le sentier du nord-ouest. Coupe-les d'un coup de baguette : la Reine Araignée t'attend au bout. » ; rappel : « Les toiles barrent toujours le sentier du nord-ouest. Un coup de baguette suffit ! » ; « Toile coupée : n/3 » ; « Le sentier est libre : la Reine Araignée t'attend ! »
 - Combat : « La Reine Araignée tisse une toile d'argent ! », « {golem} est pris dans la toile ! », « {golem} se débat dans la toile et passe son tour. », « Victoire ! La Reine Araignée est vaincue ! »
 - Fin du chapitre 2 : « Deuxième éclat retrouvé ! La suite de l'aventure arrive bientôt. »
+
+## Sous-étapes 2.7 et 2.8 (évolution, musique de la Forêt, encyclopédie, équilibrage)
+
+Décisions :
+- Objets d'évolution : 🔷 Rune d'éveil, 🔶 Cristal de puissance, 💖 Cœur ancestral. La Rune cachée de la Forêt est au fond, au sud-est, entre des racines ; la Reine en donne une deuxième.
+- On donne un objet depuis l'écran Golems (bouton « Donner », grisé si le golem n'est pas au bon stade). L'écran se ferme et le golem évolue sous nos yeux : il tourne dans les étincelles, un éclair, puis il réapparaît plus grand avec des runes lumineuses sur la poitrine (environ 2,4 s).
+- Équilibrage (simulation) : à partir de la phase 2, l'équipe a 2 golems ; les boss ont donc 1,5 × les PV d'un monstre par étape (au lieu de 2,25) pour rester entre 8 et 15 questions. L'équipe attendue en phase 2 a mangé ses repas (4 pour le golem de la phase 1, 2 pour l'autre).
+
+Textes nouveaux :
+- « Tu as trouvé une Rune d'éveil ! », « Donner », « Pour un golem au stade {n} »
+- Encyclopédie : Écorce « Un golem d'écorce aux épaules feuillues. Ses racines retiennent les monstres. » ; Champignon « Un golem champignon au grand chapeau rouge. Ses spores endorment tout le monde. » ; Squelette archer « Un archer tout en os qui tire entre les troncs. Les cailloux le démontent ! » ; Loup d'ombre « Un loup gris aux yeux violets qui rôde près du ruisseau. Les spores le calment. » ; Champignon sauteur « Un petit champignon violet qui saute partout. Les lianes l'attrapent en plein vol. » ; Reine Araignée « La reine de la forêt, couronnée d'or. Sa toile d'argent attrape les golems ! »
