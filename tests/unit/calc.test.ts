@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../../src/core/rng';
-import { generateCalc, type CalcKind } from '../../src/questions/calc';
+import { CHALLENGE_LEVEL, generateCalc, generateChallengeCalc, type CalcKind } from '../../src/questions/calc';
 
 const DRAWS = 1000;
 
 describe('générateur de calcul', () => {
-  for (let level = 1; level <= 6; level++) {
+  for (let level = 1; level <= 7; level++) {
     it(`niveau ${level} : ${DRAWS} tirages corrects`, () => {
       const rng = createRng(1000 + level);
       for (let i = 0; i < DRAWS; i++) {
-        const q = generateCalc(level, rng);
+        const q = level === CHALLENGE_LEVEL ? generateChallengeCalc(rng) : generateCalc(level, rng);
         const ctx = `${q.prompt} → ${q.values.join(', ')}`;
         expect(q.level).toBe(level);
         expect(q.values[0], ctx).toBe(q.answer);
@@ -74,6 +74,33 @@ describe('générateur de calcul', () => {
       for (let i = 0; i < DRAWS; i++) for (const t of generateCalc(level, rng).tables) seen.add(t);
     }
     for (let t = 1; t <= 10; t++) expect(seen.has(t), `table de ${t}`).toBe(true);
+  });
+
+  it('niveau 7 « défi » : 2 chiffres × 1 chiffre jusqu’à 49 × 9, partages jusqu’à 100, résultats jusqu’à 1000', () => {
+    const rng = createRng(77);
+    const kinds = new Set<CalcKind>();
+    for (let i = 0; i < DRAWS; i++) {
+      const q = generateChallengeCalc(rng);
+      kinds.add(q.kind);
+      expect(q.answer, q.prompt).toBeLessThanOrEqual(1000);
+      if (q.kind === 'mul') {
+        const [a, b] = q.prompt.match(/\d+/g)!.map(Number);
+        expect(a).toBeGreaterThanOrEqual(11);
+        expect(a).toBeLessThanOrEqual(49);
+        expect(b).toBeLessThanOrEqual(9);
+        expect(q.answer).toBe(a * b);
+      }
+      if (q.kind === 'div') {
+        const [total, groups] = q.prompt.match(/\d+/g)!.map(Number);
+        expect(total).toBeLessThanOrEqual(100);
+        expect(groups).toBeGreaterThanOrEqual(2);
+        expect(groups).toBeLessThanOrEqual(9);
+        expect(q.answer * groups).toBe(total);
+      }
+    }
+    expect([...kinds].sort()).toEqual(['div', 'mul', 'twoStep']);
+    // L'adaptation ne dépasse jamais le niveau 6 (même avec le décalage de l'Ultime).
+    expect(generateCalc(8, rng).level).toBe(6);
   });
 
   it('chaque niveau propose les types de questions prévus', () => {

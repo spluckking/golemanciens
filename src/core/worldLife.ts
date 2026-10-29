@@ -11,7 +11,7 @@ import type { WorldLabels } from '../ui/worldLabels';
 import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
 import type { Point2, Point3, WorldLayout } from '../world/layout';
 import type { FightStage } from '../world/structures';
-import type { BossId } from '../data/creatures';
+import { unlockedAttacks, type BossId } from '../data/creatures';
 import { audio } from '../audio/audio';
 import { markSeen, type GameState } from './gameState';
 import type { Interactions } from './interactions';
@@ -32,7 +32,7 @@ const LANTERN_RADIUS = 3;
 const ARCH_RADIUS = 3;
 const AIM_RANGE = 9;
 const AIM_CONE = Math.cos((40 * Math.PI) / 180);
-const MONSTER_COLORS: Record<MonsterAgent['species'], number> = { slime: 0x6ed46e, zombie: 0x7fae6a, spider: 0x6b4a2e, skeleton: 0xeeeae0, wolf: 0x3e3e4c, hopper: 0x8a4ac8, mummy: 0xe0d0a8, scorpion: 0xc8743c, vulture: 0x8a5a32, yeti: 0xf4f4f4, iceBat: 0x9fd8ff, frostGhost: 0xe8f4ff };
+const MONSTER_COLORS: Record<MonsterAgent['species'], number> = { slime: 0x6ed46e, zombie: 0x7fae6a, spider: 0x6b4a2e, skeleton: 0xeeeae0, wolf: 0x3e3e4c, hopper: 0x8a4ac8, mummy: 0xe0d0a8, scorpion: 0xc8743c, vulture: 0x8a5a32, yeti: 0xf4f4f4, iceBat: 0x9fd8ff, frostGhost: 0xe8f4ff, harpy: 0x9a9aa8, jellyfish: 0xf0a0d0, darkKnight: 0x2a2238 };
 
 /** Ce que le jeu fournit à la vie d'un biome. */
 export interface WorldHooks {
@@ -73,6 +73,8 @@ interface CreatureView {
   phase: number;
   /** Stade affiché (golems) : quand il change, le golem évolue sous nos yeux. */
   stage?: number;
+  /** Espèce affichée : la Poussière d'étoile change un golem en Galaxie. */
+  species?: string;
   /** Animation d'évolution en cours (secondes restantes) et rotation ajoutée. */
   evolving?: number;
   spin?: number;
@@ -294,7 +296,7 @@ export abstract class WorldLife {
       g.body.y = groundY(this.solid, g.body.x, g.body.z, hero.y + 2);
       const model = new CubeModel(golemModel(data.species, data.stage), golemScale(data.stage));
       this.group.add(model.root);
-      this.golemViews.set(g, { model, phase: 0, stage: data.stage });
+      this.golemViews.set(g, { model, phase: 0, stage: data.stage, species: data.species });
     }
   }
 
@@ -532,7 +534,8 @@ export abstract class WorldLife {
    * puis il réapparaît plus grand avec son nouveau modèle (son ascendant).
    */
   private animateEvolution(g: GolemAgent, view: CreatureView, dt: number): void {
-    if (view.stage !== undefined && view.stage !== g.data.stage && view.evolving === undefined) {
+    const changed = view.stage !== g.data.stage || (view.species !== undefined && view.species !== g.data.species);
+    if (view.stage !== undefined && changed && view.evolving === undefined) {
       view.evolving = EVOLVE_S;
       audio.sfx('evolve');
     }
@@ -548,6 +551,8 @@ export abstract class WorldLife {
       view.model = new CubeModel(golemModel(g.data.species, g.data.stage), golemScale(g.data.stage));
       this.group.add(view.model.root);
       view.stage = g.data.stage;
+      view.species = g.data.species;
+      g.types = unlockedAttacks(g.data.species, g.data.stage).map((a) => a.type);
       this.hooks.sparks.burst(g.body.x, g.body.y + 1.2, g.body.z, 0xfff3a0, 40, 1.8);
     }
     if (view.evolving <= 0) {
@@ -632,11 +637,11 @@ function animateMonster(m: MonsterAgent, view: CreatureView): void {
       body.position.y = hop * (m.speed > 0.2 ? 0.45 : 0.12);
       body.scale.set(1 + (1 - hop) * 0.12, 1 - (1 - hop) * 0.15, 1 + (1 - hop) * 0.12);
     }
-  } else if (m.species === 'frostGhost') {
+  } else if (m.species === 'frostGhost' || m.species === 'jellyfish') {
     // Le fantôme flotte doucement, sans marcher.
     const body = model.part('body');
     if (body) body.position.y = 0.4 + Math.sin(view.phase * 0.8) * 0.15;
-  } else if (m.species === 'vulture' || m.species === 'iceBat') {
+  } else if (m.species === 'vulture' || m.species === 'iceBat' || m.species === 'harpy') {
     const flap = Math.sin(view.phase * 3) * 0.5;
     model.swing('wingL', flap, 'z');
     model.swing('wingR', -flap, 'z');

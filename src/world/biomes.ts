@@ -1,6 +1,7 @@
 import type { TrackId } from '../audio/music';
 import type { BiomeId, GameState } from '../core/gameState';
 import { generateDesert } from './desert';
+import { generateCiel } from './ciel';
 import { generateForest } from './forest';
 import { generateGivre } from './givre';
 import type { WorldLayout } from './layout';
@@ -13,6 +14,7 @@ export const BIOME_NAMES: Record<BiomeId, string> = {
   foret: 'Forêt Murmurante',
   desert: 'Désert des Sables Chantants',
   givre: 'Pics de Givre',
+  ciel: 'Île Céleste',
 };
 
 /** Musique de chaque biome. */
@@ -21,6 +23,7 @@ export const BIOME_MUSIC: Record<BiomeId, TrackId> = {
   foret: 'foret',
   desert: 'desert',
   givre: 'givre',
+  ciel: 'ciel',
 };
 
 /** Texte d'histoire qui ouvre chaque biome : une fois lu, l'Arche des éclats y mène. */
@@ -29,6 +32,7 @@ const OPENING_STORY: Record<BiomeId, string | null> = {
   foret: 'T2',
   desert: 'T3',
   givre: 'T4',
+  ciel: 'T5',
 };
 
 /**
@@ -54,5 +58,6 @@ export function unlockedBiomes(state: Pick<GameState, 'storiesRead'>): BiomeId[]
 export function buildLayout(id: BiomeId): WorldLayout {
   if (id === 'prairie') return generatePrairie();
   if (id === 'givre') return generateGivre();
+  if (id === 'ciel') return generateCiel();
   return id === 'foret' ? generateForest() : generateDesert();
 }

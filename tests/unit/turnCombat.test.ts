@@ -35,14 +35,22 @@ describe('attaques et types', () => {
     expect(unlockedAttacks('pierre', 3).map((a) => a.slot)).toEqual(['a1', 'a2', 'a3', 'ultimate']);
   });
 
-  // Règle de conception (§ 4.1) : à chaque phase, chacun des 2 golems vise, dès l'éclosion, la faiblesse du boss.
-  for (const boss of Object.values(BOSSES)) {
+  // Règle de conception (§ 4.1) : à chaque phase, chacun des 2 golems vise, dès l'éclosion, la faiblesse du boss
+  // (le Galaxie n'éclot pas d'un œuf : c'est lui, et lui seul, qui entame l'armure du Dragon).
+  for (const boss of Object.values(BOSSES).filter((b) => b.phase <= 5)) {
     it(`les golems de la phase ${boss.phase} visent dès le stade 1 la faiblesse de ${boss.name}`, () => {
-      const species = (Object.keys(GOLEMS) as (keyof typeof GOLEMS)[]).filter((s) => GOLEMS[s].phase === boss.phase);
+      const species = (Object.keys(GOLEMS) as (keyof typeof GOLEMS)[]).filter((s) => GOLEMS[s].phase === boss.phase && s !== 'galaxie');
       expect(species).toHaveLength(2);
       for (const s of species) expect(unlockedAttacks(s, 1).some((a) => a.type === boss.stages[0].weakness)).toBe(true);
     });
   }
+
+  it('Dragon d’Ombre : armure ✨ à l’étape 1 ; seul le Galaxie a des attaques ✨', () => {
+    expect(BOSSES.dragon.stages).toHaveLength(3);
+    expect(BOSSES.dragon.stages[0].armorOnly).toBe('star');
+    const starred = (Object.keys(GOLEMS) as (keyof typeof GOLEMS)[]).filter((s) => GOLEMS[s].attacks.some((a) => a.type === 'star'));
+    expect(starred).toEqual(['galaxie']);
+  });
 
   it('chaque monstre a une faiblesse visée par au moins un golem de sa phase ou d’avant', () => {
     for (const m of Object.values(MONSTERS)) {

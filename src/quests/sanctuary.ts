@@ -23,6 +23,9 @@ export type SanctuaryStep =
   | 'memory'
   | 'mill'
   | 'stone4'
+  | 'clouds'
+  | 'balance'
+  | 'stone5'
   | 'open'
   | 'hatched';
 /** S1 (Prairie) : la pierre, puis les dalles, puis la porte ouverte, puis l'éclosion. */
@@ -33,6 +36,8 @@ export const S2_STEPS: readonly SanctuaryStep[] = ['stone', 'levers', 'canals', 
 export const S3_STEPS: readonly SanctuaryStep[] = ['push', 'mirrors', 'symbols', 'stone3', 'open', 'hatched'];
 /** S4 (Pics de Givre) : pierre, glissade, mémoire de glace, moulin gelé, seconde pierre, porte ouverte, éclosion. */
 export const S4_STEPS: readonly SanctuaryStep[] = ['stone', 'slide', 'memory', 'mill', 'stone4', 'open', 'hatched'];
+/** S5 (Île Céleste) : pierre, nuages arc-en-ciel, balance à contrepoids, seconde pierre, porte ouverte, éclosion. */
+export const S5_STEPS: readonly SanctuaryStep[] = ['stone', 'clouds', 'balance', 'stone5', 'open', 'hatched'];
 
 /** Avancement enregistré dans la sauvegarde. */
 export interface SanctuaryProgress {

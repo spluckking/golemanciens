@@ -16,6 +16,8 @@ export const TEXT_BOSS_STAGE: Record<string, string> = {
   reineAraignee: 'La Reine Araignée tisse une toile d’argent !',
   grandVer: 'Le Grand Ver plonge sous le sable… et surgit !',
   sorciere: 'La Sorcière du Blizzard lève les bras : la tempête se déchaîne !',
+  griffon: 'Le Griffon d’Ombre monte très haut… et plonge en piqué !',
+  dragon: 'Le Dragon d’Ombre perd son armure et s’envole !',
 };
 export const TEXT_BOSS_VICTORY = 'Victoire ! Le Roi Slime est vaincu !';
 export const TEXT_BOSS_VICTORIES: Record<string, string> = {
@@ -23,6 +25,8 @@ export const TEXT_BOSS_VICTORIES: Record<string, string> = {
   reineAraignee: 'Victoire ! La Reine Araignée est vaincue !',
   grandVer: 'Victoire ! Le Grand Ver des Sables est vaincu !',
   sorciere: 'Victoire ! La Sorcière du Blizzard est vaincue !',
+  griffon: 'Victoire ! Le Griffon d’Ombre est vaincu !',
+  dragon: 'Victoire ! Le Dragon d’Ombre est vaincu !',
 };
 export const TEXT_RETRY_QUESTION = 'On réessaie tout de suite ?';
 export const TEXT_RETRY = 'Réessayer';
@@ -67,3 +71,23 @@ export const TEXT_LIGHT_BRAZIER = 'Allumer';
 export const TEXT_BRAZIER = 'Brasero : {n}/3';
 export const TEXT_PATH_LIT = 'Le chemin brille dans la tempête : la Sorcière t’attend au sommet !';
 export const OBJECTIVE_GIVRE_DONE = 'Quatrième éclat retrouvé ! La suite de l’aventure arrive bientôt.';
+
+/** Quête du boss de la phase 5 (CONTENU.md § F, P5 « Les plumes noires »). Répliques nouvelles, à valider. */
+export const P5_TITLE = 'Les plumes noires';
+export const P5_TASK = 'Ramasser les plumes noires ({n}/3) pour ouvrir la tour du Griffon d’Ombre';
+export const P5_REQUEST = 'Le Griffon d’Ombre s’est enfermé dans la tour noire. Sa porte s’ouvre avec trois plumes noires, perdues sur les îles. Trouve-les !';
+export const P5_REMINDER = 'Il te faut les trois plumes noires du Griffon pour ouvrir la porte de sa tour.';
+export const TEXT_FEATHER = 'Plume noire : {n}/3';
+export const TEXT_TOWER_OPEN = 'Les trois plumes brillent : la porte de la tour s’ouvre !';
+/** Après le Griffon : l'Épreuve des Étoiles attend au sommet de l'Académie (texte nouveau, à valider). */
+/** Finale (CONTENU.md § F, « Le pont de pierre noire »). Textes nouveaux, à valider. */
+export const FINALE_TITLE = 'Le pont de pierre noire';
+export const FINALE_TASK = 'Traverser le volcan : vaincre les gardiens du chemin ({n}/{goal})';
+export const FINALE_FACE = 'Traverser le pont jusqu’au cratère et affronter le Dragon d’Ombre';
+export const TEXT_DRAGON_STAGE3 = 'Le Dragon d’Ombre se met en colère !';
+export const TEXT_LAVA = 'Aïe, c’est chaud ! Tu recules d’un pas.';
+export const TEXT_PATH_GUARDS = 'Gardiens du chemin vaincus : {n}/{goal}';
+export const TEXT_PATH_FREE = 'Le chemin est libre : le Dragon t’attend au fond du cratère !';
+export const TEXT_GAME_DONE = 'Bravo ! Tu as terminé l’aventure. Les biomes et les arènes t’attendent toujours.';
+export const OBJECTIVE_GAME_DONE = 'Aventure terminée ! Va où tu veux : les arènes et les biomes sont ouverts.';
+export const OBJECTIVE_STAR_TRIAL = 'Les cinq éclats sont réunis ! Monte au sommet de l’Académie pour l’Épreuve des Étoiles';

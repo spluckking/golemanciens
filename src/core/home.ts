@@ -22,7 +22,7 @@ const RIVET_SPEED = 0.9;
 const RIVET_PAUSE_S = 2.5;
 
 /** Statuette de chaque boss pour l'étagère (les autres arrivent avec leur jalon). */
-const TROPHY_MODELS: Partial<Record<BossId, ModelId>> = { roiSlime: 'trophyRoiSlime', reineAraignee: 'trophyReine', grandVer: 'trophyVer', sorciere: 'trophySorciere' };
+const TROPHY_MODELS: Partial<Record<BossId, ModelId>> = { roiSlime: 'trophyRoiSlime', reineAraignee: 'trophyReine', grandVer: 'trophyVer', sorciere: 'trophySorciere', griffon: 'trophyGriffon' };
 
 export interface HomeHooks {
   dialog: DialogBubble;

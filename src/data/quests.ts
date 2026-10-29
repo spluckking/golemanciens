@@ -5,7 +5,7 @@
  */
 
 export type QuestId = 'R1' | 'R2' | 'R3' | 'O1' | 'O2';
-export type QuestNpc = 'mereBrique' | 'paquerette' | 'gaston' | 'noisette' | 'pip' | 'tilleul' | 'oasia' | 'zephir' | 'flocon';
+export type QuestNpc = 'mereBrique' | 'paquerette' | 'gaston' | 'noisette' | 'pip' | 'tilleul' | 'oasia' | 'zephir' | 'flocon' | 'azur';
 
 export interface QuestDef {
   id: QuestId;
@@ -324,3 +324,77 @@ export const TEXT_NILOU_HOME = 'Nilou est rentré au village !';
 export const TEXT_GIVRE_ARENA_OPEN = 'L’arène des Pics de Givre est ouverte !';
 export const OBJECTIVE_GO_GIVRE_ARENA = 'Aller à l’arène des Pics de Givre';
 export const TEXT_HEART_FOUND = 'Tu as trouvé un Cœur ancestral !';
+
+/**
+ * Quêtes de la phase 5 (CONTENU.md § E, Village des Nuages). Titres et objectifs : CONTENU.md.
+ * Le Capitaine Azur donne toutes les quêtes ; les répliques sont nouvelles, à valider par le parent.
+ */
+export const QUESTS_P5: readonly QuestDef[] = [
+  {
+    id: 'R1',
+    title: 'Les cristaux de vent',
+    mandatory: true,
+    giver: 'azur',
+    turnIn: 'azur',
+    goal: 4,
+    task: 'Récupérer les cristaux de vent sur les îlots ({n}/{goal})',
+    request: 'Le vent a soufflé nos cristaux sur les petits îlots autour du village. Saute de nuage en nuage pour les récupérer !',
+    thanks: 'Les quatre cristaux ! Le village va pouvoir voler bien droit. Merci, {prenom}.',
+  },
+  {
+    id: 'R2',
+    title: 'Le phare éteint',
+    mandatory: true,
+    giver: 'azur',
+    turnIn: 'azur',
+    goal: 3,
+    task: 'Rallumer les braseros autour du phare ({n}/{goal})',
+    request: 'Le phare s’est éteint, et les oiseaux se perdent dans les nuages. Rallume les trois braseros autour de lui !',
+    thanks: 'Le phare brille à nouveau ! Les oiseaux retrouvent leur chemin.',
+  },
+  {
+    id: 'R3',
+    title: 'Les harpies du pont',
+    mandatory: true,
+    giver: 'azur',
+    turnIn: 'azur',
+    goal: 3,
+    task: 'Vaincre les harpies du pont ({n}/{goal})',
+    request: 'Des harpies tournent au-dessus du pont et font peur aux voyageurs. Tes golems peuvent les chasser ?',
+    thanks: 'Plus une harpie à l’horizon ! Tu es un vrai golémancien.',
+  },
+  {
+    id: 'O1',
+    title: 'Le jardin des nuages',
+    mandatory: false,
+    giver: 'azur',
+    turnIn: 'azur',
+    goal: 5,
+    task: 'Arroser les fleurs célestes du jardin ({n}/{goal})',
+    request: 'Les fleurs célestes du jardin ont soif. Tu peux les arroser toutes les cinq ?',
+    thanks: 'Le jardin brille comme un ciel étoilé. Merci !',
+  },
+  {
+    id: 'O2',
+    title: 'La lettre au ciel',
+    mandatory: false,
+    giver: 'azur',
+    turnIn: 'azur',
+    goal: 1,
+    task: 'Porter la lettre au gardien de la plus haute tour',
+    request: 'Voici une lettre pour le gardien de la plus haute tour, à l’ouest. Il faut monter tout l’escalier !',
+    thanks: 'Le gardien a eu sa lettre ? Merci, {prenom}, tu as de bonnes jambes !',
+  },
+];
+
+/** Textes d'interface nouveaux (à valider). */
+export const TEXT_WIND_CRYSTAL = 'Cristal de vent : {n}/{goal}';
+export const TEXT_LIGHTHOUSE_BRAZIER = 'Brasero du phare : {n}/{goal}';
+export const TEXT_WATER = 'Arroser';
+export const TEXT_FLOWER_WATERED = 'Fleur arrosée : {n}/{goal}';
+export const TEXT_GIVE_LETTER = 'Donner la lettre';
+export const TEXT_LETTER_GIVEN = 'Le gardien te remercie : « Une lettre du Capitaine ! Quelle belle surprise. »';
+export const TEXT_GUARDIAN_HELLO = 'Bienvenue tout en haut ! D’ici, on voit toute l’Île Céleste.';
+export const TEXT_FALL_BACK = 'Hop ! Un nuage te ramène sur l’île.';
+export const TEXT_CIEL_ARENA_OPEN = 'L’arène de l’Île Céleste est ouverte !';
+export const OBJECTIVE_GO_CIEL_ARENA = 'Aller à l’arène de l’Île Céleste';

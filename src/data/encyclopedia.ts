@@ -29,9 +29,9 @@ export const ENCYCLOPEDIA: readonly EncyclopediaEntry[] = [
   { id: 'cuivre', kind: 'golem', name: 'Cuivre', phase: 3, icon: '⚡', color: '#c8743c', description: 'Un golem de cuivre brillant, plein d’étincelles. Ses éclairs foudroient les momies.' },
   { id: 'glace', kind: 'golem', name: 'Glace', phase: 4, icon: '❄️', color: '#9fd8ff', description: 'Un golem de glace bleu pâle, couvert de pointes de givre. Son souffle gèle tout !' },
   { id: 'cristal', kind: 'golem', name: 'Cristal', phase: 4, icon: '💎', color: '#b48aff', description: 'Un golem de quartz violet qui brille au soleil. Son bouclier renvoie les coups.' },
-  { id: 'nuage', kind: 'golem', name: 'Nuage', phase: 5, icon: '☁️', color: '#e8eef8' },
-  { id: 'arcEnCiel', kind: 'golem', name: 'Arc-en-ciel', phase: 5, icon: '🌈', color: '#f08ac0' },
-  { id: 'galaxie', kind: 'golem', name: 'Galaxie', phase: 5, icon: '✨', color: '#2a2a6a' },
+  { id: 'nuage', kind: 'golem', name: 'Nuage', phase: 5, icon: '☁️', color: '#e8eef8', description: 'Un golem tout rond et doux comme un nuage. Ses rafales font tout voler !' },
+  { id: 'arcEnCiel', kind: 'golem', name: 'Arc-en-ciel', phase: 5, icon: '🌈', color: '#f08ac0', description: 'Un golem aux six couleurs. Toutes ses attaques brillent un peu plus fort.' },
+  { id: 'galaxie', kind: 'golem', name: 'Galaxie', phase: 5, icon: '✨', color: '#2a2a6a', description: 'Né de la Poussière d’étoile, il brille de mille étoiles. Il perce l’armure du dragon !' },
   // Monstres (SPEC § 5.1) ; icône = faiblesse (révision 1.4 pour le slime).
   { id: 'slime', kind: 'monster', name: 'Slime', phase: 1, icon: '☀️', color: '#6ed46e', description: 'Un cube de gelée verte qui rebondit partout. Le soleil le dessèche.' },
   { id: 'zombie', kind: 'monster', name: 'Zombie', phase: 1, icon: '🪨', color: '#7fae6a', description: 'Il marche tout lentement, les bras tendus. Les cailloux le font tomber !' },
@@ -45,15 +45,15 @@ export const ENCYCLOPEDIA: readonly EncyclopediaEntry[] = [
   { id: 'yeti', kind: 'monster', name: 'Yéti', phase: 4, icon: '🪨', color: '#f4f4f4', description: 'Grand et tout blanc, il lance des boules de neige. Les cailloux le font reculer !' },
   { id: 'iceBat', kind: 'monster', name: 'Chauve-souris de glace', phase: 4, icon: '⚡', color: '#9fd8ff', description: 'Elle vole dans les grottes avec ses ailes transparentes. Les éclairs l’éblouissent.' },
   { id: 'frostGhost', kind: 'monster', name: 'Fantôme gelé', phase: 4, icon: '💎', color: '#e8f4ff', description: 'Un drap blanc qui flotte et fait frissonner. Les cristaux le font disparaître !' },
-  { id: 'harpy', kind: 'monster', name: 'Harpie', phase: 5, icon: '❄️', color: '#9a9aa8' },
-  { id: 'jellyfish', kind: 'monster', name: 'Méduse céleste', phase: 5, icon: '⚡', color: '#f0a0d0' },
-  { id: 'darkKnight', kind: 'monster', name: 'Chevalier d’ombre', phase: 5, icon: '🌈', color: '#2a2238' },
+  { id: 'harpy', kind: 'monster', name: 'Harpie', phase: 5, icon: '❄️', color: '#9a9aa8', description: 'Une femme-oiseau aux plumes grises qui tourne autour des tours. La glace la ralentit.' },
+  { id: 'jellyfish', kind: 'monster', name: 'Méduse céleste', phase: 5, icon: '⚡', color: '#f0a0d0', description: 'Elle flotte dans le ciel comme dans la mer. Les éclairs la font fuir !' },
+  { id: 'darkKnight', kind: 'monster', name: 'Chevalier d’ombre', phase: 5, icon: '🌈', color: '#2a2238', description: 'Une armure noire aux yeux violets qui garde les ponts. Les arcs-en-ciel l’éblouissent.' },
   // Boss (SPEC § 5.1).
   { id: 'roiSlime', kind: 'boss', name: 'Roi Slime', phase: 1, icon: '☀️', color: '#5ec45e', description: 'Le plus gros slime du marais, avec une couronne d’or. Il peut se diviser !' },
   { id: 'reineAraignee', kind: 'boss', name: 'Reine Araignée', phase: 2, icon: '🍄', color: '#4a321e', description: 'La reine de la forêt, couronnée d’or. Sa toile d’argent attrape les golems !' },
   { id: 'grandVer', kind: 'boss', name: 'Grand Ver des Sables', phase: 3, icon: '⚡', color: '#c8a060', description: 'Un ver géant qui nage dans les dunes. Les éclairs le font replonger !' },
   { id: 'sorciere', kind: 'boss', name: 'Sorcière du Blizzard', phase: 4, icon: '💎', color: '#7ec8f0', description: 'Elle a apporté la tempête sur la montagne. Les cristaux brisent sa magie !' },
-  { id: 'griffon', kind: 'boss', name: 'Griffon d’Ombre', phase: 5, icon: '☁️', color: '#3d2f55' },
+  { id: 'griffon', kind: 'boss', name: 'Griffon d’Ombre', phase: 5, icon: '☁️', color: '#3d2f55', description: 'Le serviteur du dragon, mi-lion mi-aigle. Le vent le fait tomber du ciel !' },
   { id: 'dragon', kind: 'boss', name: 'Dragon d’Ombre', phase: 6, icon: '✨', color: '#2a2238' },
 ];
 

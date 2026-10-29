@@ -28,6 +28,16 @@ export const Block = {
   Snow: 21,
   Ice: 22,
   IceBrick: 23,
+  /** Île Céleste : nuage, pont arc-en-ciel, marbre des tours, et les six nuages de couleur (S5). */
+  Cloud: 24,
+  Rainbow: 25,
+  Marble: 26,
+  CloudRed: 27,
+  CloudOrange: 28,
+  CloudYellow: 29,
+  CloudGreen: 30,
+  CloudBlue: 31,
+  CloudViolet: 32,
 } as const;
 export type BlockId = (typeof Block)[keyof typeof Block];
 
@@ -75,6 +85,17 @@ export const Tile = {
   Ice: 39,
   IceBrick: 40,
   FrostGrass: 41,
+  Cloud: 42,
+  Rainbow: 43,
+  Marble: 44,
+  MarbleTop: 45,
+  CloudRed: 46,
+  CloudOrange: 47,
+  CloudYellow: 48,
+  CloudGreen: 49,
+  CloudBlue: 50,
+  CloudViolet: 51,
+  SkyFlower: 52,
 } as const;
 export type TileId = (typeof Tile)[keyof typeof Tile];
 
@@ -115,6 +136,15 @@ const defs: Record<number, BlockDef> = {
   [Block.Snow]: { top: Tile.Snow, side: Tile.SnowSide, bottom: Tile.Dirt },
   [Block.Ice]: uniform(Tile.Ice),
   [Block.IceBrick]: uniform(Tile.IceBrick),
+  [Block.Cloud]: uniform(Tile.Cloud),
+  [Block.Rainbow]: uniform(Tile.Rainbow),
+  [Block.Marble]: { top: Tile.MarbleTop, side: Tile.Marble, bottom: Tile.MarbleTop },
+  [Block.CloudRed]: uniform(Tile.CloudRed),
+  [Block.CloudOrange]: uniform(Tile.CloudOrange),
+  [Block.CloudYellow]: uniform(Tile.CloudYellow),
+  [Block.CloudGreen]: uniform(Tile.CloudGreen),
+  [Block.CloudBlue]: uniform(Tile.CloudBlue),
+  [Block.CloudViolet]: uniform(Tile.CloudViolet),
 };
 
 function uniform(t: TileId): BlockDef {

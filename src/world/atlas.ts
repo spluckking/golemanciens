@@ -51,6 +51,18 @@ function clamp(v: number): number {
 }
 
 const GRASS: Rgb = [110, 190, 80];
+
+/** Nuage : une teinte claire, des bosses plus claires et un léger ombrage en bas. */
+function cloud(t: PixelTile, rng: Rng, base: Rgb): void {
+  t.noise(rng, base, 0.02);
+  const light: Rgb = [Math.min(255, base[0] + 14), Math.min(255, base[1] + 14), Math.min(255, base[2] + 14)];
+  for (let k = 0; k < 5; k++) {
+    const cx = Math.floor(rng() * 16);
+    const cy = Math.floor(rng() * 10);
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (dx * dx + dy * dy <= 4) t.set((cx + dx) & 15, cy + dy, light);
+  }
+  for (let x = 0; x < 16; x++) t.set(x, 15, jitter([base[0] * 0.9, base[1] * 0.9, base[2] * 0.95], rng, 0.02));
+}
 const DIRT: Rgb = [140, 98, 62];
 
 const painters: Record<TileId, (t: PixelTile, rng: Rng) => void> = {
@@ -281,6 +293,38 @@ const painters: Record<TileId, (t: PixelTile, rng: Rng) => void> = {
       for (let y = 15; y > 8 + Math.floor(rng() * 4); y--) t.set(x, y, y < 11 ? [232, 244, 252] : [130, 170, 150]);
     }
   },
+  [Tile.Cloud]: (t, rng) => cloud(t, rng, [246, 250, 255]),
+  [Tile.Rainbow]: (t) => {
+    // Six bandes de couleur, comme un arc-en-ciel posé à plat.
+    const bands: Rgb[] = [[232, 74, 74], [240, 148, 60], [244, 216, 60], [90, 200, 90], [74, 138, 232], [154, 90, 216]];
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) t.set(x, y, bands[Math.min(5, Math.floor((y * 6) / 16))]);
+  },
+  [Tile.Marble]: (t, rng) => {
+    t.noise(rng, [236, 232, 240], 0.03);
+    // Veines grises du marbre et joints des pierres.
+    let x = rng() * 16;
+    for (let y = 0; y < 16; y++) {
+      x += (rng() - 0.5) * 2;
+      t.set(Math.round(x) & 15, y, [196, 192, 210]);
+    }
+    for (let i = 0; i < 16; i++) t.set(i, 15, [206, 202, 218]);
+  },
+  [Tile.MarbleTop]: (t, rng) => {
+    t.noise(rng, [240, 236, 244], 0.03);
+    for (let i = 1; i < 15; i++) {
+      t.set(i, 1, [214, 208, 226]);
+      t.set(i, 14, [214, 208, 226]);
+      t.set(1, i, [214, 208, 226]);
+      t.set(14, i, [214, 208, 226]);
+    }
+  },
+  [Tile.CloudRed]: (t, rng) => cloud(t, rng, [244, 120, 120]),
+  [Tile.CloudOrange]: (t, rng) => cloud(t, rng, [248, 176, 104]),
+  [Tile.CloudYellow]: (t, rng) => cloud(t, rng, [248, 228, 110]),
+  [Tile.CloudGreen]: (t, rng) => cloud(t, rng, [130, 216, 130]),
+  [Tile.CloudBlue]: (t, rng) => cloud(t, rng, [120, 170, 244]),
+  [Tile.CloudViolet]: (t, rng) => cloud(t, rng, [186, 130, 232]),
+  [Tile.SkyFlower]: (t) => flower(t, [154, 216, 255], [255, 243, 160]),
   [Tile.FlowerRed]: (t) => flower(t, [230, 60, 60], [255, 220, 80]),
   [Tile.FlowerYellow]: (t) => flower(t, [250, 215, 50], [200, 120, 30]),
   [Tile.FlowerBlue]: (t) => flower(t, [80, 130, 240], [255, 255, 255]),

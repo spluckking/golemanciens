@@ -6,6 +6,7 @@ import {
   ATTACK_POWER,
   BLIND_MISS_CHANCE,
   BLINDED_GOLEM_DAMAGE,
+  STAGE_DOUBLE_MULTIPLIER,
   BOSS_DAMAGE_FACTOR,
   GOLEM_DAMAGE_VARIANCE,
   MONSTER_DAMAGE_MAX,
@@ -125,7 +126,8 @@ export function golemAttackDamage(
   const superEffective = isSuperEffective(attack.type, stage);
   const allRound = golem.allRound ? ALL_ROUND_MULTIPLIER : 1;
   const variance = 1 - GOLEM_DAMAGE_VARIANCE + rng() * 2 * GOLEM_DAMAGE_VARIANCE;
-  const raw = golem.atk * ATTACK_POWER[attack.slot] * (superEffective ? WEAKNESS_MULTIPLIER : allRound) * variance;
+  const bonus = stage.doubleType === attack.type ? STAGE_DOUBLE_MULTIPLIER : superEffective ? WEAKNESS_MULTIPLIER : allRound;
+  const raw = golem.atk * ATTACK_POWER[attack.slot] * bonus * variance;
   return { amount: Math.max(1, Math.round(raw)), superEffective, armor: false };
 }
 
@@ -139,7 +141,7 @@ export function combatGolem(data: GolemData, startHp: number): CombatGolem {
     attacks: unlockedAttacks(data.species, data.stage),
     ultimateUsed: false,
     shield: false,
-    allRound: false,
+    allRound: data.species === 'arcEnCiel',
     stunned: 0,
     freed: false,
     blinded: false,
@@ -300,7 +302,7 @@ export class TurnCombat {
     events.push({ type: 'monsterAttack', monsterId: m.id, targetId: target.id, attack: this.monsterStage.attack, hit });
     if (!hit) return events;
 
-    const factor = this.kind === 'boss' ? BOSS_DAMAGE_FACTOR : ARENA_MONSTER_DAMAGE_FACTOR;
+    const factor = (this.kind === 'boss' ? BOSS_DAMAGE_FACTOR : ARENA_MONSTER_DAMAGE_FACTOR) * (this.monsterStage.power ?? 1);
     let amount = Math.max(1, Math.round(m.atk * factor * (MONSTER_DAMAGE_MIN + this.rng() * (MONSTER_DAMAGE_MAX - MONSTER_DAMAGE_MIN))));
     if (target.shield) {
       target.shield = false;

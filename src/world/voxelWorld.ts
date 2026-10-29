@@ -39,6 +39,12 @@ export class VoxelWorld {
         for (let x = x0; x <= x1; x++) this.set(x, y, z, block);
   }
 
+  /**
+   * Hauteur où commence la recherche du sol (standY) : 1 d'ordinaire ; au-dessus de la mer de nuages
+   * pour l'Île Céleste, afin de trouver le dessus des îles et non le fond.
+   */
+  standFrom = 1;
+
   /** Collision : hors de la carte, les bords sont des murs, le dessous est plein, le ciel est vide. */
   solidAt(x: number, y: number, z: number): boolean {
     if (y < 0) return true;
@@ -60,7 +66,7 @@ export class VoxelWorld {
    * Contrairement à surfaceY, elle ignore ce qui couvre le sol (toits, avancées, feuillages).
    */
   standY(x: number, z: number): number {
-    for (let y = 1; y < this.sizeY - 1; y++) {
+    for (let y = this.standFrom; y < this.sizeY - 1; y++) {
       if (this.solidAt(x, y - 1, z) && !this.solidAt(x, y, z) && !this.solidAt(x, y + 1, z) && this.get(x, y, z) !== Block.Water) return y;
     }
     return this.surfaceY(x, z);

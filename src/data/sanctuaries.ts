@@ -21,6 +21,9 @@ export const NICKNAME_SUGGESTIONS: Record<GolemSpecies, string[]> = {
   cuivre: ['Étincelle', 'Zap', 'Volt'],
   glace: ['Givre', 'Glaçon', 'Frimas'],
   cristal: ['Prisme', 'Quartz', 'Améthyste'],
+  nuage: ['Cumulus', 'Brise', 'Plume'],
+  arcEnCiel: ['Iris', 'Prisma', 'Aurore'],
+  galaxie: ['Comète', 'Nova', 'Orion'],
 };
 
 /** Textes d'interface nouveaux (à valider). */
@@ -106,3 +109,24 @@ export const TEXT_MILL_JAM = 'Trop de roues se touchent : tout se bloque !';
 export const TEXT_ICE_MELTS = 'Le mur de glace fond !';
 /** Essais du moulin sans succès avant l'aide de Lumibloc. */
 export const MILL_HINT_AFTER = 3;
+
+// ---------- S5 : sanctuaire des Vents (Île Céleste) ----------
+
+export const S5_EGG_CHOICES: readonly GolemSpecies[] = ['nuage', 'arcEnCiel'];
+/** Aide de Lumibloc pour la balance (CONTENU.md, S5, mot pour mot). */
+export const S5_BALANCE_HINT = 'Compte : il faut arriver à 8 de chaque côté.';
+/** Textes d'interface nouveaux (à valider). */
+export const TEXT_CLOUDS_HINT = 'Saute sur les nuages dans l’ordre de l’arc-en-ciel. Le vitrail te le rappelle !';
+export const TEXT_CLOUD_RIGHT = 'Le nuage s’allume ! ({n}/6)';
+export const TEXT_CLOUD_WRONG = 'Pas celui-là ! Regarde le vitrail et recommence par le rouge.';
+export const TEXT_CLOUD_FALL = 'Hop ! Un coup de vent te ramène au départ.';
+export const TEXT_CLOUDS_DONE = 'Les six nuages brillent : la porte s’ouvre !';
+export const TEXT_BALANCE_PANEL = 'Poser les poids';
+export const TEXT_BALANCE_CHOOSE = 'Le plateau de gauche porte 8. Pose des poids sur le plateau de droite pour équilibrer la balance.';
+export const TEXT_WEIGHT_ON = 'Retirer le poids {n}';
+export const TEXT_WEIGHT_OFF = 'Poser le poids {n}';
+export const TEXT_BALANCE_LIGHT = 'Pas assez lourd : la herse reste basse.';
+export const TEXT_BALANCE_HEAVY = 'Trop lourd ! La balance penche de l’autre côté.';
+export const TEXT_BALANCE_DONE = 'La balance est droite : la herse se lève !';
+/** Poses de poids sans succès avant l'aide de Lumibloc. */
+export const BALANCE_HINT_AFTER = 6;

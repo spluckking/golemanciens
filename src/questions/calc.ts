@@ -440,6 +440,88 @@ const LEVELS: Record<number, (rng: Rng) => Spec> = {
   6: level6,
 };
 
+// ---------- Niveau 7 « défi » (révision 1.7, Épreuve des Étoiles seulement) ----------
+
+/** Nombre à 2 chiffres × 1 chiffre (jusqu'à 49 × 9), expliqué en dizaines et unités. */
+function bigTimes(rng: Rng): Spec {
+  let a = 0;
+  do a = randInt(rng, 12, 49);
+  while (a % 10 === 0);
+  const b = randInt(rng, 3, 9);
+  const r = a * b;
+  const tens = Math.floor(a / 10) * 10;
+  const units = a % 10;
+  return {
+    kind: 'mul',
+    prompt: `${a} ${TIMES} ${b} = ?`,
+    answer: r,
+    candidates: [a * (b + 1), a * (b - 1), (a + 1) * b, (a - 1) * b, r + 10, r - 10, tens * b + units, r + 1, r - 1],
+    explanation: `${a} ${TIMES} ${b} : ${tens} ${TIMES} ${b} = ${tens * b}, puis ${units} ${TIMES} ${b} = ${units * b}, et ${tens * b} + ${units * b} = ${fmtNumber(r)}.`,
+    tables: [b],
+  };
+}
+
+/** Partage exact jusqu'à 100 par 2 à 9 (« 72 étoiles en 8 groupes »). */
+function bigShare(rng: Rng): Spec {
+  const groups = randInt(rng, 2, 9);
+  const each = randInt(rng, Math.max(3, Math.ceil(20 / groups)), Math.floor(100 / groups));
+  const total = groups * each;
+  const things = pick(rng, ['étoiles', 'flocons', 'plumes', 'cristaux']);
+  return {
+    kind: 'div',
+    prompt: `Lumibloc range ${total} ${things} en ${groups} groupes égaux. Combien de ${things} y a-t-il dans chaque groupe ?`,
+    answer: each,
+    candidates: [each + 1, each - 1, each + 2, each - 2, each + 10, groups, total - groups],
+    explanation: `${groups} ${TIMES} ${each} = ${total}, donc chaque groupe a ${each} ${things}.`,
+    tables: [groups],
+  };
+}
+
+/** Problème à 2 étapes avec des centaines, résultat jusqu'à 1000. */
+function bigTwoStep(rng: Rng): Spec {
+  if (rng() < 0.5) {
+    const a = randInt(rng, 3, 9) * 50;
+    const b = randInt(rng, 1, a / 50 - 1) * 50 + randInt(rng, 0, 1) * 20;
+    const x = a - b;
+    const c = randInt(rng, 1, Math.floor((1000 - x) / 10)) * 10;
+    const r = x + c;
+    return {
+      kind: 'twoStep',
+      prompt: `Le Capitaine Azur a ${a} plumes. Il en donne ${b} aux harpies, puis il en trouve ${c}. Combien de plumes a-t-il maintenant ?`,
+      answer: r,
+      candidates: [x, a + b + c, x - c, r + 10, r - 10, r + 100, r - 100],
+      explanation: `${a} ${MINUS} ${b} = ${x}, puis ${x} + ${c} = ${fmtNumber(r)}.`,
+    };
+  }
+  const n = randInt(rng, 2, 4);
+  const per = randInt(rng, 11, 24) * 10;
+  const total = n * per;
+  const c = randInt(rng, 1, Math.min(20, Math.floor((1000 - total) / 5))) * 5;
+  const r = total + c;
+  return {
+    kind: 'twoStep',
+    prompt: `Un golem porte ${n} caisses de ${per} cristaux, puis il en ramasse encore ${c}. Combien de cristaux porte-t-il en tout ?`,
+    answer: r,
+    candidates: [total, total - c, per + c, r + 10, r - 10, r + 100, r - 100],
+    explanation: `${n} ${TIMES} ${per} = ${total}, puis ${total} + ${c} = ${fmtNumber(r)}.`,
+    tables: [n],
+  };
+}
+
+function level7(rng: Rng): Spec {
+  const k = rng();
+  if (k < 0.4) return bigTimes(rng);
+  if (k < 0.7) return bigShare(rng);
+  return bigTwoStep(rng);
+}
+
+/** Niveau 7 « défi » : jamais atteint par l'adaptation, réservé à l'Épreuve des Étoiles (SPEC § 8.3). */
+export const CHALLENGE_LEVEL = 7;
+
+export function generateChallengeCalc(rng: Rng): CalcQuestion {
+  return build(rng, CHALLENGE_LEVEL, level7(rng));
+}
+
 export function generateCalc(level: number, rng: Rng): CalcQuestion {
   const lv = Math.max(1, Math.min(6, Math.round(level)));
   return build(rng, lv, LEVELS[lv](rng));

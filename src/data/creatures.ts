@@ -6,7 +6,7 @@ import type { AttackSlot } from './balance';
  * Type d'une attaque (révision 1.4) : la faiblesse d'un monstre se compare au type de l'attaque.
  * C'est l'élément du golem par défaut ; certaines attaques ont un autre type (☀️ Soleil).
  */
-export type AttackType = 'rock' | 'plant' | 'sun' | 'spore' | 'sand' | 'thunder' | 'ice' | 'crystal' | 'star';
+export type AttackType = 'rock' | 'plant' | 'sun' | 'spore' | 'sand' | 'thunder' | 'ice' | 'crystal' | 'wind' | 'rainbow' | 'star';
 
 /** Élément d'un golem : le type de ses attaques par défaut. */
 export type Element = AttackType;
@@ -20,6 +20,8 @@ export const TYPE_ICON: Record<AttackType, string> = {
   thunder: '⚡',
   ice: '❄️',
   crystal: '💎',
+  wind: '☁️',
+  rainbow: '🌈',
   star: '✨',
 };
 
@@ -32,6 +34,8 @@ export const TYPE_NAME: Record<AttackType, string> = {
   thunder: 'Foudre',
   ice: 'Glace',
   crystal: 'Cristal',
+  wind: 'Vent',
+  rainbow: 'Arc-en-ciel',
   star: 'Étoile',
 };
 
@@ -49,7 +53,7 @@ export interface AttackInfo {
   effect?: AttackEffect;
 }
 
-export type GolemSpecies = 'pierre' | 'mousse' | 'ecorce' | 'champignon' | 'sable' | 'cuivre' | 'glace' | 'cristal';
+export type GolemSpecies = 'pierre' | 'mousse' | 'ecorce' | 'champignon' | 'sable' | 'cuivre' | 'glace' | 'cristal' | 'nuage' | 'arcEnCiel' | 'galaxie';
 
 export interface GolemInfo {
   name: string;
@@ -154,6 +158,43 @@ export const GOLEMS: Record<GolemSpecies, GolemInfo> = {
       { slot: 'ultimate', name: 'Pluie de cristaux', kind: 'force', type: 'crystal' },
     ],
   },
+  // Phase 5 : chacun a, dès l'éclosion, une attaque ☁️ (faiblesse du Griffon d'Ombre).
+  // Arc-en-ciel : A2 « Rayon bleu » est de type ☁️, un rayon couleur de ciel (décision du jalon 5, à valider) ;
+  // il garde son bonus ×1,25 sur toutes ses attaques (×1,5 contre une faiblesse 🌈).
+  nuage: {
+    name: 'Nuage',
+    element: 'wind',
+    phase: 5,
+    attacks: [
+      { slot: 'a1', name: 'Rafale', kind: 'force', type: 'wind' },
+      { slot: 'a2', name: 'Brume', kind: 'magic', type: 'wind' },
+      { slot: 'a3', name: 'Tornade', kind: 'force', type: 'wind', effect: 'blind' },
+      { slot: 'ultimate', name: 'Ouragan', kind: 'magic', type: 'wind' },
+    ],
+  },
+  arcEnCiel: {
+    name: 'Arc-en-ciel',
+    element: 'rainbow',
+    phase: 5,
+    attacks: [
+      { slot: 'a1', name: 'Rayon rouge', kind: 'force', type: 'rainbow' },
+      { slot: 'a2', name: 'Rayon bleu', kind: 'magic', type: 'wind' },
+      { slot: 'a3', name: 'Arc lumineux', kind: 'magic', type: 'rainbow', effect: 'blind' },
+      { slot: 'ultimate', name: 'Prisme total', kind: 'force', type: 'rainbow' },
+    ],
+  },
+  // Galaxie (SPEC § 4.3) : un golem au stade 4 transformé par la Poussière d'étoile ; toutes ses attaques sont ✨.
+  galaxie: {
+    name: 'Galaxie',
+    element: 'star',
+    phase: 5,
+    attacks: [
+      { slot: 'a1', name: 'Étoile filante', kind: 'force', type: 'star' },
+      { slot: 'a2', name: 'Pluie de météores', kind: 'magic', type: 'star' },
+      { slot: 'a3', name: 'Trou noir', kind: 'magic', type: 'star', effect: 'stun' },
+      { slot: 'ultimate', name: 'Supernova', kind: 'force', type: 'star' },
+    ],
+  },
 };
 
 /** Attaques débloquées par stade (§ 4.3, révision 1.4) : A1 et A2 au stade 1, A3 au stade 2, Ultime au stade 3. */
@@ -163,7 +204,7 @@ export function unlockedAttacks(species: GolemSpecies, stage: number): AttackInf
   return GOLEMS[species].attacks.filter((a) => stage >= UNLOCK_STAGE[a.slot]);
 }
 
-export type MonsterSpecies = 'slime' | 'zombie' | 'spider' | 'skeleton' | 'wolf' | 'hopper' | 'mummy' | 'scorpion' | 'vulture' | 'yeti' | 'iceBat' | 'frostGhost';
+export type MonsterSpecies = 'slime' | 'zombie' | 'spider' | 'skeleton' | 'wolf' | 'hopper' | 'mummy' | 'scorpion' | 'vulture' | 'yeti' | 'iceBat' | 'frostGhost' | 'harpy' | 'jellyfish' | 'darkKnight';
 
 export interface MonsterInfo {
   name: string;
@@ -189,9 +230,13 @@ export const MONSTERS: Record<MonsterSpecies, MonsterInfo> = {
   yeti: { name: 'Yéti', weakness: 'rock', phase: 4, attack: 'Boule de neige' },
   iceBat: { name: 'Chauve-souris de glace', weakness: 'thunder', phase: 4, attack: 'Cri glacé' },
   frostGhost: { name: 'Fantôme gelé', weakness: 'crystal', phase: 4, attack: 'Frisson' },
+  // Phase 5 (noms d'attaques nouveaux, à valider).
+  harpy: { name: 'Harpie', weakness: 'ice', phase: 5, attack: 'Plumes coupantes' },
+  jellyfish: { name: 'Méduse céleste', weakness: 'thunder', phase: 5, attack: 'Filaments' },
+  darkKnight: { name: 'Chevalier d’ombre', weakness: 'rainbow', phase: 5, attack: 'Épée d’ombre' },
 };
 
-export type BossId = 'roiSlime' | 'reineAraignee' | 'grandVer' | 'sorciere';
+export type BossId = 'roiSlime' | 'reineAraignee' | 'grandVer' | 'sorciere' | 'griffon' | 'dragon';
 
 /** Une étape d'un boss : faiblesse, attaque, et éventuelle armure (seul un type l'entame). */
 export interface BossStage {
@@ -202,6 +247,10 @@ export interface BossStage {
   stuns?: boolean;
   /** Son attaque aveugle le golem actif : sa prochaine attaque est moins forte. */
   blinds?: boolean;
+  /** Ce type fait double dégât (dragon, étapes 2 et 3), au lieu du bonus de faiblesse. */
+  doubleType?: AttackType;
+  /** Ses attaques frappent plus fort (dragon en colère, étape 3). */
+  power?: number;
 }
 
 export interface BossInfo {
@@ -244,6 +293,26 @@ export const BOSSES: Record<BossId, BossInfo> = {
     stages: [
       { weakness: 'crystal', attack: 'Flocons tranchants' },
       { weakness: 'crystal', attack: 'Tempête', blinds: true },
+    ],
+  },
+  // Étape 2 : « Piqué » (SPEC § 5.1), un plongeon depuis le ciel.
+  griffon: {
+    name: 'Griffon d’Ombre',
+    phase: 5,
+    stages: [
+      { weakness: 'wind', attack: 'Coups de griffes' },
+      { weakness: 'wind', attack: 'Piqué' },
+    ],
+  },
+  // Dragon d'Ombre (SPEC § 5.1) : (1) armure que seul ✨ entame, (2) vol et souffle d'ombre,
+  // (3) colère, avec des attaques plus fortes ; aux étapes 2 et 3, tout le monde le touche et ✨ fait double dégât.
+  dragon: {
+    name: 'Dragon d’Ombre',
+    phase: 6,
+    stages: [
+      { weakness: 'star', attack: 'Coup de queue', armorOnly: 'star' },
+      { weakness: 'star', attack: 'Souffle d’ombre', doubleType: 'star' },
+      { weakness: 'star', attack: 'Colère du dragon', doubleType: 'star', power: 1.3 },
     ],
   },
 };

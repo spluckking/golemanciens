@@ -1,4 +1,5 @@
 import { golemBaseStats } from '../data/balance';
+import { createStarTrial, type StarTrialProgress } from '../quests/starTrial';
 import type { BossQuestStep } from '../data/bossQuest';
 import type { EvolutionItem } from '../data/items';
 import { GOLEMS, type GolemSpecies } from '../data/creatures';
@@ -12,8 +13,8 @@ import { createQuestLog, type QuestLog } from '../quests/villageQuests';
 export const SAVE_VERSION = 3;
 
 /** Biomes du jeu (un seul en mémoire à la fois). */
-export type BiomeId = 'prairie' | 'foret' | 'desert' | 'givre';
-export const BIOME_IDS: readonly BiomeId[] = ['prairie', 'foret', 'desert', 'givre'];
+export type BiomeId = 'prairie' | 'foret' | 'desert' | 'givre' | 'ciel';
+export const BIOME_IDS: readonly BiomeId[] = ['prairie', 'foret', 'desert', 'givre', 'ciel'];
 
 /** Avancement d'une phase dans son biome : œuf, quêtes du village, arène, boss. */
 export interface BiomeProgress {
@@ -110,6 +111,8 @@ export interface GameState {
   items: Record<EvolutionItem, number>;
   /** Objets cachés déjà ramassés (ils ne réapparaissent pas). */
   itemsFound: string[];
+  /** Épreuve des Étoiles (révision 1.7) : étoiles allumées, enregistrées. */
+  starTrial: StarTrialProgress;
 }
 
 export function createBiomeProgress(): BiomeProgress {
@@ -153,7 +156,7 @@ export function createGameState(): GameState {
     tutorialsSeen: [],
     trophies: [],
     biome: 'prairie',
-    biomes: { prairie: createBiomeProgress(), foret: createBiomeProgress(), desert: createBiomeProgress(), givre: createBiomeProgress() },
+    biomes: { prairie: createBiomeProgress(), foret: createBiomeProgress(), desert: createBiomeProgress(), givre: createBiomeProgress(), ciel: createBiomeProgress() },
     lessonDone: false,
     stats: createStats(),
     settings: createSettings(),
@@ -161,6 +164,7 @@ export function createGameState(): GameState {
     seen: [],
     items: { rune: 0, crystal: 0, heart: 0 },
     itemsFound: [],
+    starTrial: createStarTrial(),
   };
 }
 

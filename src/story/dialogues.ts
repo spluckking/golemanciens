@@ -20,6 +20,8 @@ export const NPC_NAMES: Record<string, string> = {
   zephir: 'Zéphir',
   flocon: 'Grand-mère Flocon',
   nilou: 'Nilou',
+  azur: 'Capitaine Azur',
+  gardien: 'Le gardien de la tour',
 };
 
 const GREETINGS: Record<string, string> = {
@@ -35,6 +37,7 @@ const GREETINGS: Record<string, string> = {
   zephir: 'Zéphir, marchand du désert ! J’ai des épices, des tapis… et beaucoup de sable.',
   flocon: 'Bienvenue aux Igloos du Col ! Approche-toi du feu, il fait si froid dehors.',
   nilou: 'J’ai froid… Je ne sais plus où est le village !',
+  azur: 'Bienvenue au Village des Nuages, moussaillon ! Ici, on navigue sur le vent.',
 };
 
 export function greeting(npcId: string): DialogLine {

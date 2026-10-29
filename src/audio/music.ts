@@ -7,7 +7,7 @@
  * pour que la boucle ne revienne qu'au bout de 30 s à 1 min.
  */
 
-export type TrackId = 'prairie' | 'foret' | 'desert' | 'givre' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
+export type TrackId = 'prairie' | 'foret' | 'desert' | 'givre' | 'ciel' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
 
 export interface Song {
   bpm: number;
@@ -210,6 +210,39 @@ export const SONGS: Record<TrackId, Song> = {
         bass: 'E2 - - - - - - - C2 - - - - - - - A1 - - - - - - - B1 - - - - - - -',
         drums: 'h . . . . . . . h . . . . . . . h . . . . . . . h . . . h . h .',
         pad: 'E3+G3+B3 - - - - - - - C3+E3+G3 - - - - - - - C3+E3+A3 - - - - - - - B2+D#3+F#3 - - - - - - -',
+      },
+    },
+    'A B A2 C',
+  ),
+  // Île Céleste : ré majeur, aérien et lumineux, comme une valse qui flotte sur les nuages ;
+  // un passage plus rêveur en si mineur (B), une reprise qui s'envole (A2) et une brise légère (C).
+  ciel: compose(
+    112,
+    0.72,
+    {
+      A: {
+        lead: 'D5 - F#5 A5 - D6 C#6 - B5 - A5 F#5 - E5 - . G5 - B5 D6 - C#6 B5 - A5 - F#5 E5 D5 - - .',
+        bass: 'D2 . A2 . D3 . A2 . G2 . D3 . G2 . D3 . E2 . B2 . E3 . B2 . A1 . E2 . A2 . C#3 .',
+        drums: 'k . . h . . s . . h . . k . . h s . . h . . k . . h s . h . h .',
+        pad: 'D3+F#3+A3 - - - - - - - G3+B3+D4 - - - - - - - E3+G3+B3 - - - - - - - A3+C#4+E4 - - - - - - -',
+      },
+      B: {
+        lead: 'B5 - - A5 F#5 - D5 - E5 - F#5 - G5 - - . A5 - - G5 F#5 - E5 - D5 - E5 F#5 E5 - - .',
+        bass: 'B1 . F#2 . B2 . F#2 . G2 . D3 . G2 . D3 . D2 . A2 . D3 . A2 . A1 . E2 . A2 . E2 .',
+        drums: 'k . . h . . h . k . . h . . h . k . . h . . h . k . . h s . h h',
+        pad: 'B2+D3+F#3 - - - - - - - G3+B3+D4 - - - - - - - D3+F#3+A3 - - - - - - - A3+C#4+E4 - - - - - - -',
+      },
+      A2: {
+        lead: 'A5 - D6 F#6 - E6 D6 - C#6 - D6 A5 - - - . B5 - D6 E6 - F#6 E6 - D6 - C#6 E6 D6 - - .',
+        bass: 'D2 . A2 . D3 . A2 . G2 . D3 . G2 . D3 . E2 . B2 . E3 . B2 . A1 . E2 . A2 . C#3 .',
+        drums: 'k . h h . . s . k . h h . . s . k . h h . . s . k . h h s . h .',
+        pad: 'D3+F#3+A3 - - - - - - - G3+B3+D4 - - - - - - - E3+G3+B3 - - - - - - - A3+C#4+E4 - - - - - - -',
+      },
+      C: {
+        lead: 'D5 - - - A5 - - - F#5 - - - E5 - - - D5 - - - C#5 - - - D5 - - - - - . .',
+        bass: 'D2 - - - - - - - B1 - - - - - - - G1 - - - - - - - A1 - - - - - - -',
+        drums: 'h . . . . . . . h . . . . . . . h . . . . . . . h . . . h . h .',
+        pad: 'D3+F#3+A3 - - - - - - - B2+D3+F#3 - - - - - - - G3+B3+D4 - - - - - - - A3+C#4+E4 - - - - - - -',
       },
     },
     'A B A2 C',

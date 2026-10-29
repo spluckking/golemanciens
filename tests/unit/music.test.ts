@@ -28,7 +28,7 @@ describe('musiques', () => {
   });
 
   it('les musiques de biome durent au moins 30 s avant de reboucler', () => {
-    for (const id of ['prairie', 'foret', 'desert', 'givre'] as const) {
+    for (const id of ['prairie', 'foret', 'desert', 'givre', 'ciel'] as const) {
       const song = SONGS[id];
       expect(voiceLength(song.lead) * stepSeconds(song.bpm)).toBeGreaterThanOrEqual(30);
     }

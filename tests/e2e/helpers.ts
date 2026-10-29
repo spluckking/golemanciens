@@ -70,6 +70,12 @@ export async function playFight(page: Page, correct: boolean, endId: string): Pr
       await ((await best.count()) > 0 ? best.first() : attacks.first()).tap();
       continue;
     }
+    // Golem actif K.O. : on fait entrer le suivant.
+    const switches = page.locator('.combat-switch');
+    if ((await switches.count()) > 0) {
+      await switches.first().tap();
+      continue;
+    }
     await page.waitForTimeout(150);
   }
   throw new Error(`Combat sans fin (attendu : ${endId})`);

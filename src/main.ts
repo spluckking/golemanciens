@@ -7,7 +7,7 @@ import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
 import { CINEMATICS, OUTRO_CINEMATICS, storyCaptions } from './story/cinematics';
-import { S2_STEPS, S3_STEPS, S4_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
+import { S2_STEPS, S3_STEPS, S4_STEPS, S5_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
 import { checkpointState } from './core/checkpoints';
 import { applyBlockTheme } from './ui/theme';
@@ -101,7 +101,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   if (isTest && params.get('chapter') === '2') Object.assign(state, checkpointState(state, 'chapter2'));
   // « ?test&unlock=foret,desert » débloque des biomes (comme si T2, T3 étaient lus) ; « &biome=desert » y commence.
   const unlock = (params.get('unlock') ?? params.get('biome') ?? '').split(',');
-  const opening: Record<string, string> = { foret: 'T2', desert: 'T3', givre: 'T4' };
+  const opening: Record<string, string> = { foret: 'T2', desert: 'T3', givre: 'T4', ciel: 'T5' };
   if (isTest) for (const b of unlock) if (opening[b] && !state.storiesRead.includes(opening[b])) state.storiesRead.push(opening[b]);
   // « &desertSanctuary=mirrors|symbols|stone3|open|hatched » avance le temple ensablé ;
   // « &desertBoss=active » : quêtes et arène du Désert terminées, quête du Grand Ver acceptée.
@@ -125,6 +125,20 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     givre.arena.wins = 3;
     givre.bossQuest = 'active';
   }
+  // « &cielSanctuary=clouds|balance|stone5|open|hatched » avance le sanctuaire des Vents ;
+  // « &cielBoss=active » : quêtes et arène de l'Île Céleste terminées, quête du Griffon acceptée.
+  const cielStep = params.get('cielSanctuary');
+  if (isTest && cielStep && S5_STEPS.includes(cielStep as SanctuaryStep)) progress(state, 'ciel').sanctuary.step = cielStep as SanctuaryStep;
+  if (isTest && params.get('cielBoss') === 'active') {
+    const ciel = progress(state, 'ciel');
+    ciel.sanctuary.step = 'hatched';
+    for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) ciel.quests[id].status = id.startsWith('R') ? 'done' : 'available';
+    ciel.arena.wins = 3;
+    ciel.bossQuest = 'active';
+  }
+  // « &shards=5&stage=4 » : les cinq éclats (l'Épreuve des Étoiles attend), golems au stade donné.
+  if (isTest && params.has('shards')) state.shards = Number(params.get('shards'));
+  if (isTest && params.has('stars')) state.starTrial.lit = Number(params.get('stars'));
   const biome = params.get('biome');
   if (isTest && biome && BIOME_IDS.includes(biome as BiomeId)) state.biome = biome as BiomeId;
   // « ?test&bossHp=0.3 » : boss plus fragiles (parcours de bout en bout plus courts).
@@ -139,6 +153,9 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
     for (const id of (params.get('golems') ?? '').split(',')) {
       if (id in GOLEMS) state.golems.push(createGolem(id as GolemSpecies));
     }
+    // « &stage=4 » : les golems donnés sont à ce stade (Épreuve des Étoiles, Galaxie).
+    const stage = Number(params.get('stage') ?? 1);
+    for (const g of state.golems) g.stage = Math.max(g.stage, Math.min(4, stage));
     // « ?test&trophies=roiSlime » pose des trophées sur l'étagère de la maison.
     for (const id of (params.get('trophies') ?? '').split(',')) if (id) state.trophies.push(id);
     // « ?test&start=play » saute l'introduction (prénom fictif, tutoriel de déplacement déjà vu).

@@ -69,6 +69,8 @@ export const MONSTER_TURN_DELAY_S = 0.8;
 
 /** Faiblesses (révision 1.4) : bonus quand le type de l'attaque est la faiblesse de la cible. */
 export const WEAKNESS_MULTIPLIER = 1.5;
+/** Dragon, étapes 2 et 3 : ✨ fait double dégât (SPEC.md § 5.1). */
+export const STAGE_DOUBLE_MULTIPLIER = 2;
 /** Arc-en-ciel : bonus permanent sur toutes ses attaques (§ 7.1). */
 export const ALL_ROUND_MULTIPLIER = 1.25;
 
@@ -118,3 +120,5 @@ export const MEALS_PER_STAGE = 4;
 
 /** Évolution (SPEC.md § 4.3) : chaque stade multiplie les PV max et l'ATQ. */
 export const EVOLUTION_MULT = 1.35;
+/** Galaxie (SPEC.md § 4.3) : la Poussière d'étoile multiplie PV max et ATQ. */
+export const GALAXY_MULT = 1.4;

@@ -31,6 +31,10 @@ import type { DesertLayout } from '../world/desert';
 import { DesertLife } from './desertLife';
 import type { GivreLayout } from '../world/givre';
 import { GivreLife } from './givreLife';
+import type { CielLayout } from '../world/ciel';
+import { CielLife } from './cielLife';
+import { runStarCeremony, TEXT_STAR_TRIAL } from './starCeremony';
+import { OBJECTIVE_STAR_TRIAL } from '../data/bossQuest';
 import type { Cell } from '../world/structures';
 import type { QuestionView } from '../questions/present';
 import type { GolemSpecies } from '../data/creatures';
@@ -227,6 +231,7 @@ export class Game {
 
     this.life = this.createLife(this.layout);
     this.scene.add(this.life.group);
+    this.syncStarTrial();
 
     // Le metteur en scène suit le biome chargé (monde et collisions).
     const game = this;
@@ -434,6 +439,7 @@ export class Game {
     };
     const fights = { onFight: () => void this.startFight('arena'), onBossFight: () => void this.startFight('boss') };
     if (layout.id === 'foret') return new ForestLife(layout as ForestLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary });
+    if (layout.id === 'ciel') return new CielLife(layout as CielLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary, moveHero: (x: number, z: number) => this.teleport(x, z) });
     if (layout.id === 'givre') return new GivreLife(layout as GivreLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary });
     if (layout.id === 'desert') return new DesertLife(layout as DesertLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary, shake: () => (this.shakeTime = 1.2) });
     return new PrairieLife(layout as PrairieLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, {
@@ -457,6 +463,7 @@ export class Game {
     this.scene.add(this.biome.group);
     this.life = this.createLife(this.layout);
     this.scene.add(this.life.group);
+    this.syncStarTrial();
     this.applySky();
     this.lastSafe = null;
   }
@@ -546,7 +553,46 @@ export class Game {
 
   /** Objectif actif du journal et de la boussole : chaque biome le donne. */
   private objective(): Objective {
-    return this.life.objective(this.hero);
+    const goal = this.life.objective(this.hero);
+    // Les cinq éclats sont réunis : l'Épreuve des Étoiles attend au sommet de l'Académie.
+    if (this.starTrialPending) {
+      const target = this.prairie ? (this.layout as PrairieLayout).academyDoor : this.layout.arch;
+      return { ...goal, text: OBJECTIVE_STAR_TRIAL, target, current: [{ text: OBJECTIVE_STAR_TRIAL, active: true }, ...goal.current.filter((c) => c.text !== OBJECTIVE_STAR_TRIAL).map((c) => ({ ...c, active: false }))] };
+    }
+    return goal;
+  }
+
+  /** L'Épreuve des Étoiles attend : les cinq éclats sont là, et aucun golem n'est encore Galaxie. */
+  get starTrialPending(): boolean {
+    return this.state.shards >= 5 && !this.state.golems.some((g) => g.species === 'galaxie');
+  }
+
+  /** Dans la Prairie, la Pierre-Étoile de l'Épreuve devant la porte de l'Académie. */
+  private syncStarTrial(): void {
+    this.interactions.remove('star-trial');
+    if (this.layout.id !== 'prairie' || !this.starTrialPending) return;
+    const door = (this.layout as PrairieLayout).academyDoor;
+    this.interactions.add({ id: 'star-trial', x: door.x, y: door.y, z: door.z + 3, radius: 2.6, label: TEXT_STAR_TRIAL, action: () => void this.starTrial() });
+  }
+
+  /** L'Épreuve des Étoiles, puis la cérémonie de la Poussière d'étoile (O5) et le Golem Galaxie. */
+  private async starTrial(): Promise<void> {
+    if (this.paused || this.fight) return;
+    this.paused = true;
+    this.input.stickX = this.input.stickY = 0;
+    this.dialog.close();
+    audio.duck(true);
+    const born = await runStarCeremony({
+      layer: this.uiLayer,
+      state: this.state,
+      rng: this.rng,
+      playOutro: (id) => this.playOutro(id),
+      toast: (text) => this.hud.showToast(text, 4),
+      save: () => void this.save(),
+    });
+    audio.duck(false);
+    this.paused = false;
+    if (born) this.syncStarTrial();
   }
 
   /** Réglages du menu parent : affichage des FPS, volumes. */

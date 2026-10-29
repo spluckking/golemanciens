@@ -17,6 +17,9 @@ const SHADOWS: Record<GolemSpecies, ModelId> = {
   cuivre: 'shadowCuivre',
   glace: 'shadowGlace',
   cristal: 'shadowCristal',
+  nuage: 'shadowNuage',
+  arcEnCiel: 'shadowArcEnCiel',
+  galaxie: 'shadowGalaxie',
 };
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
