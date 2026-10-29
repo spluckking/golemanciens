@@ -1079,3 +1079,19 @@ body {
   bottom: 12vh;
   transform: translateX(-50%);
 }
+
+/* Temple ensablé : la suite logique au mur et les dalles (chiffres ou symboles). */
+.symbol-wall,
+.symbol-tile {
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: rgba(60, 40, 20, 0.75);
+  color: #fff6d8;
+  font-size: 30px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.symbol-tile {
+  font-size: 26px;
+}

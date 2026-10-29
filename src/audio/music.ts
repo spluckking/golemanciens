@@ -7,7 +7,7 @@
  * pour que la boucle ne revienne qu'au bout de 30 s à 1 min.
  */
 
-export type TrackId = 'prairie' | 'foret' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
+export type TrackId = 'prairie' | 'foret' | 'desert' | 'arena' | 'boss' | 'dragon' | 'finale' | 'storyDay' | 'storyNight' | 'storyMorning';
 
 export interface Song {
   bpm: number;
@@ -156,6 +156,30 @@ export const SONGS: Record<TrackId, Song> = {
       },
     },
     'A B A2 C',
+  ),
+  // Désert des Sables Chantants : ré mineur aux couleurs orientales (si bémol, do dièse), une
+  // flûte qui serpente sur un rythme de tambour ; une partie plus calme comme le vent (C).
+  desert: compose(
+    100,
+    0.7,
+    {
+      A: {
+        lead: 'D5 . E5 F5 E5 D5 C#5 - D5 . F5 A5 G5 F5 E5 - F5 . G5 A5 Bb5 A5 G5 - F5 E5 D5 C#5 D5 - - .',
+        bass: 'D2 . D3 . A2 . D3 . D2 . D3 . A2 . A2 . Bb1 . F2 . Bb2 . F2 . A1 . E2 . A2 . E2 .',
+        drums: 'k . . s . . k . k . . s . . h . k . . s . . k . k . . s . h h .',
+      },
+      B: {
+        lead: 'A5 - G5 F5 G5 - A5 - Bb5 - A5 G5 F5 - E5 - D5 - E5 F5 G5 - F5 E5 C#5 - D5 E5 D5 - - .',
+        bass: 'D2 . A2 . D3 . A2 . G2 . D3 . G2 . D3 . Bb1 . F2 . Bb2 . F2 . A1 . E2 . A2 . A1 .',
+        drums: 'k . h s . h k . k . h s . h k . k . h s . h k . k . h s k s s .',
+      },
+      C: {
+        lead: 'D5 - - - F5 - - - A5 - - - G5 - - - F5 - - - E5 - - - D5 - - - - - . .',
+        bass: 'D2 - - - - - - - Bb1 - - - - - - - G1 - - - - - - - A1 - - - - - - -',
+        drums: 'k . . . . . . . k . . . . . . . k . . . . . . . k . . . s . s .',
+      },
+    },
+    'A B A C',
   ),
   // Arène : la mineur, entraînant.
   arena: compose(

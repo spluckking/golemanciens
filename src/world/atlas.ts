@@ -217,6 +217,35 @@ const painters: Record<TileId, (t: PixelTile, rng: Rng) => void> = {
     }
     for (const r of [3, 6]) for (let a = 0; a < 24; a++) t.set(Math.round(7.5 + Math.cos((a / 24) * Math.PI * 2) * r), Math.round(7.5 + Math.sin((a / 24) * Math.PI * 2) * r), c, 180);
   },
+  [Tile.Sandstone]: (t, rng) => {
+    t.noise(rng, [216, 190, 128], 0.05);
+    // Strates horizontales du grès.
+    for (const y of [4, 9, 13]) for (let x = 0; x < 16; x++) t.set(x, y, jitter([196, 166, 106], rng, 0.05));
+  },
+  [Tile.SandstoneTop]: (t, rng) => {
+    t.noise(rng, [224, 200, 140], 0.05);
+    for (let k = 0; k < 2; k++) for (let x = 1; x < 15; x++) t.set(x, k === 0 ? 1 : 14, [200, 172, 112]);
+    for (let k = 0; k < 2; k++) for (let y = 1; y < 15; y++) t.set(k === 0 ? 1 : 14, y, [200, 172, 112]);
+  },
+  [Tile.CactusSide]: (t, rng) => {
+    t.noise(rng, [70, 140, 70], 0.08);
+    for (const x of [3, 7, 11]) for (let y = 0; y < 16; y++) t.set(x, y, [50, 110, 50]);
+    for (let k = 0; k < 8; k++) t.set(1 + Math.floor(rng() * 14), Math.floor(rng() * 16), [230, 230, 190]);
+  },
+  [Tile.CactusTop]: (t, rng) => {
+    t.noise(rng, [90, 160, 80], 0.08);
+    for (let k = 0; k < 4; k++) t.set(6 + Math.floor(rng() * 4), 6 + Math.floor(rng() * 4), [240, 120, 160]);
+  },
+  [Tile.DeadBush]: (t, rng) => {
+    const c: [number, number, number] = [140, 100, 60];
+    for (let k = 0; k < 5; k++) {
+      let x = 7.5;
+      for (let y = 15; y > 4 + k; y--) {
+        x += (rng() - 0.5) * 1.6 + (k - 2) * 0.25;
+        t.set(Math.round(x), y, c);
+      }
+    }
+  },
   [Tile.FlowerRed]: (t) => flower(t, [230, 60, 60], [255, 220, 80]),
   [Tile.FlowerYellow]: (t) => flower(t, [250, 215, 50], [200, 120, 30]),
   [Tile.FlowerBlue]: (t) => flower(t, [80, 130, 240], [255, 255, 255]),

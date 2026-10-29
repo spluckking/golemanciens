@@ -1,5 +1,27 @@
 import type { GolemSpecies } from '../data/creatures';
 import type { Cube, ModelDef, PartDef } from './cubeModel';
+import {
+  bucketModel,
+  camelModel,
+  cartModel,
+  crystalItemModel,
+  cuivreModel,
+  doorCrystalModel,
+  drumModel,
+  grandVerModel,
+  mapPieceModel,
+  mirrorModel,
+  mummyModel,
+  pressurePlateModel,
+  sableModel,
+  sandstoneBlockModel,
+  scorpionModel,
+  sunRayModel,
+  symbolTileModel,
+  troughModel,
+  trophyVerModel,
+  vultureModel,
+} from './desertModels';
 import { runeItemModel, trophyReineModel, canalModel, champignonModel, ecorceModel, giantWebModel, hopperModel, leverModel, millWheelModel, pathWebModel, questMushroomModel, skeletonModel, spiderQueenModel, springModel, steleModel, wolfModel } from './forestModels';
 
 /**
@@ -478,6 +500,9 @@ export const VILLAGER_LOOKS: Record<string, VillagerLook> = {
   noisette: { skin: 0xd8a882, hair: 0xe8e2d0, hairStyle: 'long', hat: 'kerchief', hatColor: 0x6a8a3a, top: 0x5a7a34, bottom: 0x3e5424, shoes: 0x4a3426, outfit: 'robe', outfitColor: 0xb08a4a, beard: 0xe8e2d0 },
   pip: { skin: 0xf2c6a0, hair: 0xc0702a, hairStyle: 'spiky', hat: 'none', hatColor: 0, top: 0xe0a040, bottom: 0x5a4632, shoes: 0x3a2a1e, outfit: 'plain', outfitColor: 0 },
   tilleul: { skin: 0xb07a52, hair: 0x2a1a10, hairStyle: 'short', hat: 'cap', hatColor: 0x8a5a2c, top: 0xc8b07a, bottom: 0x5a4632, shoes: 0x3a2a1e, outfit: 'apron', outfitColor: 0x8a5a2c },
+  // Désert : Dame Oasia (cheffe de l'oasis, longue robe turquoise), Zéphir (marchand au foulard).
+  oasia: { skin: 0x9a6648, hair: 0x2a1a10, hairStyle: 'long', hat: 'kerchief', hatColor: 0xf0c43c, top: 0x2a9a9a, bottom: 0x1e6e6e, shoes: 0x8a5a2c, outfit: 'dress', outfitColor: 0x2a9a9a },
+  zephir: { skin: 0xc68a62, hair: 0x5a3a22, hairStyle: 'short', hat: 'kerchief', hatColor: 0xe8e2d0, top: 0xc0392b, bottom: 0x8a5a2c, shoes: 0x5a3a20, outfit: 'robe', outfitColor: 0xf0c43c, beard: 0x5a3a22 },
 };
 
 // ---------- Dragon d'Ombre (finale) ----------
@@ -1076,6 +1101,8 @@ export const PORTRAITS: Record<string, PortraitColors> = {
   noisette: { skin: 0xd8a882, hair: 0xe8e2d0, hat: 0x6a8a3a, beard: 0xe8e2d0, eye: EYE_DARK },
   pip: { skin: 0xf2c6a0, hair: 0xc0702a, eye: EYE_DARK },
   tilleul: { skin: 0xb07a52, hair: 0x2a1a10, hat: 0x8a5a2c, eye: EYE_DARK },
+  oasia: { skin: 0x9a6648, hair: 0x2a1a10, hat: 0xf0c43c, eye: EYE_DARK },
+  zephir: { skin: 0xc68a62, hair: 0x5a3a22, hat: 0xe8e2d0, beard: 0x5a3a22, eye: EYE_DARK },
 };
 
 /** Définitions construites une seule fois : la géométrie de chaque pièce est partagée entre instances. */
@@ -1085,6 +1112,30 @@ export const MODELS = {
   mousse: mousseModel(),
   ecorce: ecorceModel(),
   champignon: champignonModel(),
+  sable: sableModel(),
+  cuivre: cuivreModel(),
+  mummy: mummyModel(),
+  scorpion: scorpionModel(),
+  vulture: vultureModel(),
+  grandVer: grandVerModel(),
+  camel: camelModel(),
+  drum: drumModel(),
+  bucket: bucketModel(),
+  trough: troughModel(),
+  cart: cartModel(),
+  mapPiece: mapPieceModel(),
+  crystalItem: crystalItemModel(),
+  mirror: mirrorModel(),
+  sunRay: sunRayModel(),
+  doorCrystal: doorCrystalModel(false),
+  doorCrystalLit: doorCrystalModel(true),
+  sandstoneBlock: sandstoneBlockModel(),
+  pressurePlate: pressurePlateModel(),
+  symbolSun: symbolTileModel(0xffc030),
+  symbolMoon: symbolTileModel(0xe8ecff),
+  symbolStar: symbolTileModel(0xfff3a0),
+  symbolNumber: symbolTileModel(0x8a5a2c),
+  trophyVer: trophyVerModel(),
   guardian: guardianModel(),
   slime: slimeModel(),
   zombie: zombieModel(),
@@ -1119,6 +1170,7 @@ export const MODELS = {
   eggMousse: eggModel(0x5aa04a),
   eggPrairie: eggModel(0x8d8f9c, 0x5aa04a),
   eggForet: eggModel(0x7a5232, 0xd8402e),
+  eggDesert: eggModel(0xe0c080, 0xc8743c),
   riddleStone: riddleStoneModel(),
   tileRed: floorTileModel(TILE_COLORS.red, false),
   tileYellow: floorTileModel(TILE_COLORS.yellow, false),
@@ -1136,11 +1188,15 @@ export const MODELS = {
   shadowMousse: silhouette(mousseModel()),
   shadowEcorce: silhouette(ecorceModel()),
   shadowChampignon: silhouette(champignonModel()),
+  shadowSable: silhouette(sableModel()),
+  shadowCuivre: silhouette(cuivreModel()),
   villagerFarmer: villagerModel(VILLAGER_LOOKS.farmer),
   villagerBaker: villagerModel(VILLAGER_LOOKS.baker),
   noisette: villagerModel(VILLAGER_LOOKS.noisette),
   pip: villagerModel(VILLAGER_LOOKS.pip),
   tilleul: villagerModel(VILLAGER_LOOKS.tilleul),
+  oasia: villagerModel(VILLAGER_LOOKS.oasia),
+  zephir: villagerModel(VILLAGER_LOOKS.zephir),
   villagerGrandpa: villagerModel(VILLAGER_LOOKS.grandpa),
   villagerGirl: villagerModel(VILLAGER_LOOKS.girl),
   villagerFisher: villagerModel(VILLAGER_LOOKS.fisher),
@@ -1165,6 +1221,10 @@ export const MODELS = {
   goldFlower: goldFlowerModel(),
 } as const satisfies Record<string, ModelDef>;
 export type ModelId = keyof typeof MODELS;
+
+/** Couleur des éclats de chaque élément (stade 3) et élément de chaque golem. */
+const ELEMENT_COLOR: Record<string, number> = { rock: 0xc8ccd8, plant: 0x7ad05a, spore: 0xc08af0, sand: 0xf4dca0, thunder: 0xfff060, ice: 0xbfe8ff, crystal: 0xd8b0ff, wind: 0xf0f6ff, rainbow: 0xff9ad0, star: 0xfff3a0 };
+const GOLEM_ELEMENT: Record<string, string> = { pierre: 'rock', mousse: 'plant', ecorce: 'plant', champignon: 'spore', sable: 'sand', cuivre: 'thunder' };
 
 /** Taille d'un golem selon son stade (SPEC.md § 4.1 : chaque stade le rend plus grand). */
 export function golemScale(stage: number): number {
@@ -1196,6 +1256,25 @@ export function golemModel(species: GolemSpecies, stage: number): ModelDef {
     [0.18, 0.05, 0.03, x, y - h * 0.1, front, rune],
   ];
   const def: ModelDef = [...base, { name: 'runes', pivot: body.pivot, glow: true, cubes: runes }];
+  // Stade 3 : des éclats de son élément sur les épaules et la tête (cristaux, branches, éclairs…).
+  if (stage >= 3) {
+    const c = ELEMENT_COLOR[GOLEM_ELEMENT[species]] ?? 0xffffff;
+    const top = Math.max(...body.cubes.map((k) => k[4] + k[1] / 2));
+    const half = Math.max(...body.cubes.map((k) => Math.abs(k[3]) + k[0] / 2));
+    def.push({
+      name: 'elements',
+      pivot: body.pivot,
+      glow: true,
+      cubes: [
+        [0.12, 0.3, 0.12, -half + 0.05, y + h / 2 + 0.12, z, c],
+        [0.12, 0.3, 0.12, half - 0.05, y + h / 2 + 0.12, z, c],
+        [0.1, 0.22, 0.1, -half + 0.16, y + h / 2 + 0.05, z + 0.1, c],
+        [0.1, 0.22, 0.1, half - 0.16, y + h / 2 + 0.05, z + 0.1, c],
+        [0.12, 0.26, 0.12, -0.12, top + 0.12, 0, c],
+        [0.12, 0.34, 0.12, 0.1, top + 0.16, 0, c],
+      ],
+    });
+  }
   evolvedCache.set(key, def);
   return def;
 }

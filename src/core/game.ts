@@ -27,6 +27,8 @@ import { BIOME_MUSIC, BIOME_NAMES, buildLayout, pendingStory, unlockedBiomes } f
 import type { WorldLayout } from '../world/layout';
 import type { PrairieLayout } from '../world/prairie';
 import type { ForestLayout } from '../world/forest';
+import type { DesertLayout } from '../world/desert';
+import { DesertLife } from './desertLife';
 import type { Cell } from '../world/structures';
 import type { QuestionView } from '../questions/present';
 import type { GolemSpecies } from '../data/creatures';
@@ -152,6 +154,8 @@ export class Game {
   private safeTimer = 0;
   /** Dernier endroit où le héros marchait librement (retour pour « Me débloquer »). */
   private lastSafe: { x: number; z: number } | null = null;
+  /** Secousse de l'écran en cours (le Grand Ver surgit…), en secondes. */
+  private shakeTime = 0;
   /** Distance parcourue depuis le dernier bruit de pas. */
   private stride = 0;
   frameCount = 0;
@@ -426,6 +430,7 @@ export class Game {
     };
     const fights = { onFight: () => void this.startFight('arena'), onBossFight: () => void this.startFight('boss') };
     if (layout.id === 'foret') return new ForestLife(layout as ForestLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary });
+    if (layout.id === 'desert') return new DesertLife(layout as DesertLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, { ...hooks, ...fights, sanctuary, shake: () => (this.shakeTime = 1.2) });
     return new PrairieLife(layout as PrairieLayout, this.state, this.atlas, this.solid, this.rng, this.interactions, {
       ...hooks,
       onSleep: () => this.sleep(),
@@ -726,6 +731,12 @@ export class Game {
     this.hud.setCompass(compassRotation(this.rig.yaw, h.x, h.z, target.x, target.z));
     this.hud.update(dt);
     this.rig.update(dt, h.x, h.y, h.z, this.solid);
+    if (this.shakeTime > 0) {
+      this.shakeTime = Math.max(0, this.shakeTime - dt);
+      const k = 0.25 * Math.min(1, this.shakeTime * 2);
+      this.camera.position.x += (Math.random() - 0.5) * k;
+      this.camera.position.y += (Math.random() - 0.5) * k;
+    }
   }
 
   /**

@@ -13,6 +13,8 @@ const SHADOWS: Record<GolemSpecies, ModelId> = {
   mousse: 'shadowMousse',
   ecorce: 'shadowEcorce',
   champignon: 'shadowChampignon',
+  sable: 'shadowSable',
+  cuivre: 'shadowCuivre',
 };
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));

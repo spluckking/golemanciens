@@ -27,6 +27,12 @@ export class Interactions {
     if (i >= 0) this.items.splice(i, 1);
   }
 
+  /** Position d'un élément actif (mode test). */
+  find(id: string): { x: number; z: number } | null {
+    const it = this.items.find((i) => i.id === id);
+    return it ? { x: it.x, z: it.z } : null;
+  }
+
   /** Identifiants des éléments actifs (mode test). */
   ids(): string[] {
     return this.items.map((it) => it.id);

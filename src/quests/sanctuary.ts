@@ -9,11 +9,13 @@ import { drawRiddle, type RiddleMemory } from '../questions/riddleBank';
  */
 
 /** Étapes des sanctuaires : pierres-énigmes, énigmes du monde, porte ouverte, éclosion. */
-export type SanctuaryStep = 'stone' | 'tiles' | 'levers' | 'canals' | 'stone2' | 'open' | 'hatched';
+export type SanctuaryStep = 'stone' | 'tiles' | 'levers' | 'canals' | 'stone2' | 'push' | 'mirrors' | 'symbols' | 'stone3' | 'open' | 'hatched';
 /** S1 (Prairie) : la pierre, puis les dalles, puis la porte ouverte, puis l'éclosion. */
 export const SANCTUARY_STEPS: readonly SanctuaryStep[] = ['stone', 'tiles', 'open', 'hatched'];
 /** S2 (Forêt) : pierre, trois leviers, canaux d'eau, deuxième pierre, porte ouverte, éclosion. */
 export const S2_STEPS: readonly SanctuaryStep[] = ['stone', 'levers', 'canals', 'stone2', 'open', 'hatched'];
+/** S3 (Désert) : bloc de grès, miroirs du soleil, dalles-symboles, pierre-énigme, porte ouverte, éclosion. */
+export const S3_STEPS: readonly SanctuaryStep[] = ['push', 'mirrors', 'symbols', 'stone3', 'open', 'hatched'];
 
 /** Avancement enregistré dans la sauvegarde. */
 export interface SanctuaryProgress {

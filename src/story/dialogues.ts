@@ -16,6 +16,8 @@ export const NPC_NAMES: Record<string, string> = {
   noisette: 'Sage Noisette',
   pip: 'Pip',
   tilleul: 'Tilleul',
+  oasia: 'Dame Oasia',
+  zephir: 'Zéphir',
 };
 
 const GREETINGS: Record<string, string> = {
@@ -27,6 +29,8 @@ const GREETINGS: Record<string, string> = {
   noisette: 'Bienvenue aux Cabanes des Cimes. Ici, les feuilles écoutent et le vent répond.',
   pip: 'Tu as vu nos passerelles ? Je cours dessus plus vite que les écureuils !',
   tilleul: 'Bonjour ! Je suis charpentier. Les ponts de la forêt, c’est moi.',
+  oasia: 'Bienvenue à Palmebloc ! Ici, chaque goutte d’eau est un trésor.',
+  zephir: 'Zéphir, marchand du désert ! J’ai des épices, des tapis… et beaucoup de sable.',
 };
 
 export function greeting(npcId: string): DialogLine {

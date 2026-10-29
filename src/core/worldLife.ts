@@ -32,7 +32,7 @@ const LANTERN_RADIUS = 3;
 const ARCH_RADIUS = 3;
 const AIM_RANGE = 9;
 const AIM_CONE = Math.cos((40 * Math.PI) / 180);
-const MONSTER_COLORS: Record<MonsterAgent['species'], number> = { slime: 0x6ed46e, zombie: 0x7fae6a, spider: 0x6b4a2e, skeleton: 0xeeeae0, wolf: 0x3e3e4c, hopper: 0x8a4ac8 };
+const MONSTER_COLORS: Record<MonsterAgent['species'], number> = { slime: 0x6ed46e, zombie: 0x7fae6a, spider: 0x6b4a2e, skeleton: 0xeeeae0, wolf: 0x3e3e4c, hopper: 0x8a4ac8, mummy: 0xe0d0a8, scorpion: 0xc8743c, vulture: 0x8a5a32 };
 
 /** Ce que le jeu fournit à la vie d'un biome. */
 export interface WorldHooks {
@@ -632,7 +632,13 @@ function animateMonster(m: MonsterAgent, view: CreatureView): void {
       body.position.y = hop * (m.speed > 0.2 ? 0.45 : 0.12);
       body.scale.set(1 + (1 - hop) * 0.12, 1 - (1 - hop) * 0.15, 1 + (1 - hop) * 0.12);
     }
-  } else if (m.species === 'spider') {
+  } else if (m.species === 'vulture') {
+    const flap = Math.sin(view.phase * 3) * 0.5;
+    model.swing('wingL', flap, 'z');
+    model.swing('wingR', -flap, 'z');
+    const body = model.part('body');
+    if (body) body.position.y = 0.6 + Math.sin(view.phase) * 0.15;
+  } else if (m.species === 'spider' || m.species === 'scorpion') {
     const s = Math.sin(view.phase * 2) * (m.speed > 0.2 ? 0.35 : 0.08);
     model.swing('legsL', s, 'z');
     model.swing('legsR', -s, 'z');

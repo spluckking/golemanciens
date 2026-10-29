@@ -6,7 +6,7 @@ import type { AttackSlot } from './balance';
  * Type d'une attaque (révision 1.4) : la faiblesse d'un monstre se compare au type de l'attaque.
  * C'est l'élément du golem par défaut ; certaines attaques ont un autre type (☀️ Soleil).
  */
-export type AttackType = 'rock' | 'plant' | 'sun' | 'spore' | 'star';
+export type AttackType = 'rock' | 'plant' | 'sun' | 'spore' | 'sand' | 'thunder' | 'star';
 
 /** Élément d'un golem : le type de ses attaques par défaut. */
 export type Element = AttackType;
@@ -16,6 +16,8 @@ export const TYPE_ICON: Record<AttackType, string> = {
   plant: '🌿',
   sun: '☀️',
   spore: '🍄',
+  sand: '🏜️',
+  thunder: '⚡',
   star: '✨',
 };
 
@@ -24,6 +26,8 @@ export const TYPE_NAME: Record<AttackType, string> = {
   plant: 'Plante',
   sun: 'Soleil',
   spore: 'Spore',
+  sand: 'Sable',
+  thunder: 'Foudre',
   star: 'Étoile',
 };
 
@@ -41,7 +45,7 @@ export interface AttackInfo {
   effect?: AttackEffect;
 }
 
-export type GolemSpecies = 'pierre' | 'mousse' | 'ecorce' | 'champignon';
+export type GolemSpecies = 'pierre' | 'mousse' | 'ecorce' | 'champignon' | 'sable' | 'cuivre';
 
 export interface GolemInfo {
   name: string;
@@ -98,6 +102,30 @@ export const GOLEMS: Record<GolemSpecies, GolemInfo> = {
       { slot: 'ultimate', name: 'Champignon géant', kind: 'force', type: 'spore' },
     ],
   },
+  // Phase 3 : chacun a, dès l'éclosion, une attaque ⚡ (faiblesse du Grand Ver des Sables).
+  // Sable : A2 « Sable électrique » (⚡) remplace « Tourbillon » (décision du jalon 3, à valider).
+  sable: {
+    name: 'Sable',
+    element: 'sand',
+    phase: 3,
+    attacks: [
+      { slot: 'a1', name: 'Poing de sable', kind: 'force', type: 'sand' },
+      { slot: 'a2', name: 'Sable électrique', kind: 'magic', type: 'thunder' },
+      { slot: 'a3', name: 'Tempête aveuglante', kind: 'magic', type: 'sand', effect: 'blind' },
+      { slot: 'ultimate', name: 'Dune géante', kind: 'force', type: 'sand' },
+    ],
+  },
+  cuivre: {
+    name: 'Cuivre',
+    element: 'thunder',
+    phase: 3,
+    attacks: [
+      { slot: 'a1', name: 'Éclair rapide', kind: 'force', type: 'thunder' },
+      { slot: 'a2', name: 'Boule électrique', kind: 'magic', type: 'thunder' },
+      { slot: 'a3', name: 'Choc', kind: 'force', type: 'thunder', effect: 'stun' },
+      { slot: 'ultimate', name: 'Orage', kind: 'magic', type: 'thunder' },
+    ],
+  },
 };
 
 /** Attaques débloquées par stade (§ 4.3, révision 1.4) : A1 et A2 au stade 1, A3 au stade 2, Ultime au stade 3. */
@@ -107,7 +135,7 @@ export function unlockedAttacks(species: GolemSpecies, stage: number): AttackInf
   return GOLEMS[species].attacks.filter((a) => stage >= UNLOCK_STAGE[a.slot]);
 }
 
-export type MonsterSpecies = 'slime' | 'zombie' | 'spider' | 'skeleton' | 'wolf' | 'hopper';
+export type MonsterSpecies = 'slime' | 'zombie' | 'spider' | 'skeleton' | 'wolf' | 'hopper' | 'mummy' | 'scorpion' | 'vulture';
 
 export interface MonsterInfo {
   name: string;
@@ -125,9 +153,13 @@ export const MONSTERS: Record<MonsterSpecies, MonsterInfo> = {
   skeleton: { name: 'Squelette archer', weakness: 'rock', phase: 2, attack: 'Flèche' },
   wolf: { name: 'Loup d’ombre', weakness: 'spore', phase: 2, attack: 'Morsure d’ombre' },
   hopper: { name: 'Champignon sauteur', weakness: 'plant', phase: 2, attack: 'Saut piquant' },
+  // Phase 3 (noms d'attaques nouveaux, à valider).
+  mummy: { name: 'Momie', weakness: 'thunder', phase: 3, attack: 'Bandelettes' },
+  scorpion: { name: 'Scorpion', weakness: 'rock', phase: 3, attack: 'Piqûre' },
+  vulture: { name: 'Vautour', weakness: 'sand', phase: 3, attack: 'Plongeon' },
 };
 
-export type BossId = 'roiSlime' | 'reineAraignee';
+export type BossId = 'roiSlime' | 'reineAraignee' | 'grandVer';
 
 /** Une étape d'un boss : faiblesse, attaque, et éventuelle armure (seul un type l'entame). */
 export interface BossStage {
@@ -160,6 +192,15 @@ export const BOSSES: Record<BossId, BossInfo> = {
     stages: [
       { weakness: 'spore', attack: 'Crochets d’argent' },
       { weakness: 'spore', attack: 'Toile', stuns: true },
+    ],
+  },
+  // Étape 2 : il plonge sous le sable, puis « Surgissement » (SPEC § 5.1).
+  grandVer: {
+    name: 'Grand Ver des Sables',
+    phase: 3,
+    stages: [
+      { weakness: 'thunder', attack: 'Morsure des sables' },
+      { weakness: 'thunder', attack: 'Surgissement' },
     ],
   },
 };

@@ -21,6 +21,9 @@ export const Block = {
   Ash: 17,
   /** Forêt : pierre couverte de mousse (sanctuaire). */
   MossStone: 18,
+  /** Désert : grès (temple, maisons) et cactus. */
+  Sandstone: 19,
+  Cactus: 20,
 } as const;
 export type BlockId = (typeof Block)[keyof typeof Block];
 
@@ -58,6 +61,11 @@ export const Tile = {
   MushroomRed: 29,
   MushroomBlue: 30,
   Web: 31,
+  Sandstone: 32,
+  SandstoneTop: 33,
+  CactusSide: 34,
+  CactusTop: 35,
+  DeadBush: 36,
 } as const;
 export type TileId = (typeof Tile)[keyof typeof Tile];
 
@@ -93,6 +101,8 @@ const defs: Record<number, BlockDef> = {
   [Block.Lava]: uniform(Tile.Lava),
   [Block.Ash]: { top: Tile.Ash, side: Tile.Basalt, bottom: Tile.Basalt },
   [Block.MossStone]: { top: Tile.MossStone, side: Tile.MossStone, bottom: Tile.Stone },
+  [Block.Sandstone]: { top: Tile.SandstoneTop, side: Tile.Sandstone, bottom: Tile.SandstoneTop },
+  [Block.Cactus]: { top: Tile.CactusTop, side: Tile.CactusSide, bottom: Tile.CactusTop },
 };
 
 function uniform(t: TileId): BlockDef {

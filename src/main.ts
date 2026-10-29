@@ -7,7 +7,7 @@ import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
 import { CINEMATICS, OUTRO_CINEMATICS, storyCaptions } from './story/cinematics';
-import { S2_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
+import { S2_STEPS, S3_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
 import { checkpointState } from './core/checkpoints';
 import { applyBlockTheme } from './ui/theme';
@@ -36,6 +36,8 @@ declare global {
       forestSanctuary: () => ReturnType<ForestLife['sanctuary']['snapshot']>;
       quests: () => ReturnType<PrairieLife['quests']['snapshot']>;
       interactables: () => string[];
+      /** Position d'une interaction (mode test). */
+      interactionAt: (id: string) => { x: number; z: number } | null;
       answer: () => number;
       fight: () => ReturnType<ArenaFight['snapshot']> | null;
       save: () => Promise<boolean>;
@@ -97,9 +99,21 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   }
   // « ?test&chapter=2 » : le Roi Slime est vaincu, l'Arche des éclats attend la lecture de T2.
   if (isTest && params.get('chapter') === '2') Object.assign(state, checkpointState(state, 'chapter2'));
-  // « ?test&unlock=foret » débloque la Forêt (comme si T2 était lu) ; « &biome=foret » y commence la partie.
-  const unlock = params.get('unlock') ?? params.get('biome');
-  if (isTest && unlock === 'foret' && !state.storiesRead.includes('T2')) state.storiesRead.push('T2');
+  // « ?test&unlock=foret,desert » débloque des biomes (comme si T2, T3 étaient lus) ; « &biome=desert » y commence.
+  const unlock = (params.get('unlock') ?? params.get('biome') ?? '').split(',');
+  const opening: Record<string, string> = { foret: 'T2', desert: 'T3' };
+  if (isTest) for (const b of unlock) if (opening[b] && !state.storiesRead.includes(opening[b])) state.storiesRead.push(opening[b]);
+  // « &desertSanctuary=mirrors|symbols|stone3|open|hatched » avance le temple ensablé ;
+  // « &desertBoss=active » : quêtes et arène du Désert terminées, quête du Grand Ver acceptée.
+  const desertStep = params.get('desertSanctuary');
+  if (isTest && desertStep && S3_STEPS.includes(desertStep as SanctuaryStep)) progress(state, 'desert').sanctuary.step = desertStep as SanctuaryStep;
+  if (isTest && params.get('desertBoss') === 'active') {
+    const desert = progress(state, 'desert');
+    desert.sanctuary.step = 'hatched';
+    for (const id of ['R1', 'R2', 'R3', 'O1', 'O2'] as const) desert.quests[id].status = id.startsWith('R') ? 'done' : 'available';
+    desert.arena.wins = 3;
+    desert.bossQuest = 'active';
+  }
   const biome = params.get('biome');
   if (isTest && biome && BIOME_IDS.includes(biome as BiomeId)) state.biome = biome as BiomeId;
   // « ?test&bossHp=0.3 » : boss plus fragiles (parcours de bout en bout plus courts).
@@ -159,6 +173,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       },
       quests: () => prairie().quests.snapshot(),
       interactables: () => game.interactions.ids(),
+      interactionAt: (id) => game.interactions.find(id),
       answer: () => shownQuestion()?.correctIndex ?? -1,
       fight: () => game.fight?.snapshot() ?? null,
       save: () => game.save(),

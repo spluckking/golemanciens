@@ -21,7 +21,7 @@ import { readingSeconds } from './captions';
 
 export type SkyPreset = 'day' | 'dusk' | 'night' | 'morning' | 'ember';
 /** Décors construits pour une cinématique (en dehors du biome). */
-export type SetId = 'volcano' | 'foret';
+export type SetId = 'volcano' | 'foret' | 'desert';
 
 /** Un décor de cinématique : son monde de blocs et son rendu (libéré à la fin). */
 export interface CinematicSet {

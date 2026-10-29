@@ -17,6 +17,8 @@ export const NICKNAME_SUGGESTIONS: Record<GolemSpecies, string[]> = {
   mousse: ['Pousse', 'Trèfle', 'Lichen'],
   ecorce: ['Brindille', 'Noyer', 'Bouleau'],
   champignon: ['Cèpe', 'Pois', 'Bolet'],
+  sable: ['Dune', 'Grain', 'Mirage'],
+  cuivre: ['Étincelle', 'Zap', 'Volt'],
 };
 
 /** Textes d'interface nouveaux (à valider). */
@@ -51,3 +53,21 @@ export const TEXT_CANALS_DONE = 'L’eau fait tourner la roue du moulin !';
 export const TEXT_DOOR_OPEN = 'La porte du temple s’ouvre !';
 /** Nombre de rotations sans succès avant l'aide de Lumibloc pour les canaux. */
 export const CANAL_HINT_AFTER = 12;
+
+// ---------- S3 : temple ensablé (Désert) ----------
+
+export const S3_EGG_CHOICES: readonly GolemSpecies[] = ['sable', 'cuivre'];
+/** Aides de Lumibloc (CONTENU.md, S3, mot pour mot). */
+export const S3_PUSH_HINT = 'Place-toi derrière le bloc pour le pousser dans la bonne direction.';
+export const S3_MIRROR_HINT = 'Un miroir renvoie la lumière comme un ballon qui rebondit contre un mur.';
+/** Textes d'interface nouveaux (à valider). */
+export const TEXT_PUSH = 'Pousser';
+export const TEXT_PUSH_STUCK = 'Le bloc ne bouge pas : quelque chose le bloque.';
+export const TEXT_PUSH_DONE = 'Le bloc est sur la dalle : une porte s’ouvre !';
+export const TEXT_MIRROR = 'Tourner le miroir';
+export const TEXT_MIRRORS_DONE = 'Le rayon touche le cristal : la porte s’ouvre !';
+export const TEXT_SYMBOL_WRONG = 'Ce n’est pas ça. Regarde bien la suite !';
+export const TEXT_SYMBOL_RIGHT = 'Bravo ! Voici une autre suite.';
+export const TEXT_SYMBOLS_DONE = 'Les deux suites sont trouvées !';
+/** Poussées ou rotations sans succès avant l'aide de Lumibloc. */
+export const TEMPLE_HINT_AFTER = 10;

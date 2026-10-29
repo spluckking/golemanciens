@@ -12,8 +12,8 @@ import { createQuestLog, type QuestLog } from '../quests/villageQuests';
 export const SAVE_VERSION = 3;
 
 /** Biomes du jeu (un seul en mémoire à la fois). */
-export type BiomeId = 'prairie' | 'foret';
-export const BIOME_IDS: readonly BiomeId[] = ['prairie', 'foret'];
+export type BiomeId = 'prairie' | 'foret' | 'desert';
+export const BIOME_IDS: readonly BiomeId[] = ['prairie', 'foret', 'desert'];
 
 /** Avancement d'une phase dans son biome : œuf, quêtes du village, arène, boss. */
 export interface BiomeProgress {
@@ -153,7 +153,7 @@ export function createGameState(): GameState {
     tutorialsSeen: [],
     trophies: [],
     biome: 'prairie',
-    biomes: { prairie: createBiomeProgress(), foret: createBiomeProgress() },
+    biomes: { prairie: createBiomeProgress(), foret: createBiomeProgress(), desert: createBiomeProgress() },
     lessonDone: false,
     stats: createStats(),
     settings: createSettings(),

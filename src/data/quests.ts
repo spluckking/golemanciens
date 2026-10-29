@@ -5,7 +5,7 @@
  */
 
 export type QuestId = 'R1' | 'R2' | 'R3' | 'O1' | 'O2';
-export type QuestNpc = 'mereBrique' | 'paquerette' | 'gaston' | 'noisette' | 'pip' | 'tilleul';
+export type QuestNpc = 'mereBrique' | 'paquerette' | 'gaston' | 'noisette' | 'pip' | 'tilleul' | 'oasia' | 'zephir';
 
 export interface QuestDef {
   id: QuestId;
@@ -172,3 +172,79 @@ export const TEXT_PICK_FLOWER = 'Cueillir';
 export const TEXT_KEY_FOUND = 'Tu as trouvé la clé du puits !';
 export const TEXT_FLOWER_PICKED = 'Fleur jaune : {n}/{goal}';
 export const TEXT_CHICKEN_HOME = 'Poule dans l’enclos : {n}/{goal}';
+
+/**
+ * Quêtes de la phase 3 (CONTENU.md § E, Oasis de Palmebloc). Titres et objectifs : CONTENU.md.
+ * Qui donne chaque quête, et les répliques : nouveaux, à valider par le parent.
+ */
+export const QUESTS_P3: readonly QuestDef[] = [
+  {
+    id: 'R1',
+    title: 'L’eau de l’oasis',
+    mandatory: true,
+    giver: 'oasia',
+    turnIn: 'oasia',
+    goal: 3,
+    task: 'Remplir un seau à la source et le vider dans l’abreuvoir ({n}/{goal})',
+    request: 'Les bêtes de l’oasis ont soif ! Remplis un seau à la source et vide-le dans l’abreuvoir, trois fois.',
+    thanks: 'L’abreuvoir est plein ! Les chameaux te disent merci, {prenom}.',
+  },
+  {
+    id: 'R2',
+    title: 'La charrette ensablée',
+    mandatory: true,
+    giver: 'zephir',
+    turnIn: 'zephir',
+    goal: 3,
+    task: 'Casser les caisses qui bloquent la charrette ({n}/{goal})',
+    request: 'Ma charrette est coincée par des caisses tombées dans le sable. Tu peux les casser d’un coup de baguette ?',
+    thanks: 'Ma charrette roule à nouveau ! Merci, {prenom}, voici des pommes du marché.',
+  },
+  {
+    id: 'R3',
+    title: 'Les scorpions du puits',
+    mandatory: true,
+    giver: 'oasia',
+    turnIn: 'oasia',
+    goal: 3,
+    task: 'Vaincre les scorpions du vieux puits ({n}/{goal})',
+    request: 'Des scorpions se cachent autour du vieux puits. Tes golems peuvent les chasser ?',
+    thanks: 'Le puits est tranquille maintenant. Tu es courageux, {prenom} !',
+  },
+  {
+    id: 'O1',
+    title: 'La carte déchirée',
+    mandatory: false,
+    giver: 'zephir',
+    turnIn: 'zephir',
+    goal: 3,
+    task: 'Retrouver les morceaux de la carte ({n}/{goal})',
+    request: 'Le vent a déchiré ma carte en trois morceaux ! Ils sont quelque part dans les dunes.',
+    thanks: 'Ma carte est entière ! Je ne me perdrai plus dans les dunes.',
+  },
+  {
+    id: 'O2',
+    title: 'Le chameau têtu',
+    mandatory: false,
+    giver: 'oasia',
+    turnIn: 'oasia',
+    goal: 1,
+    task: 'Ramener le chameau Caramel à l’enclos (il veut d’abord une 🍎)',
+    request: 'Caramel, notre chameau, s’est sauvé dans les dunes. Il ne suit personne… sauf contre une pomme !',
+    thanks: 'Caramel est rentré ! Il a l’air content, et moi aussi.',
+  },
+];
+
+/** Textes d'interface nouveaux (à valider). */
+export const TEXT_FILL = 'Remplir le seau';
+export const TEXT_EMPTY = 'Vider le seau';
+export const TEXT_BUCKET = 'Seau d’eau : {n}/{goal}';
+export const TEXT_CART_CRATE = 'Caisse cassée : {n}/{goal}';
+export const TEXT_MAP_PIECE = 'Morceau de carte : {n}/{goal}';
+export const TEXT_FEED_CAMEL = 'Donner 1 🍎';
+export const TEXT_CAMEL_NO_FOOD = 'Il te faut une 🍎 pour Caramel.';
+export const TEXT_CAMEL_FOLLOWS = 'Caramel te suit !';
+export const TEXT_CAMEL_HOME = 'Caramel est rentré à l’enclos !';
+export const TEXT_DESERT_ARENA_OPEN = 'L’arène du Désert est ouverte !';
+export const OBJECTIVE_GO_DESERT_ARENA = 'Aller à l’arène du Désert';
+export const TEXT_CRYSTAL_FOUND = 'Tu as trouvé un Cristal de puissance !';

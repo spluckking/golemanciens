@@ -14,11 +14,13 @@ export const TEXT_BOSS_SPLITS = 'Le Roi Slime se divise !';
 export const TEXT_BOSS_STAGE: Record<string, string> = {
   roiSlime: TEXT_BOSS_SPLITS,
   reineAraignee: 'La Reine Araignée tisse une toile d’argent !',
+  grandVer: 'Le Grand Ver plonge sous le sable… et surgit !',
 };
 export const TEXT_BOSS_VICTORY = 'Victoire ! Le Roi Slime est vaincu !';
 export const TEXT_BOSS_VICTORIES: Record<string, string> = {
   roiSlime: TEXT_BOSS_VICTORY,
   reineAraignee: 'Victoire ! La Reine Araignée est vaincue !',
+  grandVer: 'Victoire ! Le Grand Ver des Sables est vaincu !',
 };
 export const TEXT_RETRY_QUESTION = 'On réessaie tout de suite ?';
 export const TEXT_RETRY = 'Réessayer';
@@ -43,3 +45,13 @@ export const P2_REMINDER = 'Les toiles barrent toujours le sentier du nord-ouest
 export const TEXT_WEB_CUT = 'Toile coupée : {n}/3';
 export const TEXT_WEBS_DONE = 'Le sentier est libre : la Reine Araignée t’attend !';
 export const OBJECTIVE_FOREST_DONE = 'Deuxième éclat retrouvé ! La suite de l’aventure arrive bientôt.';
+
+/** Quête du boss de la phase 3 (CONTENU.md § F, P3 « Les tambours des dunes »). Répliques nouvelles, à valider. */
+export const P3_TITLE = 'Les tambours des dunes';
+export const P3_TASK = 'Frapper les tambours anciens ({n}/3) pour faire surgir le Grand Ver';
+export const P3_REQUEST = 'Trois tambours anciens dorment près de la fosse, au nord-ouest. Frappe-les tous : le Grand Ver sortira du sable !';
+export const P3_REMINDER = 'Les tambours anciens sont au nord-ouest, près de la fosse. Frappe-les tous les trois !';
+export const TEXT_STRIKE_DRUM = 'Frapper';
+export const TEXT_DRUM = 'Tambour : {n}/3';
+export const TEXT_WORM_RISES = 'Le sol tremble… Le Grand Ver surgit de la fosse !';
+export const OBJECTIVE_DESERT_DONE = 'Troisième éclat retrouvé ! La suite de l’aventure arrive bientôt.';
