@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { ATLAS_COLS, ATLAS_ROWS, type TileId } from './blocks';
+import type { TileId } from './blocks';
 import { meshChunk, type MeshData } from './mesher';
 import { CHUNK_SIZE } from './voxelWorld';
 import type { WorldLayout } from './layout';
-import { createVoxelMaterial } from './voxelMaterial';
+import { atlasTileRect, createVoxelMaterial } from './voxelMaterial';
 
 /** Ce qu'il faut pour dessiner un monde : les blocs et la végétation (biome ou décor de cinématique). */
 export type SceneLayout = Pick<WorldLayout, 'world' | 'decorations'>;
@@ -77,6 +77,7 @@ export class BiomeScene {
     geo.setAttribute('normal', new THREE.BufferAttribute(data.normals, 3));
     geo.setAttribute('uv', new THREE.BufferAttribute(data.uvs, 2));
     geo.setAttribute('tileIndex', new THREE.BufferAttribute(data.tiles, 1));
+    geo.setAttribute('ao', new THREE.BufferAttribute(data.ao, 1));
     geo.setIndex(new THREE.BufferAttribute(data.indices, 1));
     geo.computeBoundingSphere();
     geo.computeBoundingBox();
@@ -131,12 +132,7 @@ export class BiomeScene {
 }
 
 function crossedQuad(tile: TileId): THREE.BufferGeometry {
-  const tx = tile % ATLAS_COLS;
-  const ty = Math.floor(tile / ATLAS_COLS);
-  const u0 = tx / ATLAS_COLS;
-  const u1 = (tx + 1) / ATLAS_COLS;
-  const v1 = 1 - ty / ATLAS_ROWS;
-  const v0 = 1 - (ty + 1) / ATLAS_ROWS;
+  const { u0, u1, v0, v1 } = atlasTileRect(tile);
   const h = 0.45;
   const positions: number[] = [];
   const uvs: number[] = [];

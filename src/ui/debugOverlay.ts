@@ -12,7 +12,8 @@ export class DebugOverlay {
     this.root = el('div', { className: 'debug', testId: 'debug' });
   }
 
-  update(dt: number, renderer: THREE.WebGLRenderer): void {
+  /** sceneCalls : appels de la scène (sans les passes plein écran du post-traitement). */
+  update(dt: number, renderer: THREE.WebGLRenderer, sceneCalls: number): void {
     this.frames++;
     this.elapsed += dt;
     if (this.elapsed < 0.5) return;
@@ -21,6 +22,7 @@ export class DebugOverlay {
     this.elapsed = 0;
     const { calls, triangles } = renderer.info.render;
     const ratio = renderer.getPixelRatio();
-    this.root.textContent = `${this.fps.toFixed(0)} FPS · ${calls} appels · ${(triangles / 1000).toFixed(1)} k triangles · ratio ${ratio.toFixed(2)}`;
+    const post = calls - sceneCalls;
+    this.root.textContent = `${this.fps.toFixed(0)} FPS · ${sceneCalls} appels${post > 0 ? ` (+${post} post)` : ''} · ${(triangles / 1000).toFixed(1)} k triangles · ratio ${ratio.toFixed(2)}`;
   }
 }

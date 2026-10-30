@@ -8,7 +8,9 @@ import type { Sparks } from '../entities/sparks';
 import { greeting, lumiblocLine } from '../story/dialogues';
 import type { DialogBubble } from '../ui/dialog';
 import type { WorldLabels } from '../ui/worldLabels';
-import { ATLAS_COLS, ATLAS_ROWS, Tile } from '../world/blocks';
+import { Tile } from '../world/blocks';
+import { atlasTileRect } from '../world/voxelMaterial';
+import { softShadowGeometry, softShadowMaterial } from '../entities/softShadow';
 import type { Point2, Point3, WorldLayout } from '../world/layout';
 import type { FightStage } from '../world/structures';
 import { unlockedAttacks, type BossId } from '../data/creatures';
@@ -243,9 +245,8 @@ export abstract class WorldLife {
     this.crateMesh.computeBoundingSphere();
     this.group.add(this.crateMesh);
 
-    // Ombres en disque sous les personnages (un seul appel de dessin).
-    const disc = new THREE.CircleGeometry(0.5, 12).rotateX(-Math.PI / 2);
-    this.shadows = new THREE.InstancedMesh(disc, new THREE.MeshBasicMaterial({ color: 0, transparent: true, opacity: 0.25, depthWrite: false }), 64);
+    // Ombres douces sous les personnages : un dégradé radial, un seul appel de dessin.
+    this.shadows = new THREE.InstancedMesh(softShadowGeometry(1), softShadowMaterial(0.42), 64);
     this.shadows.frustumCulled = false;
     this.group.add(this.shadows);
   }
@@ -663,12 +664,7 @@ function animateMonster(m: MonsterAgent, view: CreatureView): void {
 /** Plaque une tuile de l'atlas sur les 6 faces d'une boîte. */
 function mapBoxToTile(geo: THREE.BufferGeometry, tile: number): void {
   const uv = geo.getAttribute('uv') as THREE.BufferAttribute;
-  const tx = tile % ATLAS_COLS;
-  const ty = Math.floor(tile / ATLAS_COLS);
-  for (let i = 0; i < uv.count; i++) {
-    const u = (tx + uv.getX(i)) / ATLAS_COLS;
-    const v = 1 - (ty + 1 - uv.getY(i)) / ATLAS_ROWS;
-    uv.setXY(i, u, v);
-  }
+  const r = atlasTileRect(tile);
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, r.u0 + (r.u1 - r.u0) * uv.getX(i), r.v0 + (r.v1 - r.v0) * uv.getY(i));
   uv.needsUpdate = true;
 }

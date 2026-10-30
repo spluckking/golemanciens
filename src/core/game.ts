@@ -42,6 +42,11 @@ import type { QuestionView } from '../questions/present';
 import type { GolemSpecies } from '../data/creatures';
 import { buildVolcanoSet } from '../world/volcanoSet';
 import { createAtlasTexture } from '../world/voxelMaterial';
+import { BIOME_LIGHT } from '../world/lighting';
+import { PostFx } from './postFx';
+import { QUALITY, type QualityProfile } from './quality';
+import { SkyDome } from './skyDome';
+import { softShadowGeometry, softShadowMaterial } from '../entities/softShadow';
 import { ArenaFight } from './arenaFight';
 import { itemTip } from './evolution';
 import { ForestLife } from './forestLife';
@@ -57,7 +62,8 @@ import { Interactions } from './interactions';
 import type { SolidFn } from './physics';
 import type { Rng } from './rng';
 
-const MAX_PIXEL_RATIO = 1.5;
+/** Exposition du tone mapping « Neutral » (couleurs franches, sans virage des jaunes et des verts). */
+const EXPOSURE = 0.95;
 const FOG_NEAR = 30;
 const FOG_FAR = 64;
 const LOOK_YAW_PER_PX = 0.006;
@@ -101,12 +107,18 @@ export interface GameOptions {
   bossHpScale?: number;
   /** Enregistrer la partie dans IndexedDB (désactivé par défaut en mode test). */
   persist?: boolean;
+  /** Profil de rendu (« haut » sur la tablette, « test » pour la CI). */
+  quality?: QualityProfile;
 }
 
 /** Boucle de jeu : rendu, héros, caméra, commandes, vie du biome. */
 export class Game {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
+  readonly quality: QualityProfile;
+  private readonly sky = new SkyDome();
+  private readonly zenith = new THREE.Color();
+  private readonly postFx: PostFx | null;
   readonly camera: THREE.PerspectiveCamera;
   readonly input = new InputState();
   readonly hero: HeroState;
@@ -178,9 +190,16 @@ export class Game {
     this.timeScale = options.timeScale ?? 1;
     this.bossHpScale = options.bossHpScale;
     this.persist = options.persist ?? false;
+    this.quality = options.quality ?? QUALITY.test;
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.quality.maxPixelRatio));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    // Tone mapping une seule fois (à l'écran, ou dans l'OutputPass du post-traitement), sortie sRGB.
+    this.renderer.toneMapping = THREE.NeutralToneMapping;
+    this.renderer.toneMappingExposure = EXPOSURE;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // Les appels de dessin sont comptés sur toute l'image, puis remis à zéro à chaque image.
+    this.renderer.info.autoReset = false;
     container.appendChild(this.renderer.domElement);
 
     this.scene.background = new THREE.Color();
@@ -188,9 +207,10 @@ export class Game {
     this.hemi = new THREE.HemisphereLight(0xeaf6ff, 0x7a6a50, 1.9);
     this.sun = new THREE.DirectionalLight(0xfff4e0, 1.6);
     this.sun.position.set(0.5, 1, 0.35);
-    this.scene.add(this.hemi, this.sun);
+    this.scene.add(this.hemi, this.sun, this.sky.mesh);
 
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, FOG_FAR + 20);
+    this.postFx = this.quality.bloom ? PostFx.create(this.renderer, this.scene, this.camera) : null;
 
     this.layout = buildLayout(state.biome);
     this.solid = (x, y, z) => this.layout.world.solidAt(x, y, z);
@@ -204,10 +224,7 @@ export class Game {
     const spawnYaw = this.layout.spawnYaw;
     this.hero = createHero(titleSpot.x, titleSpot.y, titleSpot.z, spawnYaw);
     this.scene.add(this.heroModel.root);
-    this.shadow = new THREE.Mesh(
-      new THREE.CircleGeometry(0.42, 16).rotateX(-Math.PI / 2),
-      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false }),
-    );
+    this.shadow = new THREE.Mesh(softShadowGeometry(0.84), softShadowMaterial(0.48));
     this.scene.add(this.shadow);
     this.rig = new CameraRig(this.camera, spawnYaw);
 
@@ -271,8 +288,9 @@ export class Game {
     return this.debug?.fps ?? 0;
   }
 
+  /** Appels de dessin de la scène (budget de CLAUDE.md), hors passes plein écran du post-traitement. */
   get drawCalls(): number {
-    return this.renderer.info.render.calls;
+    return this.postFx ? this.postFx.sceneCalls : this.renderer.info.render.calls;
   }
 
   start(): void {
@@ -414,6 +432,8 @@ export class Game {
     this.setMode('cinematic');
     await this.director.play(script, { captions, playerName: this.state.playerName, ...options });
     if (there !== here) this.loadBiome(here);
+    // La cinématique a ses propres ciels : on rend au biome son ambiance.
+    this.applySky();
     this.setMode(previous);
   }
 
@@ -479,9 +499,18 @@ export class Game {
     this.lastSafe = null;
   }
 
+  /** Ambiance du biome : soleil, lumière d'ambiance, ciel en dégradé ; le brouillard prend la couleur de l'horizon. */
   private applySky(): void {
-    (this.scene.background as THREE.Color).setHex(this.layout.sky);
-    (this.scene.fog as THREE.Fog).color.setHex(this.layout.sky);
+    const rig = BIOME_LIGHT[this.layout.id];
+    (this.scene.background as THREE.Color).setHex(rig.horizon);
+    (this.scene.fog as THREE.Fog).color.setHex(rig.horizon);
+    this.zenith.setHex(rig.zenith);
+    this.hemi.color.setHex(rig.hemiSky);
+    this.hemi.groundColor.setHex(rig.hemiGround);
+    this.hemi.intensity = rig.hemi;
+    this.sun.color.setHex(rig.sunColor);
+    this.sun.intensity = rig.sun;
+    this.sun.position.set(...rig.sunDir);
   }
 
   /** Biomes où l'arche peut mener depuis ici. */
@@ -714,8 +743,10 @@ export class Game {
   }
 
   private resize(): void {
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+    const ratio = Math.min(window.devicePixelRatio, this.quality.maxPixelRatio);
+    this.renderer.setPixelRatio(ratio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.postFx?.setSize(window.innerWidth, window.innerHeight, ratio);
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
   }
@@ -727,9 +758,13 @@ export class Game {
     if (this.director.active) this.director.update(dt);
     else if (this.fight) this.fight.update(dt);
     else this.update(this.paused ? 0 : dt);
-    this.renderer.render(this.scene, this.camera);
+    // Le ciel suit la caméra ; pendant une cinématique, son zénith se déduit de l'horizon choisi par le plan.
+    this.sky.update(this.camera, (this.scene.fog as THREE.Fog).color, this.director.active ? null : this.zenith, this.hemi.groundColor, this.sun);
+    this.renderer.info.reset();
+    if (this.postFx) this.postFx.render(dt);
+    else this.renderer.render(this.scene, this.camera);
     this.labels.end(dt);
-    this.debug?.update(dt, this.renderer);
+    this.debug?.update(dt, this.renderer, this.drawCalls);
     this.frameCount++;
   }
 

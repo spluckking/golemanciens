@@ -53,13 +53,14 @@ tests/                    unit/, content/, sim/, e2e/
 
 ## Budget de performance (Xiaomi Pad 7 Pro)
 
-- **Pixel ratio** : `renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5))`.
+- **Profils de rendu** (`src/core/quality.ts`) : « Haut » sur la tablette (pixel ratio plafonné à **1,75**, bloom léger en demi-résolution sur les émissifs), « Test » pour la CI et le mode test (pixel ratio plafonné à **1,5**, aucun post-traitement). Le test E2E `rendu.spec.ts` couvre le profil Haut.
+- **Image** : `NeutralToneMapping` appliqué une seule fois (à l'écran ou dans l'`OutputPass`), sortie sRGB ; ciel en dégradé et lumière par biome (`src/world/lighting.ts`).
 - **Cible** : 60 fps, et jamais moins de 50 dans les pires scènes.
 - **Chunks** de 16×16×32, avec un **meshing glouton** (greedy meshing) et une géométrie construite une seule fois, ou dans un Web Worker si c'est nécessaire.
-- **Matériaux** : `MeshLambertMaterial` avec un seul atlas de textures. Brouillard pour limiter la distance de vue (environ 64 blocs).
-- **Pas d'ombres temps réel** : une ombre en disque sous les entités.
+- **Matériaux** : `MeshLambertMaterial` avec un seul atlas de textures (tuiles à marges et mipmaps), occlusion ambiante calculée dans les sommets au maillage, émissif HDR pour les éléments lumineux. Brouillard linéaire à la couleur de l'horizon pour limiter la distance de vue (environ 64 blocs).
+- **Pas d'ombres temps réel** : une ombre douce (dégradé radial) sous les entités.
 - **InstancedMesh** pour la végétation, les caisses et les particules.
-- **Moins de 150 draw calls** et **moins de 300 000 triangles** visibles : à vérifier via `renderer.info` dans le mode test (afficher les FPS).
+- **Moins de 150 draw calls** et **moins de 300 000 triangles** visibles : à vérifier via `renderer.info` dans le mode test (afficher les FPS). Les passes plein écran du post-traitement sont comptées à part.
 - **Un seul biome en mémoire**, avec libération des ressources (`dispose`) au changement de biome.
 
 ## Tests (obligatoires à chaque jalon)

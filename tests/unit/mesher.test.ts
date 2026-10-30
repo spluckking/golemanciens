@@ -95,4 +95,21 @@ describe('meshing glouton', () => {
     // Barre de 4×1×1 coupée en deux : 2×(1×4 dessus/dessous/devant/derrière) + 2 bouts = 18.
     expect(totalArea(a.positions, a.quadCount) + totalArea(b.positions, b.quadCount)).toBe(18);
   });
+
+  it('occlusion ambiante : à l’air libre le sol est clair, au pied d’un mur il s’assombrit', () => {
+    const w = smallWorld();
+    for (let x = 0; x < 16; x++) for (let z = 0; z < 16; z++) w.set(x, 0, z, Block.Stone);
+    let open = meshChunk(w, 0, 0).opaque;
+    expect([...open.ao].every((a) => a === 3)).toBe(true);
+    // Un mur posé sur le sol : les coins du sol qui le touchent passent à l'ombre.
+    for (let z = 0; z < 16; z++) w.set(8, 1, z, Block.Stone);
+    const walled = meshChunk(w, 0, 0).opaque;
+    expect(Math.min(...walled.ao)).toBeLessThan(3);
+    // Le dessus du mur, lui, reste à l'air libre.
+    let topAo = 3;
+    for (let k = 0; k < walled.quadCount * 4; k++) if (walled.normals[k * 3 + 1] === 1 && walled.positions[k * 3 + 1] === 2) topAo = Math.min(topAo, walled.ao[k]);
+    expect(topAo).toBe(3);
+    open = walled;
+    expect(open.ao.length).toBe(open.quadCount * 4);
+  });
 });

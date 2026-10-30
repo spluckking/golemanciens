@@ -1,4 +1,5 @@
 import './style.css';
+import { detectQuality } from './core/quality';
 import { EVOLUTION_MULT } from './data/balance';
 import { makeGalaxy } from './quests/starTrial';
 import './ui/theme.css';
@@ -149,7 +150,8 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   if (isTest && biome && BIOME_IDS.includes(biome as BiomeId)) state.biome = biome as BiomeId;
   // « ?test&bossHp=0.3 » : boss plus fragiles (parcours de bout en bout plus courts).
   const bossHpScale = isTest && params.has('bossHp') ? Number(params.get('bossHp')) : undefined;
-  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale, persist, bossHpScale });
+  const quality = detectQuality(params, navigator.webdriver);
+  const game = new Game(root, layer, state, rng, { debug: params.has('debug') || isTest, timeScale, persist, bossHpScale, quality });
   const app = new App(game, layer, state, rng, timeScale);
   game.start();
   loading?.remove();

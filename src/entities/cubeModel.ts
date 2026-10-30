@@ -19,10 +19,13 @@ export interface PartDef {
 export type ModelDef = PartDef[];
 
 /** Matériaux partagés par tous les modèles en cubes (couleurs par sommet). */
+/** Intensité des pièces lumineuses (HDR, avant le tone mapping). */
+const GLOW_GAIN = 1.35;
 let sharedMaterial: THREE.MeshLambertMaterial | null = null;
 let glowMaterial: THREE.MeshBasicMaterial | null = null;
 function material(glow: boolean): THREE.Material {
-  if (glow) return (glowMaterial ??= new THREE.MeshBasicMaterial({ vertexColors: true }));
+  // Pièces lumineuses (runes, cristaux, flammes, auras) : au-dessus de 1 en HDR, elles font briller le bloom.
+  if (glow) return (glowMaterial ??= new THREE.MeshBasicMaterial({ vertexColors: true, color: new THREE.Color(GLOW_GAIN, GLOW_GAIN, GLOW_GAIN) }));
   return (sharedMaterial ??= new THREE.MeshLambertMaterial({ vertexColors: true }));
 }
 
