@@ -1,14 +1,79 @@
 :root {
-  --ui-bg: rgba(20, 28, 60, 0.38);
-  --ui-bg-pressed: rgba(20, 28, 60, 0.6);
-  --ui-border: rgba(255, 255, 255, 0.55);
+  /* ----- Identité « Golémancien » : voxel illustré, jouet vivant, chaud et magique ----- */
+  /* Encre et contours (un trait sombre et chaud, comme un dessin de livre d'images) */
+  --ink: #2b2230;
+  --ink-soft: #5e4c63;
+  --outline: #2a1f2e;
+  /* Papier et bois : les panneaux de lecture, de questions et de menus */
+  --paper: #fdf5e2;
+  --paper-2: #f3e3bf;
+  --paper-edge: #c49a62;
+  --paper-edge-press: #9a6f3a;
+  --wood: #b5763f;
+  --wood-dark: #74431f;
+  /* Pierre runique : les plaques du HUD posées sur le monde (indigo chaud, translucide) */
+  --night: rgba(40, 28, 58, 0.66);
+  --night-solid: #2c2142;
+  --night-press: rgba(28, 18, 42, 0.82);
+  --night-edge: rgba(255, 220, 160, 0.42);
+  /* Accents : or des runes, cristal, feuille (action principale), braise (danger) */
+  --rune: #ffd25e;
+  --rune-deep: #c4861a;
+  --rune-edge: #e8a62a;
+  --crystal: #7fe3ff;
+  --crystal-deep: #2b86b8;
+  --leaf: #67c95a;
+  --leaf-deep: #2f8a3a;
+  --leaf-edge: #2f7a2a;
+  --stone-edge: #5b4a6c;
+  --inset-edge: #a88358;
+  --danger: #e2604a;
+  --danger-edge: #a03a28;
+  /* Surfaces */
+  --surface-night: linear-gradient(180deg, rgba(58, 42, 82, 0.72), rgba(32, 22, 48, 0.72));
+  --surface-stone: linear-gradient(180deg, #6e5a86, #4a3a62);
+  --surface-leaf: linear-gradient(180deg, #7fdc68, #47a83c);
+  --surface-rune: linear-gradient(180deg, #ffe08a, #f0b43a);
+  --surface-paper: linear-gradient(180deg, #fffaf0, #f6e8c8);
+  /* Profondeur : ombres avec décalage et flou ; relief doux des boutons (gelée de jouet) */
+  --shadow-1: 0 2px 4px rgba(30, 15, 40, 0.28);
+  --shadow-2: 0 6px 16px rgba(30, 15, 40, 0.34);
+  --shadow-3: 0 18px 44px rgba(30, 15, 40, 0.45);
+  --lift: inset 0 2px 0 rgba(255, 255, 255, 0.45), inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+  --press: inset 0 3px 6px rgba(0, 0, 0, 0.28);
+  --text-shadow-block: 0 2px 3px rgba(20, 10, 30, 0.55);
+  /* Formes */
+  --radius-s: 12px;
+  --radius-m: 18px;
+  --radius-l: 26px;
+  /* Typographie : polices du système uniquement (CLAUDE.md : aucune police à télécharger) */
+  --font: ui-rounded, 'SF Pro Rounded', 'Nunito', 'Quicksand', 'Trebuchet MS', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --fs-xs: 14px;
+  --fs-s: 18px;
+  --fs-m: 22px;
+  --fs-l: 28px;
+  --fs-xl: 36px;
+  --fs-xxl: 48px;
+  /* Mouvement : retour immédiat, arrivées douces, sorties instantanées (fin en display: none) */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-press: cubic-bezier(0.3, 0.7, 0.4, 1);
+  --t-press: 100ms;
+  --t-state: 200ms;
+  --t-enter: 300ms;
+  /* Textures en pixels (papier, bois) peintes au démarrage par ui/theme.ts */
+  --tex-size: 64px;
+  /* Anciennes variables de la mise en page, rattachées au système */
+  --ui-bg: var(--night);
+  --ui-bg-pressed: var(--night-press);
+  --ui-border: var(--night-edge);
   --ui-text: #ffffff;
-  --accent: #6ff0ff;
-  --gold: #f0c43c;
+  --accent: var(--crystal);
+  --gold: var(--rune);
+  --safe-t: env(safe-area-inset-top, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font);
   color: var(--ui-text);
 }
 

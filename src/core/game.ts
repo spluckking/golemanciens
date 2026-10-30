@@ -41,7 +41,7 @@ import type { Cell } from '../world/structures';
 import type { QuestionView } from '../questions/present';
 import type { GolemSpecies } from '../data/creatures';
 import { buildVolcanoSet } from '../world/volcanoSet';
-import { createAtlasTexture } from '../world/voxelMaterial';
+import { createAtlasTexture, setSeamlessMips } from '../world/voxelMaterial';
 import { BIOME_LIGHT } from '../world/lighting';
 import { PostFx } from './postFx';
 import { QUALITY, type QualityProfile } from './quality';
@@ -191,6 +191,8 @@ export class Game {
     this.bossHpScale = options.bossHpScale;
     this.persist = options.persist ?? false;
     this.quality = options.quality ?? QUALITY.test;
+    // Le CSS adapte ses effets coûteux (flou des fenêtres) au profil de rendu.
+    document.documentElement.dataset.quality = this.quality.tier;
     this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.quality.maxPixelRatio));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -207,7 +209,9 @@ export class Game {
     this.hemi = new THREE.HemisphereLight(0xeaf6ff, 0x7a6a50, 1.9);
     this.sun = new THREE.DirectionalLight(0xfff4e0, 1.6);
     this.sun.position.set(0.5, 1, 0.35);
-    this.scene.add(this.hemi, this.sun, this.sky.mesh);
+    this.scene.add(this.hemi, this.sun);
+    if (this.quality.sky) this.scene.add(this.sky.mesh);
+    setSeamlessMips(this.quality.seamlessMips);
 
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, FOG_FAR + 20);
     this.postFx = this.quality.bloom ? PostFx.create(this.renderer, this.scene, this.camera) : null;

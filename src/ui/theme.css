@@ -1,16 +1,10 @@
 /* =====================================================================
-   Thème « blocs » : panneaux et boutons en relief, textures en pixels
-   (peintes au démarrage par ui/theme.ts), contours nets, ombres franches.
-   Chargé après style.css : il habille les composants qui y sont définis.
+   Thème « Golémancien » : voxel illustré et jouet vivant. Panneaux de papier
+   dans un cadre de bois, plaques de pierre runique translucides sur le monde,
+   accents d'or, de cristal et de feuille ; contours fins, ombres douces.
+   Les variables sont définies dans style.css (:root). Chargé après style.css.
    ===================================================================== */
 
-:root {
-  --tex-size: 64px;
-  --outline: #15161c;
-  --text-shadow-block: 2px 2px 0 rgba(0, 0, 0, 0.55);
-  --ink: #26252b;
-  font-family: 'Trebuchet MS', system-ui, 'Segoe UI', Roboto, sans-serif;
-}
 
 #loading {
   background: var(--tex-plank, none) 0 0 / var(--tex-size), #6b4a28;
@@ -23,13 +17,12 @@
 
 .btn-action,
 .btn-top {
-  border-radius: 8px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #c7c7c7 #404040 #404040 #c7c7c7;
-  background: var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
-  image-rendering: pixelated;
+  border-color: var(--stone-edge);
+  background: var(--surface-stone);
   box-shadow:
-    0 0 0 3px var(--outline),
+    0 0 0 2px var(--outline),
     0 6px 14px rgba(0, 0, 0, 0.3);
   opacity: 0.94;
   transition:
@@ -40,7 +33,7 @@
 .btn-action.pressed,
 .btn-top.pressed,
 .btn-top:active:not(:disabled) {
-  border-color: #404040 #c7c7c7 #c7c7c7 #404040;
+  border-color: var(--stone-edge);
   filter: brightness(0.85);
   transform: translateY(3px);
 }
@@ -56,19 +49,19 @@
 }
 
 .btn-attack {
-  background: linear-gradient(rgba(70, 140, 220, 0.35), rgba(70, 140, 220, 0.35)), var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
+  background: var(--surface-night);
 }
 
 .btn-interact {
-  border-color: #fff0b0 #8a6410 #8a6410 #fff0b0;
-  background: linear-gradient(rgba(240, 196, 60, 0.6), rgba(240, 196, 60, 0.6)), var(--tex-stone) 0 0 / var(--tex-size), #c9a040;
+  border-color: var(--rune-edge);
+  background: var(--surface-rune);
   animation: pulse-block 1.4s ease-in-out infinite;
 }
 
 @keyframes pulse-block {
   50% {
     box-shadow:
-      0 0 0 3px var(--outline),
+      0 0 0 2px var(--outline),
       0 0 0 9px rgba(240, 196, 60, 0.35);
   }
 }
@@ -88,10 +81,9 @@
 .stick-knob {
   border-radius: 14px;
   border: 4px solid;
-  border-color: #d0d0d0 #454545 #454545 #d0d0d0;
-  background: var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
-  image-rendering: pixelated;
-  box-shadow: 0 0 0 3px var(--outline);
+  border-color: var(--stone-edge);
+  background: var(--surface-stone);
+  box-shadow: 0 0 0 2px var(--outline);
 }
 
 /* ---------- HUD ---------- */
@@ -101,11 +93,10 @@
 .compass,
 .toast,
 .debug {
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 3px solid;
-  border-color: #4c5266 #101219 #101219 #4c5266;
-  background: var(--tex-slate) 0 0 / var(--tex-size), #262a36;
-  image-rendering: pixelated;
+  border-color: var(--night-edge);
+  background: var(--surface-night);
   box-shadow: 0 0 0 2px var(--outline);
   text-shadow: var(--text-shadow-block);
 }
@@ -116,15 +107,15 @@
 }
 
 .compass {
-  border-color: #ffe27a #8a6410 #8a6410 #ffe27a;
+  border-color: var(--rune-edge);
 }
 
 .toast {
   color: #fff4c8;
   font-weight: 800;
-  border-color: #ffe27a #8a6410 #8a6410 #ffe27a;
+  border-color: var(--rune-edge);
   box-shadow:
-    0 0 0 3px var(--outline),
+    0 0 0 2px var(--outline),
     0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
@@ -163,17 +154,16 @@
 /* ---------- Écrans et cartes ---------- */
 
 .btn-big {
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 5px solid;
-  border-color: #a8e88a #2b5a1d #2b5a1d #a8e88a;
-  background: var(--tex-grass) 0 0 / var(--tex-size), #5a9e3c;
-  image-rendering: pixelated;
+  border-color: var(--leaf-edge);
+  background: var(--surface-leaf);
   font-family: inherit;
   font-weight: 800;
   letter-spacing: 0.02em;
   text-shadow: var(--text-shadow-block);
   box-shadow:
-    0 0 0 3px var(--outline),
+    0 0 0 2px var(--outline),
     0 7px 0 3px rgba(0, 0, 0, 0.35);
   transition:
     transform 0.08s,
@@ -182,30 +172,29 @@
 
 .btn-big:active:not(:disabled) {
   transform: translateY(4px);
-  border-color: #2b5a1d #a8e88a #a8e88a #2b5a1d;
+  border-color: var(--leaf-edge);
   box-shadow:
-    0 0 0 3px var(--outline),
+    0 0 0 2px var(--outline),
     0 3px 0 3px rgba(0, 0, 0, 0.35);
 }
 
 .btn-big:disabled {
-  border-color: #b8b8b8 #4a4a4a #4a4a4a #b8b8b8;
-  background: var(--tex-stone) 0 0 / var(--tex-size), #7d7d7d;
+  border-color: var(--stone-edge);
+  background: var(--surface-stone);
   box-shadow:
-    0 0 0 3px var(--outline),
+    0 0 0 2px var(--outline),
     0 7px 0 3px rgba(0, 0, 0, 0.25);
 }
 
 .card,
 .dialog {
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 5px solid;
-  border-color: #ffffff #6e6b66 #6e6b66 #ffffff;
-  background: var(--tex-panel) 0 0 / var(--tex-size), #c9c6c0;
-  image-rendering: pixelated;
+  border-color: var(--paper-edge);
+  background: var(--surface-paper);
   color: var(--ink);
   box-shadow:
-    0 0 0 4px var(--outline),
+    0 0 0 2px var(--outline),
     0 16px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -223,24 +212,24 @@
 
 /* Champ de texte enfoncé dans le panneau. */
 .name-input {
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   border: 5px solid;
-  border-color: #5a5852 #ffffff #ffffff #5a5852;
+  border-color: var(--inset-edge);
   background: #fbfaf6;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   font-family: inherit;
   font-weight: 800;
 }
 
 .choice {
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 5px solid;
-  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  border-color: var(--paper-edge);
   background: #f4f2ec;
   color: var(--ink);
   font-family: inherit;
   font-weight: 700;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   transition:
     transform 0.08s,
     background 0.12s;
@@ -248,19 +237,19 @@
 
 .choice:active:not(:disabled),
 .choice.chosen {
-  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+  border-color: var(--paper-edge-press);
   background: #dfe6ff;
 }
 
 .choice.correct {
-  border-color: #c8f5b8 #2f7a2a #2f7a2a #c8f5b8;
+  border-color: var(--leaf-edge);
   background: #bfeeb2;
   box-shadow: 0 0 0 3px #1d4a1a;
 }
 
 .choice.missed {
   background: #e4e1da;
-  border-color: #f4f2ec #b0aca4 #b0aca4 #f4f2ec;
+  border-color: var(--paper-edge);
 }
 
 .explanation {
@@ -270,14 +259,14 @@
 
 /* Parchemin : papier en pixels dans un cadre de bois. */
 .parchment {
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   border: 10px solid transparent;
   background:
     var(--tex-paper) 0 0 / var(--tex-size) padding-box,
     var(--tex-plank) 0 0 / var(--tex-size) border-box;
   image-rendering: pixelated;
   box-shadow:
-    0 0 0 4px var(--outline),
+    0 0 0 2px var(--outline),
     0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
@@ -289,14 +278,14 @@
 .dialog-portrait .portrait {
   border-radius: 2px;
   border: 4px solid;
-  border-color: #5a5852 #ffffff #ffffff #5a5852;
+  border-color: var(--inset-edge);
   background: #8b8b8b;
 }
 
 .dialog-name {
   display: inline-block;
   padding: 2px 10px;
-  border-radius: 3px;
+  border-radius: var(--radius-s);
   background: #2d3a8c;
   color: #ffffff;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
@@ -304,18 +293,18 @@
 
 .dialog-btn,
 .btn-replay {
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  border-color: var(--paper-edge);
   background: #f4f2ec;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   font-family: inherit;
   font-weight: 700;
 }
 
 .dialog-btn:active,
 .btn-replay:active {
-  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+  border-color: var(--paper-edge-press);
 }
 
 .journal-section {
@@ -329,13 +318,12 @@
 /* ---------- Cinématiques ---------- */
 
 .cine-caption {
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #4c5266 #101219 #101219 #4c5266;
-  background: var(--tex-slate) 0 0 / var(--tex-size), #262a36;
-  image-rendering: pixelated;
+  border-color: var(--night-edge);
+  background: var(--surface-night);
   box-shadow:
-    0 0 0 3px var(--outline),
+    0 0 0 2px var(--outline),
     0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
@@ -344,33 +332,32 @@
 }
 
 .cine-next {
-  border-radius: 8px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #fff0b0 #8a6410 #8a6410 #fff0b0;
-  background: linear-gradient(rgba(240, 196, 60, 0.75), rgba(240, 196, 60, 0.75)), var(--tex-stone) 0 0 / var(--tex-size);
+  border-color: var(--rune-edge);
+  background: var(--surface-rune);
   color: #ffffff;
   text-shadow: var(--text-shadow-block);
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
 }
 
 @keyframes cine-next-pulse {
   50% {
     box-shadow:
-      0 0 0 3px var(--outline),
+      0 0 0 2px var(--outline),
       0 0 0 10px rgba(240, 196, 60, 0.3);
   }
 }
 
 .cine-skip {
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #c7c7c7 #404040 #404040 #c7c7c7;
-  background: var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
-  image-rendering: pixelated;
+  border-color: var(--stone-edge);
+  background: var(--surface-stone);
   font-family: inherit;
   font-weight: 800;
   text-shadow: var(--text-shadow-block);
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
 }
 
 /* ---------- Éclosion : choix du golem et surnom ---------- */
@@ -393,13 +380,13 @@
   gap: 10px;
   min-height: 260px;
   padding: 22px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 5px solid;
-  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  border-color: var(--paper-edge);
   background: #f4f2ec;
   color: var(--ink);
   font-family: inherit;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   cursor: pointer;
   touch-action: manipulation;
   transition: transform 0.1s;
@@ -407,7 +394,7 @@
 
 .golem-choice:active {
   transform: translateY(3px);
-  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+  border-color: var(--paper-edge-press);
 }
 
 .golem-choice-pierre {
@@ -458,21 +445,21 @@
   min-width: 150px;
   min-height: 72px;
   padding: 0 22px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  border-color: var(--paper-edge);
   background: #f4f2ec;
   color: var(--ink);
   font-size: 28px;
   font-weight: 800;
   font-family: inherit;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   cursor: pointer;
   touch-action: manipulation;
 }
 
 .btn-suggestion:active {
-  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+  border-color: var(--paper-edge-press);
 }
 
 .nickname-row {
@@ -490,8 +477,8 @@
 }
 
 .btn-big.btn-secondary {
-  border-color: #c7c7c7 #404040 #404040 #c7c7c7;
-  background: var(--tex-stone) 0 0 / var(--tex-size), #8b8b8b;
+  border-color: var(--stone-edge);
+  background: var(--surface-stone);
   font-size: 26px;
 }
 
@@ -527,11 +514,11 @@
   place-items: center;
   width: 44px;
   height: 52px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 3px solid;
-  border-color: #fff0b0 #8a6410 #8a6410 #fff0b0;
+  border-color: var(--rune-edge);
   background: #f0c43c;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   color: #ffffff;
   font-size: 34px;
   font-weight: 900;
@@ -540,7 +527,7 @@
 }
 
 .quest-mark.return {
-  border-color: #c8f5b8 #2f7a2a #2f7a2a #c8f5b8;
+  border-color: var(--leaf-edge);
   background: #5ec44a;
 }
 
@@ -554,7 +541,6 @@
 
 .pixel-icon {
   display: block;
-  image-rendering: pixelated;
   pointer-events: none;
 }
 
@@ -568,13 +554,12 @@
   top: 10px;
   gap: 6px;
   padding: 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 3px solid;
-  border-color: #4c5266 #101219 #101219 #4c5266;
-  background: var(--tex-slate) 0 0 / var(--tex-size), #262a36;
-  image-rendering: pixelated;
+  border-color: var(--night-edge);
+  background: var(--surface-night);
   box-shadow:
-    0 0 0 3px var(--outline),
+    0 0 0 2px var(--outline),
     0 6px 14px rgba(0, 0, 0, 0.3);
   pointer-events: auto;
 }
@@ -582,7 +567,7 @@
 .btn-top {
   width: 76px;
   height: 76px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   box-shadow: none;
   opacity: 1;
 }
@@ -602,17 +587,16 @@
 .btn-action,
 .btn-top {
   opacity: 1;
-  border-color: rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.45);
+  border-color: var(--night-edge);
   background: rgba(70, 72, 82, 0.42);
   box-shadow: 0 0 0 2px rgba(21, 22, 28, 0.55);
-  backdrop-filter: blur(2px);
 }
 
 .btn-action.pressed,
 .btn-top.pressed,
 .btn-top:active:not(:disabled) {
   background: rgba(40, 42, 50, 0.6);
-  border-color: rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.45) rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.35);
+  border-color: var(--night-edge);
   filter: none;
 }
 
@@ -623,13 +607,13 @@
 }
 
 .btn-interact {
-  border-color: rgba(255, 240, 176, 0.8) rgba(138, 100, 16, 0.6) rgba(138, 100, 16, 0.6) rgba(255, 240, 176, 0.8);
+  border-color: var(--rune-edge);
   background: rgba(240, 196, 60, 0.5);
 }
 
 .top-bar {
   background: rgba(38, 42, 54, 0.4);
-  border-color: rgba(255, 255, 255, 0.25) rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.25);
+  border-color: var(--night-edge);
   box-shadow: 0 0 0 2px rgba(21, 22, 28, 0.5);
 }
 
@@ -683,11 +667,11 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 3px solid;
-  border-color: #4c5266 #101219 #101219 #4c5266;
+  border-color: var(--night-edge);
   background: rgba(38, 42, 54, 0.82);
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   text-shadow: var(--text-shadow-block);
 }
 
@@ -722,7 +706,7 @@
   align-items: center;
   gap: 8px;
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   background: rgba(240, 196, 60, 0.25);
   border: 2px solid rgba(240, 196, 60, 0.8);
 }
@@ -755,7 +739,7 @@
 .combat-pip {
   width: 16px;
   height: 16px;
-  border-radius: 3px;
+  border-radius: var(--radius-s);
   border: 2px solid var(--outline);
   background: #5ec44a;
 }
@@ -788,21 +772,21 @@
   gap: 10px;
   min-height: 92px;
   padding: 10px 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  border-color: var(--paper-edge);
   background: #f4f2ec;
   color: var(--ink);
   font-family: inherit;
   text-align: left;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   cursor: pointer;
   touch-action: manipulation;
 }
 
 .combat-attack:active,
 .combat-switch:active {
-  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+  border-color: var(--paper-edge-press);
   transform: translateY(3px);
 }
 
@@ -891,7 +875,7 @@
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
   padding: 12px 26px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 3px solid rgba(255, 255, 255, 0.4);
   background: rgba(21, 22, 28, 0.78);
   font-size: 30px;
@@ -963,7 +947,6 @@
 .combat-lumibloc .portrait {
   width: 84px;
   height: 84px;
-  image-rendering: pixelated;
 }
 
 .combat-lumibloc-text {
@@ -984,11 +967,11 @@
   right: calc(16px + var(--safe-r));
   width: 80px;
   height: 80px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #fff0b0 #8a6410 #8a6410 #fff0b0;
+  border-color: var(--rune-edge);
   background: rgba(240, 196, 60, 0.35);
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   font-size: 40px;
   pointer-events: auto;
   cursor: pointer;
@@ -1024,7 +1007,7 @@
   grid-template-columns: 40px 1fr 40px;
   align-items: center;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   background: rgba(255, 255, 255, 0.5);
   font-size: 24px;
   font-weight: 700;
@@ -1070,7 +1053,7 @@
 
 .gs-food {
   padding: 6px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   background: rgba(0, 0, 0, 0.08);
   font-size: 28px;
   font-weight: 800;
@@ -1081,7 +1064,7 @@
   align-items: center;
   gap: 14px;
   padding: 10px 14px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   background: #fff6d8;
   border: 3px solid #f0c43c;
   font-size: 22px;
@@ -1094,7 +1077,6 @@
 .gs-tip .portrait {
   width: 56px;
   height: 56px;
-  image-rendering: pixelated;
 }
 
 .gs-list {
@@ -1111,11 +1093,11 @@
   flex-direction: column;
   gap: 12px;
   padding: 14px 18px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  border-color: var(--paper-edge);
   background: #f4f2ec;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
 }
 
 .gs-card.dot-pierre {
@@ -1157,7 +1139,7 @@
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   background: rgba(255, 255, 255, 0.7);
   font-size: 22px;
 }
@@ -1215,29 +1197,28 @@
   gap: 8px;
   min-height: 72px;
   padding: 0 16px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #a8e88a #2b5a1d #2b5a1d #a8e88a;
-  background: var(--tex-grass) 0 0 / var(--tex-size), #5a9e3c;
-  image-rendering: pixelated;
+  border-color: var(--leaf-edge);
+  background: var(--surface-leaf);
   color: #ffffff;
   font-family: inherit;
   font-size: 22px;
   font-weight: 800;
   text-shadow: var(--text-shadow-block);
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   cursor: pointer;
   touch-action: manipulation;
 }
 
 .btn-meal:active:not(:disabled) {
-  border-color: #2b5a1d #a8e88a #a8e88a #2b5a1d;
+  border-color: var(--leaf-edge);
   transform: translateY(3px);
 }
 
 .btn-meal:disabled {
-  border-color: #b8b8b8 #4a4a4a #4a4a4a #b8b8b8;
-  background: var(--tex-stone) 0 0 / var(--tex-size), #7d7d7d;
+  border-color: var(--stone-edge);
+  background: var(--surface-stone);
   opacity: 0.7;
   cursor: default;
 }
@@ -1275,9 +1256,9 @@
   align-items: center;
   gap: 6px;
   padding: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 3px solid;
-  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  border-color: var(--paper-edge);
   background: #f4f2ec;
   box-shadow: 0 0 0 2px var(--outline);
   text-align: center;
@@ -1293,7 +1274,7 @@
   place-items: center;
   width: 72px;
   height: 72px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   border: 3px solid var(--outline);
   background: #6e6b66;
   color: #ffffff;
@@ -1403,15 +1384,15 @@
 .pm-step,
 .pm-toggle {
   min-height: 72px;
-  border-radius: 6px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #ffffff #8e8b85 #8e8b85 #ffffff;
+  border-color: var(--paper-edge);
   background: #f4f2ec;
   color: var(--ink);
   font-family: inherit;
   font-size: 26px;
   font-weight: 800;
-  box-shadow: 0 0 0 3px var(--outline);
+  box-shadow: 0 0 0 2px var(--outline);
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -1421,7 +1402,7 @@
 .pm-tab:active,
 .pm-step:active,
 .pm-toggle:active {
-  border-color: #8e8b85 #ffffff #ffffff #8e8b85;
+  border-color: var(--paper-edge-press);
 }
 
 .parent-card {
@@ -1449,7 +1430,7 @@
 .pm-tab.active {
   background: #2d3a8c;
   color: #ffffff;
-  border-color: #6a78d0 #1a2260 #1a2260 #6a78d0;
+  border-color: var(--crystal-deep);
 }
 
 .pm-content {
@@ -1472,7 +1453,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   background: rgba(255, 255, 255, 0.55);
   font-size: 21px;
 }
@@ -1507,15 +1488,15 @@
 
 .pm-toggle.on {
   background: #bfeeb2;
-  border-color: #c8f5b8 #2f7a2a #2f7a2a #c8f5b8;
+  border-color: var(--leaf-edge);
 }
 
 .pm-code {
   width: 160px;
   height: 64px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   border: 4px solid;
-  border-color: #5a5852 #ffffff #ffffff #5a5852;
+  border-color: var(--inset-edge);
   font-family: inherit;
   font-size: 28px;
   font-weight: 800;
@@ -1538,7 +1519,7 @@
 
 .btn-parent.danger {
   background: #f6d0c8;
-  border-color: #ffe8e2 #a04030 #a04030 #ffe8e2;
+  border-color: var(--danger-edge);
 }
 
 /* ---------- Pause ---------- */
@@ -1557,4 +1538,423 @@
   gap: 16px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+/* =====================================================================
+   Identité « Golémancien » : composants clés, mouvement et accessibilité.
+   Les règles ci-dessous priment sur celles du dessus (même spécificité, plus loin).
+   ===================================================================== */
+
+/* ---------- Surfaces du navigateur ---------- */
+
+::selection {
+  background: var(--rune);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--crystal);
+  outline-offset: 3px;
+}
+
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- HUD posé sur le monde : plaques de pierre runique (pas de flou permanent) ---------- */
+
+.top-left {
+  top: calc(12px + var(--safe-t));
+  left: calc(12px + var(--safe-l));
+}
+
+.top-bar {
+  top: calc(10px + var(--safe-t));
+  right: calc(12px + var(--safe-r));
+  border-radius: var(--radius-l);
+  border: 2px solid var(--night-edge);
+  background: var(--surface-night);
+  box-shadow: var(--shadow-2);
+}
+
+.compass {
+  top: calc(14px + var(--safe-t));
+  border-radius: var(--radius-m);
+  border: 2px solid var(--rune-edge);
+  background: var(--night-solid);
+  box-shadow: var(--shadow-2);
+}
+
+.stat,
+.golem-card {
+  border-radius: var(--radius-m);
+  border: 2px solid var(--night-edge);
+  background: var(--surface-night);
+  box-shadow: var(--shadow-1);
+  opacity: 1;
+}
+
+.debug {
+  border-radius: var(--radius-s);
+  border: 1px solid var(--night-edge);
+  background: var(--night-solid);
+}
+
+.btn-action,
+.btn-top {
+  border: 2px solid var(--night-edge);
+  background: var(--surface-night);
+  box-shadow: var(--lift), var(--shadow-2);
+  transition:
+    transform var(--t-press) var(--ease-press),
+    background-color var(--t-press) var(--ease-press),
+    box-shadow var(--t-press) var(--ease-press);
+}
+
+.btn-action {
+  border-radius: 50%;
+}
+
+.btn-top {
+  border-radius: var(--radius-m);
+  box-shadow: var(--lift);
+}
+
+/* Retour tactile immédiat : la touche s'enfonce et se resserre. */
+.btn-action.pressed,
+.btn-top.pressed,
+.btn-top:active:not(:disabled) {
+  transform: scale(0.94);
+  background: var(--night-press);
+  border-color: var(--night-edge);
+  box-shadow: var(--press);
+}
+
+.btn-attack,
+.btn-jump {
+  background: linear-gradient(180deg, rgba(110, 170, 240, 0.5), rgba(44, 78, 150, 0.58));
+  border-color: rgba(190, 230, 255, 0.55);
+}
+
+.btn-attack.pressed,
+.btn-jump.pressed {
+  background: linear-gradient(180deg, rgba(70, 120, 200, 0.62), rgba(28, 52, 110, 0.72));
+}
+
+/* Interagir : la touche d'or des runes, qui respire doucement. */
+.btn-interact {
+  border: 3px solid var(--rune-edge);
+  background: var(--surface-rune);
+  color: var(--ink);
+  box-shadow: var(--lift), var(--shadow-2);
+  animation:
+    ui-pop var(--t-enter) var(--ease-out),
+    rune-breathe 1.6s ease-in-out var(--t-enter) infinite;
+}
+
+.btn-interact .btn-label {
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+@keyframes rune-breathe {
+  50% {
+    box-shadow:
+      var(--lift),
+      var(--shadow-2),
+      0 0 0 8px rgba(255, 210, 94, 0.32);
+  }
+}
+
+.stick-base {
+  border: 3px solid var(--night-edge);
+  background: rgba(40, 28, 58, 0.32);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25);
+}
+
+.stick-knob {
+  border-radius: 50%;
+  border: 3px solid var(--night-edge);
+  background: var(--surface-stone);
+  box-shadow: var(--lift), var(--shadow-1);
+}
+
+/* Barres de vie : pilule arrondie, reflet en haut. */
+.hp-bar {
+  border-radius: 999px;
+  border: 2px solid var(--outline);
+  background: #3a2230;
+  overflow: hidden;
+}
+
+.hp-fill {
+  border-radius: 999px;
+  background: linear-gradient(#a6f08a 0 35%, #4fbf44 35% 100%);
+  transition: width var(--t-state) var(--ease-out);
+}
+
+.hp-monster .hp-fill {
+  background: linear-gradient(#ffab8f 0 35%, #e0503e 35% 100%);
+}
+
+/* Messages : un bandeau d'or qui arrive en glissant. */
+.toast {
+  border-radius: var(--radius-m);
+  border: 3px solid var(--rune-edge);
+  background: var(--night-solid);
+  color: #fff3cf;
+  box-shadow: var(--shadow-3);
+  animation: ui-toast var(--t-enter) var(--ease-out);
+}
+
+/* ---------- Fenêtres (en pause : là seulement, le monde est flouté derrière) ---------- */
+
+.screen-name,
+.screen-question,
+.screen-message,
+.screen-story {
+  background: rgba(28, 18, 40, 0.62);
+  animation: ui-fade var(--t-state) var(--ease-out);
+}
+
+/* Le flou n'existe qu'en profil « Haut » (la tablette) : en rendu logiciel (CI), il coûte trop cher. */
+:root[data-quality='high'] .screen-name,
+:root[data-quality='high'] .screen-question,
+:root[data-quality='high'] .screen-message,
+:root[data-quality='high'] .screen-story {
+  background: rgba(28, 18, 40, 0.5);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.card,
+.dialog {
+  border-radius: var(--radius-l);
+  border: 3px solid var(--paper-edge);
+  background: var(--surface-paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-3), inset 0 2px 0 rgba(255, 255, 255, 0.8);
+}
+
+.card {
+  animation: ui-pop var(--t-enter) var(--ease-out);
+}
+
+.dialog {
+  animation: ui-rise var(--t-enter) var(--ease-out);
+}
+
+.card-title {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+
+.parchment {
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-3);
+  animation: ui-pop var(--t-enter) var(--ease-out);
+}
+
+.dialog-name {
+  border-radius: 999px;
+  padding: 3px 14px;
+  background: var(--crystal-deep);
+  box-shadow: var(--shadow-1);
+}
+
+.dialog-portrait .portrait {
+  border-radius: var(--radius-s);
+  border: 3px solid var(--paper-edge);
+  background: var(--paper-2);
+}
+
+.name-input {
+  border-radius: var(--radius-m);
+  border: 3px solid var(--inset-edge);
+  background: #fffdf6;
+  color: var(--ink);
+  box-shadow: inset 0 3px 6px rgba(80, 50, 20, 0.18);
+}
+
+/* Action principale : la feuille (vert franc), qui s'enfonce au toucher. */
+.btn-big {
+  border-radius: var(--radius-m);
+  border: 3px solid var(--leaf-edge);
+  background: var(--surface-leaf);
+  color: #ffffff;
+  box-shadow: var(--lift), var(--shadow-2);
+  transition:
+    transform var(--t-press) var(--ease-press),
+    box-shadow var(--t-press) var(--ease-press),
+    filter var(--t-press) var(--ease-press);
+}
+
+.btn-big:active:not(:disabled) {
+  transform: scale(0.96);
+  border-color: var(--leaf-edge);
+  box-shadow: var(--press);
+}
+
+.btn-big.btn-secondary {
+  border-color: var(--stone-edge);
+  background: var(--surface-stone);
+}
+
+.btn-big:disabled {
+  border-color: var(--stone-edge);
+  background: var(--surface-stone);
+  box-shadow: none;
+  filter: saturate(0.4) brightness(0.9);
+}
+
+/* Réponses : tuiles de papier épais ; la bonne s'illumine en vert. */
+.choice {
+  border-radius: var(--radius-m);
+  border: 3px solid var(--paper-edge);
+  background: #fffaf0;
+  color: var(--ink);
+  box-shadow: var(--lift), var(--shadow-1);
+  transition:
+    transform var(--t-press) var(--ease-press),
+    background-color var(--t-state) var(--ease-out),
+    box-shadow var(--t-press) var(--ease-press);
+}
+
+.choice:active:not(:disabled),
+.choice.chosen {
+  transform: scale(0.97);
+  border-color: var(--paper-edge-press);
+  background: #ffefc7;
+  box-shadow: var(--press);
+}
+
+.choice.correct {
+  border-color: var(--leaf-edge);
+  background: #c9f2b8;
+  box-shadow: var(--lift), 0 0 0 3px rgba(103, 201, 90, 0.45);
+  animation: ui-correct 420ms var(--ease-out);
+}
+
+.choice.missed {
+  border-color: var(--paper-edge);
+  background: #efe6d4;
+  color: var(--ink-soft);
+}
+
+.explanation {
+  color: #23602c;
+}
+
+.dialog-btn,
+.btn-replay,
+.golem-choice,
+.btn-suggestion,
+.combat-switch,
+.gs-card,
+.enc-card,
+.pm-toggle {
+  border-radius: var(--radius-m);
+  box-shadow: var(--lift), var(--shadow-1);
+  transition:
+    transform var(--t-press) var(--ease-press),
+    box-shadow var(--t-press) var(--ease-press);
+}
+
+.dialog-btn:active,
+.btn-replay:active,
+.golem-choice:active,
+.btn-suggestion:active,
+.combat-switch:active,
+.pm-toggle:active {
+  transform: scale(0.96);
+  box-shadow: var(--press);
+}
+
+.combat-card {
+  border-radius: var(--radius-l);
+  background: var(--surface-night);
+  box-shadow: var(--shadow-2);
+}
+
+.combat-attack {
+  border-radius: var(--radius-m);
+  box-shadow: var(--lift), var(--shadow-2);
+}
+
+.combat-attack:active {
+  transform: scale(0.96);
+  box-shadow: var(--press);
+}
+
+.quest-mark {
+  border-radius: 50%;
+}
+
+/* ---------- Mouvement : une arrivée douce, jamais de sortie animée (fin en display: none) ---------- */
+
+@keyframes ui-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ui-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+
+/* Le dialogue est centré par translateX(-50%) : l'animation le garde. */
+@keyframes ui-rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 18px);
+  }
+  to {
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes ui-toast {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -14px) scale(0.96);
+  }
+  to {
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes ui-correct {
+  40% {
+    transform: scale(1.03);
+  }
+}
+
+/* Moins de mouvement : on garde les fondus et les changements d'état, sans déplacement. */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .dialog,
+  .parchment,
+  .toast,
+  .btn-interact {
+    animation: ui-fade var(--t-state) linear;
+  }
+
+  .choice.correct {
+    animation: none;
+  }
+
+  .btn-action.pressed,
+  .btn-top.pressed,
+  .btn-top:active:not(:disabled),
+  .btn-big:active:not(:disabled),
+  .choice:active:not(:disabled),
+  .choice.chosen {
+    transform: none;
+  }
 }

@@ -34,7 +34,7 @@ void main() {
 
 /**
  * Ciel en dégradé (zénith → horizon) avec le halo du soleil : une sphère centrée sur la caméra,
- * dessinée en premier, sans profondeur ni brouillard. L'horizon suit la couleur du brouillard,
+ * dessinée après le décor, sans écrire de profondeur ni subir de brouillard. L'horizon suit la couleur du brouillard,
  * pour que le décor lointain se fonde exactement dans le ciel. Un seul appel de dessin.
  */
 export class SkyDome {
@@ -61,13 +61,14 @@ export class SkyDome {
       vertexShader: VERTEX,
       fragmentShader: FRAGMENT,
       side: THREE.BackSide,
-      depthTest: false,
       depthWrite: false,
       fog: false,
     });
     this.mesh = new THREE.Mesh(new THREE.SphereGeometry(DOME_RADIUS, 24, 12), material);
     this.mesh.name = 'sky-dome';
-    this.mesh.renderOrder = -1000;
+    // Dessiné après le décor opaque, avec test de profondeur : seuls les pixels de ciel visibles sont calculés
+    // (le décor plus loin que le dôme est déjà entièrement dans le brouillard, de la couleur de l'horizon).
+    this.mesh.renderOrder = 1000;
     this.mesh.frustumCulled = false;
   }
 

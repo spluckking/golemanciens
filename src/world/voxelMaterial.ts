@@ -77,6 +77,12 @@ export function createAtlasTexture(canvas: HTMLCanvasElement): THREE.Texture {
   return tex;
 }
 
+/** Mipmaps sans couture aux bords des tuiles (textureGrad) : profil « Haut » seulement. */
+let seamlessMips = true;
+export function setSeamlessMips(on: boolean): void {
+  seamlessMips = on;
+}
+
 /** Ombre la plus sombre de l'occlusion ambiante (coin fermé sur deux côtés). */
 const AO_DARK = 0.52;
 /** Lave : elle éclaire d'elle-même, assez pour dépasser 1 en HDR et faire briller le bloom. */
@@ -93,6 +99,7 @@ export function createVoxelMaterial(
 ): THREE.MeshLambertMaterial {
   const mat = new THREE.MeshLambertMaterial({ map: atlas, ...options });
   const f = (n: number): string => n.toFixed(5);
+  const grad = seamlessMips;
   mat.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
       .replace(
@@ -116,7 +123,7 @@ export function createVoxelMaterial(
           // Dérivées des coordonnées non répétées : pas de couture de mipmap à chaque bord de tuile.
           vec2 gx = dFdx(vLocalUv) * vec2(${f(TILE_PX / ATLAS_W)}, ${f(TILE_PX / ATLAS_H)});
           vec2 gy = dFdy(vLocalUv) * vec2(${f(TILE_PX / ATLAS_W)}, ${f(TILE_PX / ATLAS_H)});
-          vec4 sampledDiffuseColor = textureGrad(map, atlasUv, gx, gy);
+          vec4 sampledDiffuseColor = ${grad ? 'textureGrad(map, atlasUv, gx, gy)' : 'texture2D(map, atlasUv)'};
           diffuseColor *= sampledDiffuseColor;
           diffuseColor.rgb *= mix(${f(AO_DARK)}, 1.0, vAo);
           if (abs(vTile - ${Tile.Lava.toFixed(1)}) < 0.5) totalEmissiveRadiance += sampledDiffuseColor.rgb * ${f(LAVA_GLOW)};
@@ -124,6 +131,6 @@ export function createVoxelMaterial(
         `,
       );
   };
-  mat.customProgramCacheKey = () => 'voxel-atlas-ao';
+  mat.customProgramCacheKey = () => (grad ? 'voxel-atlas-ao-grad' : 'voxel-atlas-ao');
   return mat;
 }

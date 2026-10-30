@@ -18,6 +18,8 @@ export default defineConfig({
     hasTouch: true,
     isMobile: true,
     locale: 'fr-FR',
+    // Animations d'arrivée réduites à un fondu : les touchers n'attendent pas la fin d'un mouvement.
+    reducedMotion: 'reduce',
     launchOptions: {
       args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
     },

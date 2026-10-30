@@ -12,11 +12,15 @@ export interface QualityProfile {
   maxPixelRatio: number;
   /** Bloom léger sur les émissifs (post-traitement en demi-résolution). */
   bloom: boolean;
+  /** Ciel en dégradé (sinon : couleur unie de l'horizon) et mipmaps sans couture (textureGrad). */
+  sky: boolean;
+  seamlessMips: boolean;
 }
 
 export const QUALITY: Record<QualityTier, QualityProfile> = {
-  high: { tier: 'high', maxPixelRatio: 1.75, bloom: true },
-  test: { tier: 'test', maxPixelRatio: 1.5, bloom: false },
+  high: { tier: 'high', maxPixelRatio: 1.75, bloom: true, sky: true, seamlessMips: true },
+  // Le rendu logiciel de la CI est 30 % plus lent avec le ciel et textureGrad : on s'en passe ici.
+  test: { tier: 'test', maxPixelRatio: 1.5, bloom: false, sky: false, seamlessMips: false },
 };
 
 /**

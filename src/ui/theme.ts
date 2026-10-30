@@ -1,7 +1,7 @@
 import { createRng } from '../core/rng';
 
 /**
- * Thème « blocs » de l'interface : petites textures en pixels (16 × 16) peintes sur canvas
+ * Thème « Golémancien » de l'interface : petites textures en pixels (16 × 16) peintes sur canvas
  * au démarrage, puis données au CSS sous forme de variables (--tex-…). Aucun fichier image.
  */
 
@@ -40,13 +40,10 @@ function planks(base: number): Painter {
   };
 }
 
+/** Seuls le papier et le bois gardent une texture en pixels (le reste vient des variables CSS). */
 const TEXTURES: Record<string, Painter> = {
-  stone: noise(0x8b8b8b, 12, 0.08),
-  panel: noise(0xc9c6c0, 5),
-  slate: noise(0x262a36, 6),
-  grass: noise(0x5a9e3c, 10, 0.05),
-  plank: planks(0xa8763e),
-  paper: noise(0xf1e3bf, 5),
+  plank: planks(0xb5763f),
+  paper: noise(0xf6e8c8, 4),
 };
 
 function paint(painter: Painter, seed: number): string {

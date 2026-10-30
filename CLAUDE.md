@@ -53,7 +53,7 @@ tests/                    unit/, content/, sim/, e2e/
 
 ## Budget de performance (Xiaomi Pad 7 Pro)
 
-- **Profils de rendu** (`src/core/quality.ts`) : « Haut » sur la tablette (pixel ratio plafonné à **1,75**, bloom léger en demi-résolution sur les émissifs), « Test » pour la CI et le mode test (pixel ratio plafonné à **1,5**, aucun post-traitement). Le test E2E `rendu.spec.ts` couvre le profil Haut.
+- **Profils de rendu** (`src/core/quality.ts`) : « Haut » sur la tablette (pixel ratio plafonné à **1,75**, bloom léger en demi-résolution sur les émissifs), « Test » pour la CI et le mode test (pixel ratio plafonné à **1,5**, ni post-traitement, ni ciel en dégradé, ni `textureGrad` : le rendu logiciel de la CI est trop lent). Le test E2E `rendu.spec.ts` couvre le profil Haut.
 - **Image** : `NeutralToneMapping` appliqué une seule fois (à l'écran ou dans l'`OutputPass`), sortie sRGB ; ciel en dégradé et lumière par biome (`src/world/lighting.ts`).
 - **Cible** : 60 fps, et jamais moins de 50 dans les pires scènes.
 - **Chunks** de 16×16×32, avec un **meshing glouton** (greedy meshing) et une géométrie construite une seule fois, ou dans un Web Worker si c'est nécessaire.
