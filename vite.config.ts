@@ -24,8 +24,9 @@ export default defineConfig({
         id: 'golemanciens',
         start_url: base,
         scope: base,
-        display: 'fullscreen',
-        orientation: 'landscape',
+        // Essai : mêmes réglages que Dictée-Blocs, dont l'icône s'ouvre sur les mêmes appareils Android.
+        display: 'standalone',
+        orientation: 'any',
         background_color: '#1d2b53',
         theme_color: '#1d2b53',
         icons: [
