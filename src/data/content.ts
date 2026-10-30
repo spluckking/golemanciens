@@ -1120,18 +1120,6 @@ export const CONTENT: Content = {
       "explanation": "L'avion et la fusée volent, le bateau flotte sur l'eau."
     },
     {
-      "id": "E5-01",
-      "level": 5,
-      "text": "Quel nombre vient après : 1, 4, 9, 16… ?",
-      "choices": [
-        "25",
-        "20",
-        "24"
-      ],
-      "answer": 0,
-      "explanation": "1×1, 2×2, 3×3, 4×4… puis 5×5 = 25."
-    },
-    {
       "id": "E5-02",
       "level": 5,
       "text": "Quel nombre vient après : 1, 1, 2, 3, 5, 8… ?",

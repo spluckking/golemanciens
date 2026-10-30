@@ -110,7 +110,7 @@ function statsPanel(s: GameState): HTMLElement {
 }
 
 /** Réglage chiffré avec − et +. */
-function stepper(label: string, testId: string, get: () => number, set: (v: number) => void, min: number, max: number, step: number, unit = ''): HTMLElement {
+export function stepper(label: string, testId: string, get: () => number, set: (v: number) => void, min: number, max: number, step: number, unit = ''): HTMLElement {
   const value = el('strong', { className: 'pm-value', testId: `${testId}-value` });
   const render = (): void => {
     value.textContent = `${get()}${unit}`;

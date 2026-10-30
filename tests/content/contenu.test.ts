@@ -14,7 +14,7 @@ describe('CONTENU.md et src/data', () => {
   it('il y a 6 textes, 6 outros, 60 énigmes et toutes les répliques de Lumibloc', () => {
     expect(CONTENT.stories.map((s) => s.id)).toEqual(['T1', 'T2', 'T3', 'T4', 'T5', 'T6']);
     expect(CONTENT.outros.map((o) => o.id)).toEqual(['O1', 'O2', 'O3', 'O4', 'O5', 'O6']);
-    expect(CONTENT.riddles).toHaveLength(60);
+    expect(CONTENT.riddles).toHaveLength(59);
     expect(Object.keys(CONTENT.lumibloc)).toHaveLength(17);
   });
 });
@@ -44,15 +44,15 @@ describe('textes et questions de lecture', () => {
 });
 
 describe("banque d'énigmes", () => {
-  it('12 énigmes par niveau, de 1 à 5', () => {
+  it('12 énigmes par niveau, 11 au niveau 5 (suite des carrés parfaits retirée à la demande du parent)', () => {
     for (let level = 1; level <= 5; level++) {
-      expect(CONTENT.riddles.filter((r) => r.level === level)).toHaveLength(12);
+      expect(CONTENT.riddles.filter((r) => r.level === level)).toHaveLength(level === 5 ? 11 : 12);
     }
   });
 
   it('identifiants et énoncés uniques', () => {
-    expect(new Set(CONTENT.riddles.map((r) => r.id)).size).toBe(60);
-    expect(new Set(CONTENT.riddles.map((r) => r.text)).size).toBe(60);
+    expect(new Set(CONTENT.riddles.map((r) => r.id)).size).toBe(59);
+    expect(new Set(CONTENT.riddles.map((r) => r.text)).size).toBe(59);
   });
 
   it('3 choix distincts, 1 bonne réponse et une explication', () => {

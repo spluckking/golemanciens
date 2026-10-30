@@ -265,7 +265,7 @@ export class TurnCombat {
     return [{ type: 'golemSkip', id: this.golem.id }];
   }
 
-  /** Changement de golem : il coûte le tour, sauf quand le golem actif est K.O. */
+  /** Changement de golem : il ne coûte jamais le tour, le monstre n'attaque pas à ce moment-là. */
   switchTo(golemId: string): CombatEvent[] {
     if (this.phase !== 'player' && this.phase !== 'switch') throw new Error(`Changement impossible en phase ${this.phase}`);
     const index = this.golems.findIndex((g) => g.id === golemId);
@@ -275,7 +275,7 @@ export class TurnCombat {
     this.golem.stunned = 0;
     this.golem.blinded = false;
     this.activeGolem = index;
-    this.phase = free ? 'player' : 'monster';
+    this.phase = 'player';
     return [{ type: 'switch', id: golemId, free }];
   }
 

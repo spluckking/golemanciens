@@ -216,12 +216,11 @@ describe('Ultime', () => {
 });
 
 describe('changement de golem', () => {
-  it('un changement volontaire coûte le tour', () => {
+  it('un changement volontaire ne coûte pas le tour : le monstre n’attaque pas', () => {
     const c = arena([createGolem('pierre'), createGolem('mousse')], [arenaMonster('spider', 'm')]);
     expect(c.switchTo('mousse')).toEqual([{ type: 'switch', id: 'mousse', free: false }]);
-    expect(c.phase).toBe('monster');
-    c.monsterTurn();
-    expect(c.golems[1].hp).toBeLessThan(40);
+    expect(c.phase).toBe('player');
+    expect(c.golems[1].hp).toBe(40);
     expect(c.golems[0].hp).toBe(40);
   });
 

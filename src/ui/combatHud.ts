@@ -14,12 +14,13 @@ import { el } from './dom';
 /** Textes d'interface nouveaux (à valider). */
 export const TEXT_WEAK_AGAINST = 'Faible contre';
 export const TEXT_SWITCH = 'Changer';
+const TEXT_LEAVE = 'Quitter le combat';
 export const TEXT_SHEET = 'Faiblesses';
 export const TEXT_SHEET_TITLE = '📒 Les faiblesses';
 export const TEXT_SHEET_HINT = 'Les attaques avec ✔ visent la faiblesse : elles font plus de dégâts.';
 export const TEXT_SHEET_NONE = 'Aucune de tes attaques n’a cette icône : choisis ton attaque 🧩, la plus forte !';
 
-export type CombatChoice = { kind: 'attack'; attack: AttackInfo } | { kind: 'switch'; golemId: string };
+export type CombatChoice = { kind: 'attack'; attack: AttackInfo } | { kind: 'switch'; golemId: string } | { kind: 'leave' };
 
 function bar(): { root: HTMLDivElement; fill: HTMLDivElement; text: HTMLSpanElement } {
   const fill = el('div', { className: 'hp-fill' });
@@ -39,6 +40,10 @@ export class CombatHud {
   private readonly actions = el('div', { className: 'combat-actions', testId: 'combat-actions' });
   private readonly banner = el('div', { className: 'combat-banner hidden', testId: 'combat-banner' });
   private readonly sheetBtn: HTMLButtonElement;
+  private readonly round = el('div', { className: 'combat-round hidden', testId: 'combat-round' });
+  private readonly leaveBtn = el('button', { className: 'combat-leave hidden', text: TEXT_LEAVE, testId: 'combat-leave' });
+  private leaveAllowed = false;
+  private onLeave: (() => void) | null = null;
   private sheetData: { golems: CombatGolem[]; stage: BossStage; monster: string } | null = null;
   private bannerTimer = 0;
 
@@ -61,7 +66,9 @@ export class CombatHud {
       this.golemBar.root,
       el('div', { className: 'combat-card-foot' }, [this.golemPips, this.golemBar.text]),
     ]);
-    this.root = el('div', { className: 'combat-screen', testId: 'combat' }, [monsterCard, golemCard, this.actions, this.banner, this.sheetBtn]);
+    this.root = el('div', { className: 'combat-screen', testId: 'combat' }, [monsterCard, golemCard, this.actions, this.banner, this.sheetBtn, this.round, this.leaveBtn]);
+    this.leaveBtn.type = 'button';
+    this.leaveBtn.addEventListener('click', () => this.onLeave?.());
     layer.appendChild(this.root);
   }
 
@@ -85,6 +92,13 @@ export class CombatHud {
     this.sheetData = { golems, stage, monster };
   }
 
+  /** Combat d'arène : la manche en cours (« Combat 2 / 3 ») et le bouton pour quitter. */
+  setArena(round: string): void {
+    this.round.textContent = round;
+    this.round.classList.remove('hidden');
+    this.leaveAllowed = true;
+  }
+
   showSheetButton(): void {
     this.sheetBtn.classList.remove('hidden');
   }
@@ -101,8 +115,14 @@ export class CombatHud {
     return new Promise((resolve) => {
       const done = (c: CombatChoice): void => {
         this.actions.replaceChildren();
+        this.onLeave = null;
+        this.leaveBtn.classList.add('hidden');
         resolve(c);
       };
+      if (this.leaveAllowed) {
+        this.onLeave = () => done({ kind: 'leave' });
+        this.leaveBtn.classList.remove('hidden');
+      }
       const buttons: HTMLElement[] = [];
       if (!forcedSwitch) {
         for (const a of attacks) {

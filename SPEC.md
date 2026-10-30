@@ -218,7 +218,7 @@ L'objet d'évolution **caché** de chaque phase (2 à 4) peut être trouvé à t
 - **Arène** : N golems contre N monstres, avec **un actif de chaque côté**. Les adversaires sont tirés au hasard parmi les monstres de la phase de l'arène.
 - **Boss et dragon** : toute l'équipe contre le boss seul, avec un golem actif à la fois.
 - **Ordre** : le golem actif joue, puis l'adversaire actif. Après 0,8 s, la cible et l'attaque du monstre sont annoncées clairement.
-- **Tour du joueur** : il choisit une attaque débloquée, ou « Changer de golem ». Un changement volontaire **coûte le tour**. Le changement est **gratuit** quand le golem actif est K.O.
+- **Tour du joueur** : il choisit une attaque débloquée, ou « Changer de golem ». Le changement est **gratuit** : il ne coûte pas le tour et le monstre n'attaque pas à ce moment-là.
 - **Toute attaque déclenche une question** (§ 8) :
   - bonne réponse : l'attaque touche ;
   - mauvaise réponse : l'attaque **rate**, la bonne réponse est surlignée en vert et **l'explication d'une ligne** s'affiche, puis bouton « J'ai compris ».

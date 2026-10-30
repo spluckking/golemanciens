@@ -285,6 +285,17 @@ export function generateDesert(seed = DESERT_SEED): DesertLayout {
   };
   for (const [dx, dz] of [[-5, -5], [5, 5], [-5, 4], [6, -3]]) buildPalm(world, v.x + dx, BASE_Y, v.z + dz, randInt(rng, 5, 6));
 
+  // Enclos de Caramel : une clôture de planches basse, ouverte du côté de l'étang.
+  for (let x = v.x - 11; x <= v.x - 6; x++)
+    for (let z = v.z - 2; z <= v.z + 3; z++) {
+      const sideX = x === v.x - 11 || x === v.x - 6;
+      const sideZ = z === v.z - 2 || z === v.z + 3;
+      if ((!sideX && !sideZ) || (x === v.x - 6 && (z === v.z || z === v.z + 1))) continue;
+      const y = world.surfaceY(x, z);
+      world.set(x, y, z, sideX && sideZ ? Block.Log : Block.Plank);
+      if (sideX && sideZ) world.set(x, y + 1, z, Block.Log);
+    }
+
   const temple = buildTemple(world, PADS.sanctuary.x, PADS.sanctuary.z, BASE_Y);
   const arena = buildArena(world, PADS.arena.x, PADS.arena.z, BASE_Y);
   const pit = buildPit(world, PADS.bossLair.x, PADS.bossLair.z, BASE_Y);

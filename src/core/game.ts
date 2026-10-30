@@ -8,10 +8,11 @@ import { TEXT_TROPHY } from '../data/bossQuest';
 import { CinematicDirector, type CinematicScript } from '../story/cinematics/director';
 import { JOURNAL_NO_DONE } from '../story/dialogues';
 import { askNickname, chooseGolem } from '../ui/hatching';
-import { askChoice, askQuestion, revealAnswer } from '../ui/screens';
+import { askChoice, askQuestion, revealAnswer, showMessage } from '../ui/screens';
 import { DebugOverlay } from '../ui/debugOverlay';
 import { DialogBubble } from '../ui/dialog';
 import { el } from '../ui/dom';
+import { stepper } from '../ui/parentMenu';
 import { Hud } from '../ui/hud';
 import { openEncyclopedia } from '../ui/encyclopediaScreen';
 import { openGolems } from '../ui/golemsScreen';
@@ -82,6 +83,12 @@ const TEXT_SLEPT_GOLEMS = 'Tu as bien dormi ! Tes golems sont en pleine forme.';
 const SLEEP_FADE_MS = 1800;
 /** Pause demandée avec le bouton (texte nouveau, à valider). */
 const TEXT_PAUSE = 'Le jeu est en pause. Tes golems t’attendent !';
+const TEXT_MUSIC = 'Musique';
+const TEXT_SFX = 'Bruitages';
+const TEXT_QUIT = 'Quitter le jeu';
+const TEXT_QUIT_QUESTION = 'Quitter le jeu ? Ta partie sera enregistrée.';
+const TEXT_KEEP_PLAYING = 'Continuer à jouer';
+const TEXT_QUIT_SAVED = 'Ta partie est enregistrée. Tu peux fermer le jeu.';
 /** Rappel de pause : « Continuer » après 10 s (SPEC.md § 11). */
 const PAUSE_WAIT_S = 10;
 const TEXT_SAVED = 'Bonne nuit ! Partie enregistrée.';
@@ -362,7 +369,7 @@ export class Game {
     this.dialog.close();
     this.setMode('combat');
     audio.music(kind === 'boss' ? (setup.boss === 'dragon' ? 'dragon' : 'boss') : 'arena');
-    let result: 'won' | 'lost' | 'retry';
+    let result: 'won' | 'lost' | 'retry' | 'left';
     do {
       this.fight = new ArenaFight({
         scene: this.scene,
@@ -662,10 +669,34 @@ export class Game {
     this.dialog.close();
     const text = reminder ? CONTENT.lumibloc.pause : TEXT_PAUSE;
     audio.duck(true);
-    await openPause(this.uiLayer, text, this.state.playerName, reminder ? PAUSE_WAIT_S * this.timeScale : 0, reminder ? 'pause-reminder' : 'pause');
+    await openPause(this.uiLayer, text, this.state.playerName, reminder ? PAUSE_WAIT_S * this.timeScale : 0, reminder ? 'pause-reminder' : 'pause', reminder ? [] : this.pauseSettings());
+    if (!reminder) void this.save();
     this.sincePause = 0;
     audio.duck(false);
     this.paused = false;
+  }
+
+  /** Réglages de l'écran de pause : volumes (les mêmes que dans le menu parent) et sortie du jeu. */
+  private pauseSettings(): HTMLElement[] {
+    const s = this.state.settings;
+    const volume = (label: string, testId: string, key: 'musicVolume' | 'sfxVolume'): HTMLElement =>
+      stepper(label, testId, () => Math.round(s[key] * 100), (v) => {
+        s[key] = v / 100;
+        this.applySettings();
+      }, 0, 100, 10, ' %');
+    const quit = el('button', { className: 'btn-big btn-secondary', text: TEXT_QUIT, testId: 'pause-quit' });
+    quit.type = 'button';
+    quit.addEventListener('click', () => void this.quitGame());
+    return [volume(TEXT_MUSIC, 'pause-music', 'musicVolume'), volume(TEXT_SFX, 'pause-sfx', 'sfxVolume'), quit];
+  }
+
+  /** Quitter : confirmation, sauvegarde, fermeture ; si l'appareil la refuse, on le dit. */
+  private async quitGame(): Promise<void> {
+    const name = this.state.playerName;
+    if ((await askChoice(this.uiLayer, TEXT_QUIT_QUESTION, [TEXT_KEEP_PLAYING, TEXT_QUIT], name, 'quit-confirm')) === 0) return;
+    await this.save();
+    window.close();
+    await showMessage(this.uiLayer, TEXT_QUIT_SAVED, TEXT_KEEP_PLAYING, name, 'quit-saved');
   }
 
   /** Écran Golems : stats, attaques, repas. La réplique « Repas » de Lumibloc s'affiche la première fois. */

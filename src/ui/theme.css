@@ -2347,3 +2347,114 @@ button {
     transform: none;
   }
 }
+
+/* ---------- Fenêtres longues : la liste défile, le bouton Fermer reste visible ---------- */
+
+.card {
+  min-height: 0;
+}
+
+.journal-card,
+.encyclopedia-card {
+  overflow: hidden;
+}
+
+.journal-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+.enc-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.journal-card > .btn-big,
+.encyclopedia-card > .btn-big,
+.golems-card > .btn-big {
+  flex: none;
+}
+
+@media (max-height: 600px) {
+  .screen {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .card {
+    gap: 10px;
+    padding: 14px 24px;
+  }
+
+  .journal-card .btn-big,
+  .encyclopedia-card .btn-big {
+    min-height: 56px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+}
+
+/* ---------- Arène : la manche en cours, et la sortie du combat ---------- */
+
+.combat-round,
+.combat-leave {
+  position: absolute;
+  left: calc(16px + var(--safe-l));
+  border: 0;
+  border-radius: 999px;
+  background: var(--night);
+  color: #ffffff;
+  font-family: inherit;
+  font-weight: 800;
+  box-shadow:
+    0 0 0 3px var(--rune-edge),
+    var(--shadow-1);
+}
+
+.combat-round {
+  top: calc(14px + var(--safe-t));
+  padding: 8px 18px;
+  font-size: var(--fs-m);
+}
+
+.combat-leave {
+  top: calc(70px + var(--safe-t));
+  min-height: 56px;
+  padding: 6px 18px;
+  font-size: var(--fs-s);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.combat-leave:active {
+  transform: scale(0.96);
+  box-shadow: 0 0 0 3px var(--rune-edge), var(--press);
+}
+
+/* ---------- Pause : réglages ---------- */
+
+.pause-card .pm-row {
+  align-self: stretch;
+  color: var(--ink);
+}
+
+.pause-card {
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.pause-card .pause-zzz {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .combat-leave:active {
+    transform: none;
+  }
+}

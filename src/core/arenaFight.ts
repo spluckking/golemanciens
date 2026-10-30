@@ -36,6 +36,11 @@ const TEXT_VICTORY = 'Victoire ! Tes golems ont gagné.';
 const TEXT_VICTORY_BUTTON = 'Continuer';
 const TEXT_ARENA_DONE = 'Bravo, {prenom} ! Tu as gagné les 3 combats de l’arène.';
 const TEXT_DEFEAT_BUTTON = 'D’accord';
+const TEXT_ROUND = 'Combat {n} / {total}';
+const TEXT_FREE_ROUND = 'Combat libre';
+const TEXT_LEAVE_QUESTION = 'Quitter ce combat ? Tu ne perds rien, mais ce combat ne compte pas.';
+const TEXT_LEAVE_NO = 'Continuer le combat';
+const TEXT_LEAVE_YES = 'Quitter';
 
 const TYPE_COLORS: Record<AttackType, number> = { rock: 0xa9abb8, plant: 0x6fae52, sun: 0xffc040, spore: 0xb07ae0, sand: 0xe0c080, thunder: 0xfff060, ice: 0x9fd8ff, crystal: 0xd8b0ff, wind: 0xf0f6ff, rainbow: 0xff9ad0, star: 0xfff3a0 };
 
@@ -115,6 +120,10 @@ export class ArenaFight {
     host.scene.add(this.group);
     for (const mon of this.combat.monsters) markSeen(state, mon.model);
     this.hud = new CombatHud(host.uiLayer, state.playerName, state.lessonDone);
+    if (host.kind === 'arena') {
+      const { wins } = progress(state).arena;
+      this.hud.setArena(wins < ARENA_WINS_TO_FINISH ? TEXT_ROUND.replace('{n}', String(wins + 1)).replace('{total}', String(ARENA_WINS_TO_FINISH)) : TEXT_FREE_ROUND);
+    }
     this.placeActive();
   }
 
@@ -212,7 +221,7 @@ export class ArenaFight {
   // ---------- Déroulé ----------
 
   /** Joue le combat jusqu'au bout, puis la victoire ou la défaite (et la leçon la première fois). */
-  async run(): Promise<'won' | 'lost' | 'retry'> {
+  async run(): Promise<'won' | 'lost' | 'retry' | 'left'> {
     const c = this.combat;
     const name = this.host.state.playerName;
     await wait(this.ms(0.6));
@@ -232,6 +241,13 @@ export class ArenaFight {
         continue;
       }
       const choice = await this.hud.choose(c.availableAttacks(), c.monsterStage, c.benchGolems(), c.phase === 'switch');
+      if (choice.kind === 'leave') {
+        // Confirmation : on ne quitte pas par erreur. Rien n'est perdu, les golems sont soignés.
+        const sure = await askChoice(this.host.uiLayer, TEXT_LEAVE_QUESTION, [TEXT_LEAVE_NO, TEXT_LEAVE_YES], name, 'combat-leave-confirm');
+        if (sure === 0) continue;
+        healAfterCombat(this.host.state.golems);
+        return 'left';
+      }
       if (choice.kind === 'switch') {
         await this.play(c.switchTo(choice.golemId));
         continue;

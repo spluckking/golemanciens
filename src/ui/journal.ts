@@ -40,11 +40,13 @@ export function openJournal(
     });
     const card = el('div', { className: 'card journal-card' }, [
       el('h2', { className: 'card-title', text: '📜 Journal' }),
-      el('h3', { className: 'journal-section', text: 'En cours' }),
-      list(current.map((c) => el('li', { className: c.active ? 'journal-active' : '', text: formatText(c.text, playerName) }))),
-      el('h3', { className: 'journal-section', text: 'Terminées' }),
-      list(done.length ? done.map((d) => el('li', { text: formatText(d, playerName) })) : [el('li', { className: 'journal-empty', text: formatText(emptyDone, playerName) })]),
-      ...(replayButtons.length ? [el('h3', { className: 'journal-section', text: 'Revoir l’histoire' }), el('div', { className: 'journal-replays' }, replayButtons)] : []),
+      el('div', { className: 'journal-scroll' }, [
+        el('h3', { className: 'journal-section', text: 'En cours' }),
+        list(current.map((c) => el('li', { className: c.active ? 'journal-active' : '', text: formatText(c.text, playerName) }))),
+        el('h3', { className: 'journal-section', text: 'Terminées' }),
+        list(done.length ? done.map((d) => el('li', { text: formatText(d, playerName) })) : [el('li', { className: 'journal-empty', text: formatText(emptyDone, playerName) })]),
+        ...(replayButtons.length ? [el('h3', { className: 'journal-section', text: 'Revoir l’histoire' }), el('div', { className: 'journal-replays' }, replayButtons)] : []),
+      ]),
       close,
     ]);
     const root = el('div', { className: 'screen screen-message', testId: 'journal' }, [card]);

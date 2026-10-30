@@ -595,12 +595,6 @@ Le dragon déploie ses ailes immenses. « Tu crois pouvoir me battre avec tes pe
 
 ### Niveau 5
 
-**E5-01** Quel nombre vient après : 1, 4, 9, 16… ?
-- [x] 25
-- [ ] 20
-- [ ] 24
-> Explication : 1×1, 2×2, 3×3, 4×4… puis 5×5 = 25.
-
 **E5-02** Quel nombre vient après : 1, 1, 2, 3, 5, 8… ?
 - [x] 13
 - [ ] 11
