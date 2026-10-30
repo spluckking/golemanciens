@@ -2035,6 +2035,8 @@ button {
   --core-2: #e8622c;
   --core-3: #7a1d10;
   --glow: rgba(255, 130, 50, 0.75);
+  /* Centre à 150 px du bas, comme le joystick. */
+  bottom: calc(91px + var(--safe-b));
   width: 118px;
   height: 118px;
   border-color: transparent;
@@ -2051,6 +2053,7 @@ button {
   --core-2: #2b86d8;
   --core-3: #123a80;
   --glow: rgba(127, 227, 255, 0.75);
+  bottom: calc(100px + var(--safe-b));
   width: 100px;
   height: 100px;
   border-color: transparent;
@@ -2066,6 +2069,7 @@ button {
   --core-2: #f6b93a;
   --core-3: #b86f12;
   --glow: rgba(255, 205, 90, 0.75);
+  bottom: calc(224px + var(--safe-b));
   width: 104px;
   height: 104px;
   border: 0;

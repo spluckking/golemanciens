@@ -9,6 +9,7 @@ import { BIOME_IDS, createGameState, createGolem, progress, type BiomeId, type G
 import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
 import { GOLEMS, type GolemSpecies } from './data/creatures';
+import { watchAppMode } from './core/appMode';
 import { CINEMATICS, OUTRO_CINEMATICS, storyCaptions } from './story/cinematics';
 import { S2_STEPS, S3_STEPS, S4_STEPS, S5_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
 import { shownQuestion } from './ui/screens';
@@ -66,6 +67,7 @@ window.addEventListener('contextmenu', (e) => e.preventDefault());
 
 // Le son ne peut démarrer qu'après un geste du joueur (règle des navigateurs).
 for (const type of ['pointerdown', 'keydown'] as const) window.addEventListener(type, () => audio.unlock(), { capture: true });
+watchAppMode();
 
 async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
   const isTest = params.has('test');

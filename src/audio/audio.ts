@@ -49,7 +49,7 @@ export type SfxId =
 const LOOKAHEAD_S = 0.15;
 const TICK_MS = 25;
 const FADE_S = 0.8;
-const REVERB_S = 2.2;
+const REVERB_S = 1.5;
 /** Part de réverbération (musique, bruitages). */
 const MUSIC_REVERB = 0.22;
 const SFX_REVERB = 0.18;
@@ -69,6 +69,14 @@ interface Playing {
   padLevel: number;
 }
 
+/** Débranche les éléments d'une note quand elle se termine : ils ne s'accumulent pas jusqu'au prochain ménage du navigateur. */
+function release(last: OscillatorNode, nodes: AudioNode[], after?: () => void): void {
+  last.onended = () => {
+    for (const n of nodes) n.disconnect();
+    after?.();
+  };
+}
+
 /** Hauteur MIDI → fréquence. */
 function hzOf(midi: number): number {
   return 440 * 2 ** ((midi - 69) / 12);
@@ -83,6 +91,8 @@ export class AudioEngine {
   private echoIn: GainNode | null = null;
   private noise: AudioBuffer | null = null;
   private pulse: PeriodicWave | null = null;
+  /** Vibrato partagé par toutes les notes de la mélodie. */
+  private vibrato: OscillatorNode | null = null;
   private playing: Playing | null = null;
   private wanted: TrackId | null = null;
   private timer = 0;
@@ -93,7 +103,8 @@ export class AudioEngine {
   /** À appeler au premier toucher (règle des navigateurs mobiles). */
   unlock(): void {
     if (typeof AudioContext === 'undefined') return;
-    if (!this.ctx) this.build(new AudioContext());
+    // Tampon plus large que le réglage par défaut : un jeu 3D charge l'appareil, et un tampon trop court grésille.
+    if (!this.ctx) this.build(new AudioContext({ latencyHint: 'balanced' }));
     if (this.ctx!.state === 'suspended') void this.ctx!.resume();
     if (this.wanted && !this.playing) this.music(this.wanted);
   }
@@ -108,7 +119,8 @@ export class AudioEngine {
     comp.attack.value = 0.01;
     comp.release.value = 0.2;
     this.master = ctx.createGain();
-    this.master.gain.value = 0.9;
+    // Marge avant la saturation : le compresseur remonte le niveau, et les pics se cumulent avec la réverbération.
+    this.master.gain.value = 0.72;
     comp.connect(this.master).connect(ctx.destination);
 
     this.musicBus = ctx.createGain();
@@ -155,6 +167,10 @@ export class AudioEngine {
     const imag = new Float32Array(harmonics);
     for (let n = 1; n < harmonics; n++) imag[n] = (2 / (n * Math.PI)) * Math.sin(n * Math.PI * 0.25) * (1 / (1 + n * 0.08));
     this.pulse = ctx.createPeriodicWave(real, imag);
+
+    this.vibrato = ctx.createOscillator();
+    this.vibrato.frequency.value = 5.5;
+    this.vibrato.start();
 
     this.applyVolumes();
     this.timer = window.setInterval(() => this.schedule(), TICK_MS);
@@ -243,6 +259,12 @@ export class AudioEngine {
     if (!this.ctx || !p) return;
     while (p.nextTime < this.ctx.currentTime + LOOKAHEAD_S) {
       const t = p.nextTime;
+      // Après un à-coup du jeu, on saute les notes en retard : les jouer d'un coup ferait un claquement.
+      if (t < this.ctx.currentTime) {
+        p.step = (p.step + 1) % p.length;
+        p.nextTime += p.stepS;
+        continue;
+      }
       // Petites variations de volume : le jeu sonne moins « mécanique ».
       const human = 0.85 + Math.random() * 0.3;
       for (const n of p.lead) if (n.step === p.step) this.lead(p.gain, n.hz, t, n.length * p.stepS, 0.07 * p.leadLevel * human);
@@ -262,7 +284,8 @@ export class AudioEngine {
   /** Mélodie : deux « pulses » légèrement désaccordées, filtre qui se referme, vibrato tardif, écho. */
   private lead(dest: AudioNode, hz: number, t: number, dur: number, level: number): void {
     const ctx = this.ctx;
-    if (!ctx || !this.pulse || !this.echoIn) return;
+    const { pulse, vibrato } = this;
+    if (!ctx || !pulse || !this.echoIn || !vibrato) return;
     const g = ctx.createGain();
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(level, t + 0.012);
@@ -273,27 +296,25 @@ export class AudioEngine {
     filter.Q.value = 2;
     filter.frequency.setValueAtTime(4200, t);
     filter.frequency.setTargetAtTime(1800, t + 0.02, 0.15);
-    const vibrato = ctx.createOscillator();
-    vibrato.frequency.value = 5.5;
     const depth = ctx.createGain();
     depth.gain.setValueAtTime(0, t);
     depth.gain.setTargetAtTime(hz * 0.006, t + 0.18, 0.15);
     vibrato.connect(depth);
-    for (const detune of [-6, 6]) {
+    const voices = [-6, 6].map((detune) => {
       const osc = ctx.createOscillator();
-      osc.setPeriodicWave(this.pulse);
+      osc.setPeriodicWave(pulse);
       osc.frequency.setValueAtTime(hz, t);
       osc.detune.value = detune;
       depth.connect(osc.frequency);
       osc.connect(filter);
       osc.start(t);
       osc.stop(t + dur + 0.3);
-    }
-    vibrato.start(t);
-    vibrato.stop(t + dur + 0.3);
+      return osc;
+    });
     filter.connect(g);
     g.connect(dest);
     g.connect(this.echoIn);
+    release(voices[1], [...voices, depth, filter, g], () => vibrato.disconnect(depth));
   }
 
   /** Basse : triangle et sinus une octave en dessous, attaque nette. */
@@ -308,7 +329,7 @@ export class AudioEngine {
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 900;
-    for (const [type, mult, lvl] of [['triangle', 1, 1], ['sine', 0.5, 0.6]] as const) {
+    const parts = ([['triangle', 1, 1], ['sine', 0.5, 0.6]] as const).map(([type, mult, lvl]) => {
       const osc = ctx.createOscillator();
       osc.type = type;
       osc.frequency.setValueAtTime(hz * mult, t);
@@ -317,8 +338,10 @@ export class AudioEngine {
       osc.connect(og).connect(filter);
       osc.start(t);
       osc.stop(t + dur + 0.2);
-    }
+      return [osc, og];
+    });
     filter.connect(g).connect(dest);
+    release(parts[1][0] as OscillatorNode, [...parts.flat(), filter, g]);
   }
 
   /** Nappe d'accords : dents de scie très filtrées, attaque et relâche lentes. */
@@ -332,16 +355,15 @@ export class AudioEngine {
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 1100;
-    for (const detune of [-8, 8]) {
-      const osc = ctx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(hz, t);
-      osc.detune.value = detune;
-      osc.connect(filter);
-      osc.start(t);
-      osc.stop(t + dur + 1.2);
-    }
+    // Une seule dent de scie par note : l'accord en compte déjà plusieurs, et les nappes durent longtemps.
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(hz, t);
+    osc.connect(filter);
+    osc.start(t);
+    osc.stop(t + dur + 0.9);
     filter.connect(g).connect(dest);
+    release(osc, [osc, filter, g]);
   }
 
   /** Simple voix enveloppée (bruitages mélodiques, gong…). */

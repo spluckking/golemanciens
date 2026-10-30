@@ -24,7 +24,8 @@ export default defineConfig({
         id: 'golemanciens',
         start_url: base,
         scope: base,
-        // Essai : mêmes réglages que Dictée-Blocs, dont l'icône s'ouvre sur les mêmes appareils Android.
+        // Plein écran et paysage sont demandés par le jeu (core/appMode.ts) : avec fullscreen et landscape
+        // dans le manifeste, l'icône ne s'ouvrait pas sur Android.
         display: 'standalone',
         orientation: 'any',
         background_color: '#1d2b53',

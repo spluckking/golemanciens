@@ -13,7 +13,7 @@ Ce projet est un jeu 3D en blocs pour un enfant de 8 ans (CE2), joué sur la tab
 - **Vite** + **TypeScript** en mode `strict`, sans `any` implicite.
 - **Three.js**, avec `WebGLRenderer` et `antialias: false`.
 - **Interface en DOM et CSS**, superposée au canvas : menus, dialogues, questions, HUD. Pas de texte rendu dans le WebGL.
-- **vite-plugin-pwa** pour le manifeste et le service worker : hors ligne complet, `orientation: landscape`, `display: fullscreen`.
+- **vite-plugin-pwa** pour le manifeste et le service worker : hors ligne complet, manifeste en `standalone` et orientation libre (`fullscreen` et `landscape` y empêchent l'icône de s'ouvrir sur Android) ; le jeu demande le plein écran et le paysage au toucher (`src/core/appMode.ts`).
 - **Web Audio API** pour toute la musique et les effets, générés par synthèse. **Aucun fichier audio.**
 - **IndexedDB** pour la sauvegarde, via une petite couche maison ou `idb`.
 - **Tests** : **Vitest** pour la logique, le contenu et la simulation, **Playwright** (Chromium, émulation tablette en paysage 1280×853 avec tactile) pour les parcours de bout en bout.
