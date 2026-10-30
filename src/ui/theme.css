@@ -1,7 +1,7 @@
 /* =====================================================================
-   Thème « Golémancien » : voxel illustré et jouet vivant. Panneaux de papier
-   dans un cadre de bois, plaques de pierre runique translucides sur le monde,
-   accents d'or, de cristal et de feuille ; contours fins, ombres douces.
+   Thème « Golémancien », style Runes d'or : panneaux de papier dans un cadre
+   d'or, plaques indigo sur le monde, médaillons ronds à cœur lumineux ;
+   contours fins, ombres douces.
    Les variables sont définies dans style.css (:root). Chargé après style.css.
    ===================================================================== */
 
@@ -539,16 +539,6 @@
 
 /* ---------- Icônes en pixel art ---------- */
 
-.pixel-icon {
-  display: block;
-  pointer-events: none;
-}
-
-.btn-attack .pixel-icon {
-  width: 60px;
-  height: 60px;
-}
-
 /* Barre du haut : une rangée de cases sur un panneau d'ardoise, comme une barre d'objets. */
 .top-bar {
   top: 10px;
@@ -570,11 +560,6 @@
   border-radius: var(--radius-s);
   box-shadow: none;
   opacity: 1;
-}
-
-.btn-top .pixel-icon {
-  width: 48px;
-  height: 48px;
 }
 
 .btn-top:disabled {
@@ -625,7 +610,7 @@
   filter: none;
 }
 
-.btn-top:disabled .pixel-icon {
+.btn-top:disabled .ui-icon {
   filter: grayscale(1);
   opacity: 0.45;
 }
@@ -636,23 +621,6 @@
 }
 
 /* Saut : la grosse flèche blanche lisse, dans le même bloc que la Baguette. */
-.jump-arrow {
-  display: block;
-  width: 64px;
-  height: 64px;
-  pointer-events: none;
-}
-
-.jump-arrow svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  fill: #ffffff;
-  stroke: #ffffff;
-  stroke-width: 3;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
-}
-
 /* ---------- Combat au tour par tour (SPEC § 7.2) ---------- */
 
 .combat-screen {
@@ -1955,6 +1923,423 @@ button {
   .btn-big:active:not(:disabled),
   .choice:active:not(:disabled),
   .choice.chosen {
+    transform: none;
+  }
+}
+
+/* =====================================================================
+   Style « Runes d'or » : médaillons ronds à anneau d'or et cœur lumineux,
+   sans plaque derrière les boutons. Les règles ci-dessous priment sur le reste.
+   ===================================================================== */
+
+.ui-icon {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+}
+
+.ui-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- Médaillons ---------- */
+
+.btn-top,
+.btn-action,
+.dialog-btn,
+.cine-next,
+.compass,
+.stick-knob {
+  --core-1: #6a5cc8;
+  --core-2: #33277c;
+  --core-3: #17103f;
+  --glow: rgba(127, 227, 255, 0.5);
+  /* Les calques de l'anneau restent dans le médaillon : les fenêtres passent bien par-dessus. */
+  isolation: isolate;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, var(--core-1), var(--core-2) 62%, var(--core-3));
+  box-shadow:
+    inset 0 3px 6px rgba(255, 255, 255, 0.35),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.35),
+    0 0 16px var(--glow),
+    0 5px 10px rgba(20, 10, 30, 0.5);
+}
+
+/* L'anneau d'or et le reflet : deux calques qui laissent passer le toucher. */
+.btn-top::before,
+.btn-action::before,
+.dialog-btn::before,
+.cine-next::before,
+.compass::before,
+.stick-knob::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  z-index: 1;
+  border-radius: 50%;
+  background: var(--ring);
+  -webkit-mask: radial-gradient(closest-side, transparent 83%, #000 84%);
+  mask: radial-gradient(closest-side, transparent 83%, #000 84%);
+  pointer-events: none;
+}
+
+.dialog-btn::before,
+.cine-next::before {
+  inset: -5px;
+}
+
+.btn-top::after,
+.btn-action::after,
+.dialog-btn::after,
+.cine-next::after {
+  content: '';
+  position: absolute;
+  top: 9%;
+  left: 18%;
+  width: 64%;
+  height: 30%;
+  border-radius: 50%;
+  background: linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.top-bar {
+  padding: 8px;
+  gap: 20px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.btn-top {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+}
+
+.btn-top .ui-icon {
+  width: 46px;
+  height: 46px;
+}
+
+.btn-action.btn-attack,
+.btn-action.btn-attack.pressed {
+  --core-1: #ffdf7a;
+  --core-2: #e8622c;
+  --core-3: #7a1d10;
+  --glow: rgba(255, 130, 50, 0.75);
+  width: 118px;
+  height: 118px;
+  border-color: transparent;
+}
+
+.btn-attack .ui-icon {
+  width: 72px;
+  height: 72px;
+}
+
+.btn-action.btn-jump,
+.btn-action.btn-jump.pressed {
+  --core-1: #a8f4ff;
+  --core-2: #2b86d8;
+  --core-3: #123a80;
+  --glow: rgba(127, 227, 255, 0.75);
+  width: 100px;
+  height: 100px;
+  border-color: transparent;
+}
+
+.btn-jump .ui-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.btn-action.btn-interact {
+  --core-1: #fff0a8;
+  --core-2: #f6b93a;
+  --core-3: #b86f12;
+  --glow: rgba(255, 205, 90, 0.75);
+  width: 104px;
+  height: 104px;
+  border: 0;
+  animation: ui-pop var(--t-enter) var(--ease-out);
+}
+
+.btn-interact .ui-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.btn-interact .btn-label {
+  position: relative;
+  font-size: 16px;
+  font-weight: 800;
+  color: #3a2206;
+  text-shadow: none;
+}
+
+/* Pressé : le médaillon s'enfonce et sa lumière baisse (le cœur garde sa couleur). */
+.btn-action.pressed,
+.btn-top.pressed,
+.btn-top:active:not(:disabled),
+.dialog-btn:active,
+.cine-next:active {
+  transform: scale(0.94);
+  border-color: transparent;
+  background: radial-gradient(circle at 50% 30%, var(--core-2), var(--core-3));
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.45);
+}
+
+.compass {
+  width: 76px;
+  height: 76px;
+  margin-left: -38px;
+  background: radial-gradient(circle, var(--core-1), var(--core-3));
+}
+
+.stick-base {
+  border: 0;
+  opacity: 0.9;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.08) 55%, rgba(36, 24, 78, 0.62) 56%);
+  box-shadow: 0 0 0 4px var(--rune-edge);
+}
+
+.stick-knob {
+  box-shadow: 0 5px 10px rgba(20, 10, 30, 0.5);
+}
+
+/* ---------- Pommes, éclats et golems : plaques indigo cerclées d'or ---------- */
+
+.stat {
+  gap: 8px;
+  padding: 5px 16px 5px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--night);
+  box-shadow:
+    0 0 0 3px var(--rune-edge),
+    0 4px 8px rgba(20, 10, 30, 0.45);
+}
+
+.stat .ui-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.golem-card {
+  grid-template-columns: 38px 1fr auto;
+  width: 214px;
+  padding: 7px 12px 8px 8px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--night);
+  box-shadow:
+    0 0 0 3px var(--rune-edge),
+    0 4px 8px rgba(20, 10, 30, 0.45);
+}
+
+/* La couleur du golem, dans un petit médaillon qui occupe les deux lignes de la carte. */
+.golem-dot {
+  grid-row: 1 / 3;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 3px 4px rgba(255, 255, 255, 0.45),
+    inset 0 -5px 7px rgba(0, 0, 0, 0.35),
+    0 0 0 3px var(--rune-edge);
+}
+
+.hp-row {
+  grid-column: 2 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hp-row .ui-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.golem-card .hp-bar {
+  flex: 1;
+  grid-column: auto;
+  border-color: var(--rune-deep);
+}
+
+/* ---------- Bulle de dialogue : une zone fixe, le texte ne bouge jamais ---------- */
+
+.dialog {
+  top: calc(104px + var(--safe-t));
+  height: 168px;
+  align-items: flex-start;
+  border: 0;
+  box-shadow: var(--frame), var(--shadow-3);
+}
+
+.dialog-portrait {
+  flex: none;
+}
+
+.dialog-portrait .portrait,
+.gs-tip .portrait,
+.combat-lumibloc .portrait {
+  image-rendering: pixelated;
+  border: 0;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4px var(--rune-edge),
+    0 0 0 6px var(--rune-deep);
+}
+
+.dialog-body {
+  align-self: stretch;
+  min-width: 0;
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+.dialog-name {
+  display: inline-block;
+  background: var(--night-solid);
+  color: var(--rune);
+}
+
+.dialog-actions {
+  flex: none;
+  width: 64px;
+}
+
+.dialog-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+}
+
+.dialog-btn .ui-icon {
+  width: 34px;
+  height: 34px;
+}
+
+.btn-replay {
+  border-color: var(--rune-edge);
+}
+
+/* ---------- Cinématiques : le sous-titre reste en place, ▶ a sa place réservée ---------- */
+
+.cine-caption {
+  height: 160px;
+  min-height: 0;
+  border: 0;
+  border-radius: var(--radius-l);
+  background: var(--night);
+  box-shadow: 0 0 0 3px var(--rune-edge), 0 0 0 5px var(--rune-deep), var(--shadow-2);
+}
+
+.cine-caption-text {
+  align-self: flex-start;
+}
+
+/* .hidden retire l'élément de la mise en page : ici, ▶ doit rester invisible sans céder sa place. */
+.cine-next.hidden {
+  display: grid !important;
+  visibility: hidden;
+}
+
+.cine-next {
+  position: relative;
+  --core-1: #fff0a8;
+  --core-2: #f6b93a;
+  --core-3: #b86f12;
+  --glow: rgba(255, 205, 90, 0.75);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  animation: none;
+}
+
+.cine-next .ui-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.cine-skip {
+  border: 0;
+  border-radius: 999px;
+  background: var(--night);
+  box-shadow: 0 0 0 3px var(--rune-edge), var(--shadow-2);
+}
+
+/* ---------- Fenêtres : papier clair pour lire, double cadre d'or ---------- */
+
+.card {
+  border: 0;
+  box-shadow: var(--frame), var(--shadow-3);
+}
+
+.card-title {
+  color: var(--night-solid);
+}
+
+.toast {
+  border: 0;
+  background: var(--night);
+  box-shadow: 0 0 0 3px var(--rune-edge), var(--shadow-3);
+}
+
+.btn-big {
+  border: 0;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at 50% 20%, #ffe89a, #eda02e 70%);
+  color: #3a2206;
+  text-shadow: none;
+  box-shadow:
+    0 0 0 4px var(--rune-edge),
+    0 0 0 6px var(--rune-deep),
+    0 5px 10px rgba(20, 10, 30, 0.45);
+}
+
+.btn-big:active:not(:disabled) {
+  border-color: transparent;
+  box-shadow: 0 0 0 4px var(--rune-edge), var(--press);
+}
+
+.btn-big.btn-secondary {
+  background: radial-gradient(ellipse at 50% 20%, #6a5cc8, #2c2170 80%);
+  color: #ffffff;
+}
+
+.btn-big:disabled {
+  background: radial-gradient(ellipse at 50% 20%, #8d86a8, #55506e 80%);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px var(--stone-edge);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-action.btn-interact {
+    animation: ui-fade var(--t-state) linear;
+  }
+
+  .btn-action.pressed,
+  .btn-top.pressed,
+  .btn-top:active:not(:disabled),
+  .dialog-btn:active,
+  .cine-next:active {
     transform: none;
   }
 }

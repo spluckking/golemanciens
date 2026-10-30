@@ -2,7 +2,7 @@ import type { GolemData } from '../core/gameState';
 import { GOLEMS } from '../data/creatures';
 import { frenchTypography } from '../core/text';
 import { el } from './dom';
-import { pixelIcon } from './pixelIcons';
+import { uiIcon } from './icons';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -45,7 +45,7 @@ export class Hud {
       ] as const
     ).map(([icon, label, id]) => {
       // Icône seule, dans une case de la barre du haut ; le nom reste lu par l'accessibilité.
-      const b = el('button', { className: 'btn-top', aria: label, testId: id }, [pixelIcon(icon)]);
+      const b = el('button', { className: 'btn-top', aria: label, testId: id }, [uiIcon(icon)]);
       b.title = label;
       b.type = 'button';
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -57,8 +57,8 @@ export class Hud {
     buttons[3].addEventListener('click', actions.pause);
     this.toast = el('div', { className: 'toast hidden', testId: 'toast' });
     const stats = el('div', { className: 'stats' }, [
-      el('div', { className: 'stat' }, [el('span', { text: '🍎' }), this.food]),
-      el('div', { className: 'stat' }, [el('span', { text: '✦' }), this.shards]),
+      el('div', { className: 'stat' }, [uiIcon('apple'), this.food]),
+      el('div', { className: 'stat' }, [uiIcon('shard'), this.shards]),
     ]);
     this.root = el('div', { className: 'hud' }, [
       el('div', { className: 'top-left' }, [stats, this.golemBox]),
@@ -98,7 +98,7 @@ export class Hud {
           el('span', { className: `golem-dot dot-${g.species}` }),
           el('span', { className: 'golem-name', text: g.nickname || GOLEMS[g.species].name }),
           zzz,
-          el('div', { className: 'hp-bar hp-golem' }, [fill]),
+          el('div', { className: 'hp-row' }, [uiIcon('heart'), el('div', { className: 'hp-bar hp-golem' }, [fill])]),
         ]);
         card = { root, fill, zzz };
         this.cards.set(g.id, card);

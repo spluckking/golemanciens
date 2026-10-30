@@ -1,25 +1,8 @@
 import type { InputState } from '../core/input';
 import { el } from './dom';
-import { pixelIcon, type PixelIconId } from './pixelIcons';
+import { uiIcon } from './icons';
 
 const STICK_RADIUS = 64;
-const SVG_NS = 'http://www.w3.org/2000/svg';
-
-/** Flèche de saut lisse : pointe arrondie, tige, et un trait au sol en dessous. */
-function jumpArrow(): HTMLElement {
-  const box = el('span', { className: 'jump-arrow' });
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 48 48');
-  svg.setAttribute('aria-hidden', 'true');
-  const arrow = document.createElementNS(SVG_NS, 'path');
-  arrow.setAttribute('d', 'M24 5 L42 24 L31 24 L31 34 L17 34 L17 24 L6 24 Z');
-  arrow.setAttribute('stroke-linejoin', 'round');
-  const ground = document.createElementNS(SVG_NS, 'rect');
-  for (const [k, v] of Object.entries({ x: '15', y: '39', width: '18', height: '3', rx: '1.5' })) ground.setAttribute(k, v);
-  svg.append(arrow, ground);
-  box.appendChild(svg);
-  return box;
-}
 const LOOK_SPEED = 1;
 
 /**
@@ -44,11 +27,11 @@ export class TouchControls {
     this.stickBase = el('div', { className: 'stick-base', testId: 'stick' }, [this.stickKnob]);
     stickZone.appendChild(this.stickBase);
 
-    const jump = el('button', { className: 'btn-action btn-jump', aria: 'Saut', testId: 'btn-jump' }, [jumpArrow()]);
-    const attack = this.button('btn-action btn-attack', 'wand', 'Baguette', 'btn-attack');
+    const jump = el('button', { className: 'btn-action btn-jump', aria: 'Saut', testId: 'btn-jump' }, [uiIcon('jump')]);
+    const attack = el('button', { className: 'btn-action btn-attack', aria: 'Baguette', testId: 'btn-attack' }, [uiIcon('wand')]);
     this.interactLabel = el('span', { className: 'btn-label', text: 'Parler' });
     this.interactBtn = el('button', { className: 'btn-action btn-interact hidden', aria: 'Interagir', testId: 'btn-interact' }, [
-      el('span', { className: 'btn-icon', text: '✋' }),
+      uiIcon('hand'),
       this.interactLabel,
     ]);
 
@@ -69,11 +52,6 @@ export class TouchControls {
   setInteract(label: string | null): void {
     this.interactBtn.classList.toggle('hidden', label === null);
     if (label !== null && this.interactLabel.textContent !== label) this.interactLabel.textContent = label;
-  }
-
-  /** Bouton d'action en icône seule (le nom reste lu par l'accessibilité). */
-  private button(className: string, icon: PixelIconId, label: string, testId: string): HTMLButtonElement {
-    return el('button', { className, aria: label, testId }, [pixelIcon(icon)]);
   }
 
   private tap(btn: HTMLElement, action: () => void): void {

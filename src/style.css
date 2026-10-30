@@ -1,5 +1,5 @@
 :root {
-  /* ----- Identité « Golémancien » : voxel illustré, jouet vivant, chaud et magique ----- */
+  /* ----- Identité « Golémancien », style Runes d'or : médaillons d'or, indigo et cristal, papier pour lire ----- */
   /* Encre et contours (un trait sombre et chaud, comme un dessin de livre d'images) */
   --ink: #2b2230;
   --ink-soft: #5e4c63;
@@ -7,15 +7,15 @@
   /* Papier et bois : les panneaux de lecture, de questions et de menus */
   --paper: #fdf5e2;
   --paper-2: #f3e3bf;
-  --paper-edge: #c49a62;
-  --paper-edge-press: #9a6f3a;
+  --paper-edge: #d9a032;
+  --paper-edge-press: #a86c14;
   --wood: #b5763f;
   --wood-dark: #74431f;
-  /* Pierre runique : les plaques du HUD posées sur le monde (indigo chaud, translucide) */
-  --night: rgba(40, 28, 58, 0.66);
-  --night-solid: #2c2142;
-  --night-press: rgba(28, 18, 42, 0.82);
-  --night-edge: rgba(255, 220, 160, 0.42);
+  /* Plaques du HUD posées sur le monde (indigo profond, cerclé d'or) */
+  --night: rgba(30, 20, 62, 0.86);
+  --night-solid: #1e143e;
+  --night-press: rgba(18, 12, 42, 0.92);
+  --night-edge: #d9a032;
   /* Accents : or des runes, cristal, feuille (action principale), braise (danger) */
   --rune: #ffd25e;
   --rune-deep: #c4861a;
@@ -25,14 +25,17 @@
   --leaf: #67c95a;
   --leaf-deep: #2f8a3a;
   --leaf-edge: #2f7a2a;
-  --stone-edge: #5b4a6c;
+  --stone-edge: #8a6a2a;
   --inset-edge: #a88358;
   --danger: #e2604a;
   --danger-edge: #a03a28;
   /* Surfaces */
-  --surface-night: linear-gradient(180deg, rgba(58, 42, 82, 0.72), rgba(32, 22, 48, 0.72));
-  --surface-stone: linear-gradient(180deg, #6e5a86, #4a3a62);
-  --surface-leaf: linear-gradient(180deg, #7fdc68, #47a83c);
+  --surface-night: linear-gradient(180deg, rgba(48, 36, 104, 0.88), rgba(26, 18, 60, 0.88));
+  --surface-stone: linear-gradient(180deg, #54459e, #2c2170);
+  --surface-leaf: linear-gradient(180deg, #ffdf7a, #e09128);
+  /* Anneau d'or des médaillons et double cadre d'or des fenêtres */
+  --ring: conic-gradient(from 20deg, #fff1b0, #c4861a 18%, #ffe08a 34%, #8f5a10 52%, #ffd25e 70%, #a86c14 86%, #fff1b0);
+  --frame: 0 0 0 5px var(--rune-edge), 0 0 0 8px #5a3a0e;
   --surface-rune: linear-gradient(180deg, #ffe08a, #f0b43a);
   --surface-paper: linear-gradient(180deg, #fffaf0, #f6e8c8);
   /* Profondeur : ombres avec décalage et flou ; relief doux des boutons (gelée de jouet) */

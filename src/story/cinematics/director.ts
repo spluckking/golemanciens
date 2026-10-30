@@ -10,6 +10,7 @@ import { animateCape } from '../../entities/heroModel';
 import { MODELS, type ModelId } from '../../entities/models';
 import type { Sparks } from '../../entities/sparks';
 import { el } from '../../ui/dom';
+import { uiIcon } from '../../ui/icons';
 import type { VoxelWorld } from '../../world/voxelWorld';
 import { readingSeconds } from './captions';
 
@@ -356,7 +357,7 @@ export class CinematicDirector implements ShotContext {
     this.begin();
     return new Promise((resolve) => {
       const caption = el('p', { className: 'cine-caption-text', testId: 'cinematic-caption' });
-      const next = el('button', { className: 'cine-next hidden', text: '▶', aria: 'Suite', testId: 'cinematic-next' });
+      const next = el('button', { className: 'cine-next hidden', aria: 'Suite', testId: 'cinematic-next' }, [uiIcon('next')]);
       next.type = 'button';
       const card = el('div', { className: 'cine-caption' }, [caption, next]);
       const root = el('div', { className: 'cinematic', testId: 'cinematic' }, [el('div', { className: 'cine-bar cine-bar-top' }), el('div', { className: 'cine-bar cine-bar-bottom' }), card]);

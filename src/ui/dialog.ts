@@ -1,6 +1,7 @@
 import { formatText } from '../core/text';
 import type { PortraitColors } from '../entities/models';
 import { el } from './dom';
+import { uiIcon } from './icons';
 import { hasFrenchVoice, onVoicesChanged, speak, stopSpeaking } from './speech';
 
 function hex(c: number): string {
@@ -57,8 +58,8 @@ export class DialogBubble {
   private onClose: (() => void) | null = null;
 
   constructor(private readonly playerName: () => string) {
-    this.speakBtn = el('button', { className: 'dialog-btn', text: '🔊', aria: 'Écouter', testId: 'dialog-speak' });
-    const close = el('button', { className: 'dialog-btn', text: '✕', aria: 'Fermer', testId: 'dialog-close' });
+    this.speakBtn = el('button', { className: 'dialog-btn', aria: 'Écouter', testId: 'dialog-speak' }, [uiIcon('speaker')]);
+    const close = el('button', { className: 'dialog-btn', aria: 'Fermer', testId: 'dialog-close' }, [uiIcon('close')]);
     this.root = el('div', { className: 'dialog hidden', testId: 'dialog' }, [
       this.portraitBox,
       el('div', { className: 'dialog-body' }, [this.name, this.text]),
