@@ -8,6 +8,8 @@ export interface RiddleMemory {
   seen: string[];
   /** Dernières énigmes tirées, la plus récente en dernier. */
   recent: string[];
+  /** Questions de combat déjà posées (énigmes et calculs générés), les plus récentes en dernier. */
+  asked?: string[];
 }
 
 export function createRiddleMemory(): RiddleMemory {

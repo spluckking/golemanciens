@@ -13,7 +13,7 @@ import type { Sparks } from '../entities/sparks';
 import { generateCalc } from '../questions/calc';
 import { levelForAttack, recordAnswer } from '../questions/difficulty';
 import { presentCalc, presentRiddle, type QuestionView } from '../questions/present';
-import { drawRiddle } from '../questions/riddleBank';
+import { freshCalc, generateRiddle } from '../questions/riddleGen';
 import { CombatHud } from '../ui/combatHud';
 import { askChoice, askQuestion, revealAnswer, showMessage } from '../ui/screens';
 import type { FightStage } from '../world/structures';
@@ -202,11 +202,13 @@ export class ArenaFight {
   private question(attack: AttackInfo): { view: QuestionView; category: 'calc' | 'riddle'; record: (correct: boolean) => void } {
     const { state, rng } = this.host;
     const category = questionCategory(attack);
+    const asked = (state.riddles.asked ??= []);
     if (category === 'calc') {
-      const q = generateCalc(levelForAttack('calc', state.levels.calc, attack.slot), rng);
+      const level = levelForAttack('calc', state.levels.calc, attack.slot);
+      const q = freshCalc(() => generateCalc(level, rng), this.host.phase, asked, rng);
       return { view: presentCalc(q, rng), category, record: (ok) => recordCalc(state.stats, q, ok) };
     }
-    const r = drawRiddle(CONTENT.riddles, state.riddles, levelForAttack('riddle', state.levels.riddle, attack.slot), rng);
+    const r = generateRiddle(levelForAttack('riddle', state.levels.riddle, attack.slot), this.host.phase, asked, rng);
     return { view: presentRiddle(r, rng), category, record: (ok) => recordRiddle(state.stats, r.level, ok) };
   }
 

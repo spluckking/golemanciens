@@ -271,6 +271,7 @@ Une même boîte de dialogue sert à tout : grande carte centrale, texte en au m
 
 ### 8.2 Énigmes (attaques Magie et pierres-énigmes) : banque de `CONTENU.md`, **3 choix**
 
+- **En combat**, les énigmes sont **générées** par `src/questions/riddleGen.ts` : familles à paramètres, habillées par phase (personnages, objets, symboles, nombres), avec une mémoire des 400 dernières questions enregistrée dans la sauvegarde. Les calculs passent par la même mémoire, et un sur trois est raconté avec les objets du biome. La banque ci-dessous sert aux pierres-énigmes des sanctuaires.
 - La banque est organisée en **5 niveaux**. Chaque énigme a une explication d'une ligne.
 - **Pas de répétition** tant qu'il reste des énigmes non vues au niveau demandé : on tire alors au niveau voisin, et sinon on réinitialise en excluant les 5 dernières. Les énigmes vues sont gardées dans la sauvegarde.
 

@@ -186,3 +186,9 @@ Textes nouveaux :
 - Combat : « Le Dragon d'Ombre perd son armure et s'envole ! », « Victoire ! Le Dragon d'Ombre est vaincu ! » ; attaques : « Coup de queue », « Souffle d'ombre », « Colère du dragon ».
 - Encyclopédie : Dragon d'Ombre « Il vit dans le Volcan d'Ombre. Seule la lumière des étoiles perce son armure ! »
 - Cinématique T6 (8 plans) : mise en scène nouvelle sur le texte de CONTENU.md.
+
+## Questions de combat générées (src/questions/riddleGen.ts)
+
+- Textes nouveaux écrits sans CONTENU.md, à relire : les 30 devinettes (5 par phase), les listes de mots (intrus, contraires) et les modèles de phrases.
+- Noms inventés pour compléter les phases : Frimas (phase 4), Mistral (phase 5), Braise, Cendre et Tison (phase 6).
+- E5-01 (suite des carrés parfaits) retirée de CONTENU.md à la demande du parent : la banque compte 59 énigmes, 11 au niveau 5.
