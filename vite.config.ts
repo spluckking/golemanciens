@@ -20,6 +20,8 @@ export default defineConfig({
         short_name: 'Golémanciens',
         description: 'Une aventure en blocs avec des golems, des calculs et des énigmes.',
         lang: 'fr',
+        // Identité explicite de l'application installée : Android la traite comme une nouvelle installation.
+        id: 'golemanciens',
         start_url: base,
         scope: base,
         display: 'fullscreen',
