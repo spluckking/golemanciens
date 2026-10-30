@@ -496,7 +496,11 @@ export class Game {
     this.layout = buildLayout(id);
     this.biome = new BiomeScene(this.layout, this.atlas);
     this.scene.add(this.biome.group);
+    // La vie du biome lit son avancement dès sa construction : elle doit voir celui de ce biome, pas du précédent.
+    const current = this.state.biome;
+    this.state.biome = id;
     this.life = this.createLife(this.layout);
+    this.state.biome = current;
     this.scene.add(this.life.group);
     this.syncStarTrial();
     this.applySky();
