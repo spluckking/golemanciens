@@ -28,6 +28,12 @@ export type SfxId =
   | 'hitPlant'
   | 'hitSun'
   | 'hitStar'
+  | 'hitSand'
+  | 'hitThunder'
+  | 'hitIce'
+  | 'hitCrystal'
+  | 'hitWind'
+  | 'hitRainbow'
   | 'monsterHit'
   | 'super'
   | 'poof'
@@ -601,6 +607,23 @@ export class AudioEngine {
         return this.notes([n(84), n(88), n(91)], 0.04, 0.6, 0.06, true);
       case 'hitStar':
         return this.notes([n(91), n(96), n(100), n(103)], 0.045, 0.9, 0.08, true);
+      case 'hitSand':
+        this.whoosh(bus, t, 0.6, 0.16, 700, 2600);
+        return this.noiseHit(bus, t + 0.1, 0.3, 0.07, 3200, 'highpass');
+      case 'hitThunder':
+        this.noiseHit(bus, t, 0.3, 0.26, 1800, 'highpass');
+        this.kick(bus, t + 0.02, 0.34);
+        return this.sweep(1400, 60, 0.25, 'sawtooth', 0.05);
+      case 'hitIce':
+        this.noiseHit(bus, t, 0.2, 0.1, 6000, 'highpass');
+        return this.notes([n(93), n(98), n(101)], 0.05, 0.7, 0.07, true);
+      case 'hitCrystal':
+        this.sweep(1200, 3200, 0.14, 'triangle', 0.05);
+        return this.notes([n(86), n(93), n(98)], 0.07, 0.6, 0.08, true);
+      case 'hitWind':
+        return this.whoosh(bus, t, 0.65, 0.2, 400, 1900);
+      case 'hitRainbow':
+        return this.notes([n(79), n(83), n(86), n(88), n(91), n(95)], 0.06, 0.7, 0.07, true);
       case 'monsterHit':
         this.kick(bus, t, 0.3);
         return this.sweep(320, 110, 0.16, 'triangle', 0.1);

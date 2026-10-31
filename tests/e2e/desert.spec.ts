@@ -26,14 +26,15 @@ test('temple ensablé : bloc de grès, miroirs du soleil, dalles-symboles, pierr
   }
   await expect.poll(async () => (await temple(page)).step).toBe('mirrors');
 
-  // Miroirs : deux quarts de tour chacun ; le rayon atteint le cristal.
+  // Miroirs, sur le plateau 2D : deux quarts de tour chacun ; le rayon atteint le cristal.
   const t = await temple(page);
-  for (const i of [0, 0, 1, 1]) {
-    const before = (await page.evaluate(() => (window.__game!.life() as unknown as { temple: { mirrors: string[] } }).temple.mirrors)).join();
-    await interactAt(page, t.mirrorPos[i].x + 1, t.mirrorPos[i].z, 'Tourner le miroir');
-    await expect.poll(async () => (await page.evaluate(() => (window.__game!.life() as unknown as { temple: { mirrors: string[] } }).temple.mirrors)).join()).not.toBe(before);
-    if (await page.getByTestId('dialog-close').isVisible()) await page.getByTestId('dialog-close').tap();
-  }
+  await interactAt(page, t.mirrorPos[0].x + 1, t.mirrorPos[0].z, 'Résoudre');
+  await expect(page.getByTestId('mirror-board')).toBeVisible();
+  await page.getByTestId('mirror-0').tap();
+  await page.getByTestId('mirror-restart').tap();
+  for (const i of [0, 0, 1, 1]) await page.getByTestId(`mirror-${i}`).tap();
+  await expect(page.getByTestId('mirror-crystal')).toHaveClass(/lit/);
+  await expect(page.getByTestId('mirror-board')).toHaveCount(0);
   await expect.poll(async () => (await temple(page)).step).toBe('symbols');
 
   // Dalles-symboles : ☀️ (première dalle), puis 7 (deuxième dalle).

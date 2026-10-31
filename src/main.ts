@@ -8,7 +8,7 @@ import { Game } from './core/game';
 import { BIOME_IDS, createGameState, createGolem, progress, type BiomeId, type GameState } from './core/gameState';
 import { createRng } from './core/rng';
 import { CONTENT } from './data/content';
-import { GOLEMS, type GolemSpecies } from './data/creatures';
+import { GOLEMS, type AttackType, type GolemSpecies } from './data/creatures';
 import { watchAppMode } from './core/appMode';
 import { CINEMATICS, OUTRO_CINEMATICS, storyCaptions } from './story/cinematics';
 import { S2_STEPS, S3_STEPS, S4_STEPS, S5_STEPS, SANCTUARY_STEPS, type SanctuaryStep } from './quests/sanctuary';
@@ -49,6 +49,8 @@ declare global {
       save: () => Promise<boolean>;
       audio: () => { state: string; track: string | null };
       travel: (biome: BiomeId) => Promise<void>;
+      /** Effet d'attaque rejoué dans le combat en cours. */
+      attackFx: (type: AttackType, ultimate: boolean) => void;
     };
   }
 }
@@ -241,6 +243,7 @@ async function boot(root: HTMLElement, layer: HTMLElement): Promise<void> {
       save: () => game.save(),
       audio: () => ({ state: audio.state, track: audio.track }),
       travel: (biome) => game.travel(biome),
+      attackFx: (type, ultimate) => game.fight?.showEffect(type, ultimate),
     };
   } else {
     void app.start();

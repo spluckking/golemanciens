@@ -44,6 +44,10 @@ const TILE_BURST: Record<TileColor, number> = { red: 0xe0453a, yellow: 0xf2c43c,
 
 export interface SanctuaryHooks {
   dialog: DialogBubble;
+  /** Calque de l'interface, pour les plateaux 2D des énigmes. */
+  uiLayer: HTMLElement;
+  /** Mode test : raccourcit les attentes. */
+  timeScale: number;
   toast: (text: string) => void;
   burst: (x: number, y: number, z: number, color: number, count?: number) => void;
   /** Le monde a changé (porte ouverte) : reconstruire ces cases. */

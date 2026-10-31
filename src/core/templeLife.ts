@@ -25,6 +25,7 @@ import { presentRiddle } from '../questions/present';
 import { RiddleStone, S3_STEPS, advance } from '../quests/sanctuary';
 import { MIRROR_ROOM, MirrorPuzzle, PUSH_ROOM, PushPuzzle, SYMBOL_WALLS, traceRay, type Dir } from '../quests/templePuzzles';
 import { NPC_NAMES } from '../story/dialogues';
+import { openMirrorBoard } from '../ui/mirrorBoard';
 import type { WorldLabels } from '../ui/worldLabels';
 import type { TemplePlan } from '../world/desert';
 import type { Cell } from '../world/structures';
@@ -61,7 +62,6 @@ export class TempleLife {
   private readonly blockTalk: Interactable;
   private readonly mirrorTalks: Interactable[];
   private readonly restartPush: Interactable;
-  private readonly restartMirrors: Interactable;
   private readonly stoneTalk: Interactable;
   private readonly eggTalk: Interactable;
   private wall = 0;
@@ -104,13 +104,12 @@ export class TempleLife {
     });
     this.mirrorTalks = MIRROR_ROOM.mirrors.map((m, i) => {
       const p = cell(plan.mirrorOrigin, m.x, m.y);
-      return { id: `s3-mirror-${i}`, x: p.x, y, z: p.z, radius: 1.3, label: TEXT_MIRROR, action: () => this.turnMirror(i) };
+      return { id: `s3-mirror-${i}`, x: p.x, y, z: p.z, radius: 2.2, label: TEXT_MIRROR, action: () => void this.openMirrors() };
     });
     const cp = cell(plan.mirrorOrigin, ...MIRROR_ROOM.crystal);
     this.crystal = this.place('doorCrystal', cp.x, cp.z, 0);
     this.crystalLit = this.place('doorCrystalLit', cp.x, cp.z, 0);
     for (let i = 0; i < 12; i++) this.rays.push(this.place('sunRay', 0, 0, 0));
-    this.restartMirrors = { id: 's3-restart-mirrors', ...plan.restartMirrors, y, radius: 1.2, label: TEXT_RESTART, action: () => this.resetMirrors() };
 
     // Dernière salle : les dalles de la suite, la pierre-énigme, le nid.
     for (const t of plan.symbolTiles) this.place('symbolNumber', t.x, t.z, 0);
@@ -170,7 +169,6 @@ export class TempleLife {
     set(this.blockTalk, s === 'push');
     set(this.restartPush, s === 'push');
     for (const t of this.mirrorTalks) set(t, s === 'mirrors');
-    set(this.restartMirrors, s === 'mirrors');
     set(this.stoneTalk, s === 'stone3');
     set(this.eggTalk, s === 'open');
     this.egg.root.visible = s !== 'hatched';
@@ -236,23 +234,27 @@ export class TempleLife {
 
   // ---------- Miroirs ----------
 
-  private turnMirror(i: number): void {
-    if (this.step !== 'mirrors') return;
-    const solved = this.mirror.rotate(i);
-    audio.sfx('tile');
-    this.refresh();
-    if (solved) {
-      const c = this.crystalLit.root.position;
-      this.hooks.burst(c.x, this.plan.floorY + 1, c.z, 0xffe060, 30);
-      audio.sfx('chime');
-      this.hooks.toast(TEXT_MIRRORS_DONE);
-      this.next();
-    } else this.hint(S3_MIRROR_HINT);
-  }
-
-  private resetMirrors(): void {
-    this.mirror.reset();
-    this.refresh();
+  /** L'énigme se joue sur un plateau 2D, à l'abri de la caméra et des golems. */
+  private async openMirrors(): Promise<void> {
+    if (this.busy || this.step !== 'mirrors') return;
+    this.busy = true;
+    this.hooks.lock(true);
+    const solved = await openMirrorBoard(this.hooks.uiLayer, {
+      puzzle: this.mirror,
+      hint: S3_MIRROR_HINT,
+      hintAfter: TEMPLE_HINT_AFTER,
+      onChange: () => this.refresh(),
+      onTurn: () => audio.sfx('tile'),
+      timeScale: this.hooks.timeScale,
+    });
+    this.hooks.lock(false);
+    this.busy = false;
+    if (!solved) return;
+    const c = this.crystalLit.root.position;
+    this.hooks.burst(c.x, this.plan.floorY + 1, c.z, 0xffe060, 30);
+    audio.sfx('chime');
+    this.hooks.toast(TEXT_MIRRORS_DONE);
+    this.next();
   }
 
   // ---------- Dalles-symboles ----------

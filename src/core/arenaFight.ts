@@ -7,6 +7,7 @@ import { CONTENT } from '../data/content';
 import { FOOD_BOSS, TEXT_BOSS_STAGE, TEXT_BOSS_VICTORIES, TEXT_LATER, TEXT_RETRY, TEXT_RETRY_QUESTION } from '../data/bossQuest';
 import { BOSSES, type AttackInfo, type AttackType, type BossId } from '../data/creatures';
 import { BOSS_ITEM, ITEMS } from '../data/items';
+import { AttackFx } from '../entities/attackFx';
 import { animateWalk, CubeModel } from '../entities/cubeModel';
 import { MODELS, golemModel, golemScale, type ModelId } from '../entities/models';
 import type { Sparks } from '../entities/sparks';
@@ -36,6 +37,8 @@ const TEXT_VICTORY = 'Victoire ! Tes golems ont gagné.';
 const TEXT_VICTORY_BUTTON = 'Continuer';
 const TEXT_ARENA_DONE = 'Bravo, {prenom} ! Tu as gagné les 3 combats de l’arène.';
 const TEXT_DEFEAT_BUTTON = 'D’accord';
+const TEXT_FINALE_WON = 'Victoire !';
+const TEXT_FINALE_LOST = 'Tes golems sont fatigués…';
 const TEXT_ROUND = 'Combat {n} / {total}';
 const TEXT_FREE_ROUND = 'Combat libre';
 const TEXT_LEAVE_QUESTION = 'Quitter ce combat ? Tu ne perds rien, mais ce combat ne compte pas.';
@@ -45,7 +48,12 @@ const TEXT_LEAVE_YES = 'Quitter';
 const TYPE_COLORS: Record<AttackType, number> = { rock: 0xa9abb8, plant: 0x6fae52, sun: 0xffc040, spore: 0xb07ae0, sand: 0xe0c080, thunder: 0xfff060, ice: 0x9fd8ff, crystal: 0xd8b0ff, wind: 0xf0f6ff, rainbow: 0xff9ad0, star: 0xfff3a0 };
 
 /** Bruitage d'un coup réussi, selon le type d'attaque. */
-const HIT_SFX: Record<AttackType, SfxId> = { rock: 'hitRock', plant: 'hitPlant', sun: 'hitSun', spore: 'poof', sand: 'hitPlant', thunder: 'hitSun', ice: 'hitStar', crystal: 'hitStar', wind: 'hitPlant', rainbow: 'hitStar', star: 'hitStar' };
+const HIT_SFX: Record<AttackType, SfxId> = { rock: 'hitRock', plant: 'hitPlant', sun: 'hitSun', spore: 'poof', sand: 'hitSand', thunder: 'hitThunder', ice: 'hitIce', crystal: 'hitCrystal', wind: 'hitWind', rainbow: 'hitRainbow', star: 'hitStar' };
+
+/** Attaques qui illuminent l'écran un instant. */
+const FLASH: Partial<Record<AttackType, string>> = { thunder: '#fff6b0', sun: '#ffe9a8', star: '#fff3a0' };
+/** Durée des animations de fin de combat, en secondes. */
+const FINALE_S = 1.8;
 
 export interface FightHost {
   scene: THREE.Scene;
@@ -93,6 +101,11 @@ export class ArenaFight {
   private readonly monsterScale: number;
   /** Petits slimes qui apparaissent quand le Roi Slime se divise. */
   private readonly minis: CubeModel[] = [];
+  private readonly fx = new AttackFx();
+  private readonly lookAt = new THREE.Vector3();
+  private readonly closeTo = new THREE.Vector3();
+  /** Rapprochement de la caméra sur les golems à la fin du combat (0 → 1). */
+  private closeUp = 0;
   private time = 0;
 
   constructor(private readonly host: FightHost) {
@@ -117,6 +130,7 @@ export class ArenaFight {
       this.monsterModels.set(mon.id, m);
       this.group.add(m.root);
     }
+    this.group.add(this.fx.mesh);
     host.scene.add(this.group);
     for (const mon of this.combat.monsters) markSeen(state, mon.model);
     this.hud = new CombatHud(host.uiLayer, state.playerName, state.lessonDone);
@@ -166,6 +180,56 @@ export class ArenaFight {
 
   private tween(duration: number, apply: (k: number) => void): Promise<void> {
     return new Promise((done) => this.tweens.push({ t: 0, duration, apply, done }));
+  }
+
+  /** L'effet propre au type de l'attaque, sur le monstre. */
+  private async attackEffect(type: AttackType, ultimate: boolean): Promise<void> {
+    const p = this.monsterModel.root.position;
+    const seconds = this.fx.play(type, this.golemModel.root.position, p, ultimate);
+    audio.sfx(HIT_SFX[type]);
+    const flash = FLASH[type];
+    if (flash) this.hud.flash(flash);
+    await wait(this.ms(seconds));
+    this.host.sparks.burst(p.x, p.y + 0.8, p.z, TYPE_COLORS[type], 18, 1);
+  }
+
+  /** Fin du combat : les golems fêtent la victoire, ou s'assoient, fatigués (rien de punitif). */
+  private async finale(won: boolean): Promise<void> {
+    const { golemSpot, center } = this.host.plan;
+    const seconds = FINALE_S * this.host.timeScale;
+    audio.duck(true);
+    this.hud.finale(won ? TEXT_FINALE_WON : TEXT_FINALE_LOST, won);
+    audio.sfx(won ? 'victory' : 'defeat');
+    void this.tween(0.6 * this.host.timeScale, (k) => (this.closeUp = k * k * (3 - 2 * k)));
+    const team = won ? this.combat.golems.filter((g) => g.hp > 0) : this.combat.golems;
+    const models = team.flatMap((g) => this.golemModels.get(g.id) ?? []);
+    const front = this.host.plan.view > 0 ? Math.PI : 0;
+    models.forEach((m, i) => {
+      m.root.visible = true;
+      m.root.scale.setScalar(1);
+      // Côte à côte face à la caméra, pour que toute l'équipe se voie.
+      m.root.position.set(golemSpot.x + this.dir * i * 1.5, this.floorY, golemSpot.z);
+      m.root.rotation.set(0, front, 0);
+    });
+    if (won) this.fx.confetti({ x: center.x, y: this.floorY, z: center.z }, seconds);
+    await this.tween(seconds, (k) => {
+      models.forEach((m, i) => {
+        if (won) {
+          m.root.position.y = this.floorY + Math.abs(Math.sin((k * 3 + i * 0.3) * Math.PI)) * 0.9;
+          m.root.rotation.y = front + Math.sin((k * 2 + i * 0.25) * Math.PI * 2) * 0.4;
+        } else {
+          const sit = Math.min(1, k * 2.5);
+          m.root.rotation.x = -0.35 * sit;
+          m.root.scale.y = 1 - 0.3 * sit;
+        }
+      });
+    });
+    audio.duck(false);
+  }
+
+  /** Mode test : joue l'effet d'un type sans passer par une question. */
+  showEffect(type: AttackType, ultimate: boolean): void {
+    void this.attackEffect(type, ultimate);
   }
 
   /** Bond vers l'adversaire et retour. */
@@ -267,8 +331,7 @@ export class ArenaFight {
     }
     this.refreshHud();
     const won = c.phase === 'won';
-    audio.sfx(won ? 'victory' : 'defeat');
-    await wait(this.ms(0.6));
+    await this.finale(won);
     return this.finish(won);
   }
 
@@ -335,11 +398,7 @@ export class ArenaFight {
       switch (e.type) {
         case 'attack': {
           await this.lunge(this.golemModel, this.dir);
-          if (e.hit) {
-            const p = this.monsterModel.root.position;
-            this.host.sparks.burst(p.x, p.y + 0.8, p.z, TYPE_COLORS[e.attack.type], 18, 1);
-            audio.sfx(HIT_SFX[e.attack.type]);
-          }
+          if (e.hit) await this.attackEffect(e.attack.type, e.attack.slot === 'ultimate');
           break;
         }
         case 'damage':
@@ -444,7 +503,14 @@ export class ArenaFight {
     // Le boss est grand : la caméra recule et monte un peu.
     const far = this.host.kind === 'boss' ? 1.45 : 1;
     cam.position.set(center.x + 0.5, this.floorY + 2.6 * far, center.z + 5.6 * view * far);
-    cam.lookAt(center.x + 0.5, this.floorY + 1.4, center.z - 0.5 * view);
+    const look = this.lookAt.set(center.x + 0.5, this.floorY + 1.4, center.z - 0.5 * view);
+    if (this.closeUp > 0) {
+      const g = this.host.plan.golemSpot;
+      const team = this.dir * (this.combat.golems.length - 1) * 0.75;
+      cam.position.lerp(this.closeTo.set(g.x + team, this.floorY + 1.8, g.z + 4.2 * view), this.closeUp);
+      look.lerp(this.closeTo.set(g.x + team, this.floorY + 1, g.z), this.closeUp);
+    }
+    cam.lookAt(look);
     for (let i = this.tweens.length - 1; i >= 0; i--) {
       const tw = this.tweens[i];
       tw.t += dt;
@@ -462,10 +528,12 @@ export class ArenaFight {
       this.minis.forEach((m, i) => (m.root.position.y = this.floorY + Math.abs(Math.sin(this.time * 4 + i)) * 0.3));
     }
     this.host.sparks.update(dt, () => false, () => false);
+    this.fx.update(dt);
     this.hud.update(dt);
   }
 
   dispose(): void {
+    this.fx.dispose();
     this.group.removeFromParent();
     this.hud.dispose();
   }

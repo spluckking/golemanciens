@@ -467,6 +467,8 @@ export class Game {
     };
     // Énigmes, éclosion et portes des sanctuaires (communs à tous les biomes).
     const sanctuary = {
+      uiLayer: this.uiLayer,
+      timeScale: this.timeScale,
       rebuild: (cells: Cell[]) => this.biome.rebuildCells(cells),
       ask: (view: QuestionView) => askQuestion(this.uiLayer, view, this.state.playerName),
       reveal: (view: QuestionView, chosen: number) => revealAnswer(this.uiLayer, view, chosen, this.state.playerName),

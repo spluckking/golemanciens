@@ -192,3 +192,8 @@ Textes nouveaux :
 - Textes nouveaux écrits sans CONTENU.md, à relire : les 30 devinettes (5 par phase), les listes de mots (intrus, contraires) et les modèles de phrases.
 - Noms inventés pour compléter les phases : Frimas (phase 4), Mistral (phase 5), Braise, Cendre et Tison (phase 6).
 - E5-01 (suite des carrés parfaits) retirée de CONTENU.md à la demande du parent : la banque compte 59 énigmes, 11 au niveau 5.
+
+## Fin de combat et plateau des miroirs
+
+- Titres de fin de combat : « Victoire ! » et « Tes golems sont fatigués… ».
+- Plateau 2D : « Les miroirs du soleil », « Touche un miroir pour le faire tourner. Envoie le rayon sur le cristal ! », « Recommencer », « Retour », et le bouton « Résoudre » dans le temple.

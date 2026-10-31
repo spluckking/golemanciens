@@ -2458,3 +2458,187 @@ button {
     transform: none;
   }
 }
+
+/* ---------- Fin de combat : grand titre, l'interface de combat s'efface ---------- */
+
+.combat-finale .combat-card,
+.combat-finale .combat-actions,
+.combat-finale .combat-round,
+.combat-finale .combat-sheet-btn,
+.combat-finale .combat-banner {
+  opacity: 0;
+  transition: opacity var(--t-enter) var(--ease-out);
+}
+
+.finale-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 14%;
+  text-align: center;
+  font-size: var(--fs-xxl);
+  font-weight: 800;
+  color: #dfe8ff;
+  text-shadow: var(--text-shadow-block);
+  animation: ui-pop var(--t-enter) var(--ease-out);
+  pointer-events: none;
+}
+
+.finale-text.won {
+  font-size: 72px;
+  color: var(--rune);
+  text-shadow:
+    0 3px 0 var(--rune-deep),
+    0 6px 14px rgba(20, 10, 30, 0.6);
+}
+
+.combat-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  animation: combat-flash 280ms ease-out;
+}
+
+@keyframes combat-flash {
+  20% {
+    opacity: 0.38;
+  }
+}
+
+/* ---------- Plateaux 2D des énigmes ---------- */
+
+.board-card {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 28px;
+  width: auto;
+  max-width: 96vw;
+  padding: 20px 24px;
+}
+
+.board-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  width: min(320px, 34vw);
+}
+
+.board-side .card-title {
+  font-size: var(--fs-l);
+}
+
+.board-help,
+.mirror-hint {
+  margin: 0;
+  font-size: var(--fs-s);
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.mirror-hint {
+  padding: 8px 12px;
+  border-radius: var(--radius-s);
+  background: #fff6d8;
+}
+
+.mirror-grid {
+  --board: min(calc(100vh - 88px), 560px);
+  position: relative;
+  flex: none;
+  width: var(--board);
+  height: var(--board);
+  display: grid;
+  grid-template-columns: repeat(var(--cells), 1fr);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+  background: #d8b070;
+  box-shadow: 0 0 0 4px var(--rune-deep);
+}
+
+.mirror-cell {
+  box-shadow: inset 0 0 0 1px rgba(120, 80, 30, 0.28);
+}
+
+.mirror-cell:nth-child(even) {
+  background: rgba(255, 240, 200, 0.22);
+}
+
+.mirror-ray {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.mirror-ray polyline {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.mirror-ray-glow {
+  stroke: rgba(255, 226, 122, 0.5);
+  stroke-width: 5;
+}
+
+.mirror-ray-core {
+  stroke: #fff6c8;
+  stroke-width: 1.8;
+}
+
+.mirror-slit,
+.mirror-crystal,
+.mirror-piece {
+  position: absolute;
+  width: 20%;
+  height: 20%;
+  display: grid;
+  place-items: center;
+}
+
+.mirror-slit {
+  font-size: 34px;
+  pointer-events: none;
+}
+
+.mirror-crystal {
+  font-size: 44px;
+  filter: grayscale(0.7) brightness(0.8);
+  pointer-events: none;
+  transition: filter var(--t-state) var(--ease-out);
+}
+
+.mirror-crystal.lit {
+  filter: drop-shadow(0 0 10px #fff3a0);
+}
+
+.mirror-piece {
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: radial-gradient(circle at 50% 30%, #cdeaff, #5f9ad0 70%);
+  box-shadow:
+    inset 0 0 0 4px var(--rune-edge),
+    0 3px 6px rgba(20, 10, 30, 0.4);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mirror-piece:active {
+  transform: scale(0.94);
+}
+
+.mirror-piece .ui-icon {
+  width: 56%;
+  height: 56%;
+  transition: transform var(--t-state) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mirror-piece:active {
+    transform: none;
+  }
+}

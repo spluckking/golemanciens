@@ -99,6 +99,20 @@ export class CombatHud {
     this.leaveAllowed = true;
   }
 
+  /** Éclair de lumière bref, pour les attaques les plus vives. */
+  flash(color: string): void {
+    const node = el('div', { className: 'combat-flash' });
+    node.style.background = color;
+    this.root.appendChild(node);
+    setTimeout(() => node.remove(), 300);
+  }
+
+  /** Grand titre de fin de combat. */
+  finale(text: string, won: boolean): void {
+    this.root.classList.add('combat-finale');
+    this.root.appendChild(el('div', { className: won ? 'finale-text won' : 'finale-text', text, testId: 'combat-finale' }));
+  }
+
   showSheetButton(): void {
     this.sheetBtn.classList.remove('hidden');
   }
