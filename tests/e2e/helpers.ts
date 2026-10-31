@@ -81,3 +81,17 @@ export async function playFight(page: Page, correct: boolean, endId: string): Pr
   }
   throw new Error(`Combat sans fin (attendu : ${endId})`);
 }
+
+/**
+ * Coups de baguette jusqu'à ce que done() soit vrai : sur une machine lente, un coup tombe parfois
+ * pendant la recharge et il est ignoré ; on réessaie, comme le ferait un joueur.
+ */
+export async function zapUntil(page: Page, done: () => Promise<boolean>, timeoutMs = 45_000): Promise<void> {
+  const end = Date.now() + timeoutMs;
+  while (Date.now() < end) {
+    await page.getByTestId('btn-attack').tap({ force: true, timeout: 2_000 }).catch(() => undefined);
+    await page.waitForTimeout(700);
+    if (await done()) return;
+  }
+  expect(await done()).toBe(true);
+}

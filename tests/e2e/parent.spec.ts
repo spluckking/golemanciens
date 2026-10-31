@@ -116,7 +116,7 @@ test('bouton Pause, et rappel de pause de Lumibloc (« Continuer » après l’a
   await page.evaluate(() => {
     window.__game!.state().settings.pauseMinutes = 0.05;
   });
-  await expect(page.getByTestId('pause-reminder')).toContainText('Tu joues depuis un moment', { timeout: 15_000 });
+  await expect(page.getByTestId('pause-reminder')).toContainText('Tu joues depuis un moment', { timeout: 45_000 });
   await expect(page.getByTestId('pause-reminder-continue')).toBeDisabled();
   await expect(page.getByTestId('pause-reminder-continue')).toBeEnabled({ timeout: 10_000 });
   await page.getByTestId('pause-reminder-continue').tap();

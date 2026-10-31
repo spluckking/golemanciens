@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { playFight, waitReady } from './helpers';
+import { zapUntil, playFight, waitReady } from './helpers';
 
 type BossView = { webs: { x: number; z: number; cut: boolean }[]; queen: { x: number; z: number } };
 
@@ -16,8 +16,7 @@ test('Les fils d’argent : 3 toiles coupées, la Reine Araignée vaincue, outro
   for (const [i, w] of webs.entries()) {
     await page.evaluate(([x, z]) => window.__game!.teleport(x, z + 3, 0), [w.x, w.z]);
     await page.waitForTimeout(400);
-    await page.getByTestId('btn-attack').tap();
-    await expect.poll(() => page.evaluate(() => window.__game!.state().biomes.foret.bossSteps)).toBe(i + 1);
+    await zapUntil(page, async () => (await page.evaluate(() => window.__game!.state().biomes.foret.bossSteps)) === i + 1);
   }
   await expect(page.getByTestId('toast')).toContainText('Le sentier est libre');
 

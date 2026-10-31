@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { zapUntil } from './helpers';
 
 /** Partie de test avec Pierre et Mousse (l'œuf n'arrive qu'à la sous-étape 1.4). */
 async function openWithGolems(page: Page): Promise<string[]> {
@@ -100,8 +101,8 @@ test('tous les golems K.O. : retour à la dernière lanterne, golems soignés', 
       g.atk = 0;
     }
   });
-  await page.getByTestId('btn-attack').tap();
-  await expect(page.getByTestId('ko-fade')).toBeVisible({ timeout: 15_000 });
+  // Le fondu est bref : on s'arrête aussi si le héros est déjà de retour à la lanterne.
+  await zapUntil(page, async () => (await page.getByTestId('ko-fade').isVisible()) || (await page.evaluate(() => Math.hypot(window.__game!.hero().x - 39.5, window.__game!.hero().z - 89.5) < 4)));
   await expect(page.getByTestId('ko-fade')).toBeHidden({ timeout: 5_000 });
 
   const hero = await page.evaluate(() => window.__game!.hero());

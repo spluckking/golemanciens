@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { interactAt, talkTo, waitReady } from './helpers';
+import { zapUntil, interactAt, talkTo, waitReady } from './helpers';
 
 const status = (page: Page, id: string): Promise<string> =>
   page.evaluate((q) => (window.__game!.life() as unknown as { forestQuests: { log: Record<string, { status: string }> } }).forestQuests.log[q].status, id);
@@ -26,8 +26,7 @@ test('Cabanes des Cimes : lanterne, planches et pont, loups, champignons bleus, 
   for (const p of q.planks) {
     await page.evaluate(([x, z]) => window.__game!.teleport(x, z + 2, 0), [p.x, p.z]);
     await page.waitForTimeout(400);
-    await page.getByTestId('btn-attack').tap();
-    await expect.poll(async () => (await quests(page)).planks.filter((c) => c.taken).length).toBeGreaterThan(q.planks.indexOf(p));
+    await zapUntil(page, async () => (await quests(page)).planks.filter((c) => c.taken).length > q.planks.indexOf(p));
   }
   expect(await status(page, 'R2')).toBe('ready');
   await talkTo(page, 'tilleul', 'Trois belles planches');
