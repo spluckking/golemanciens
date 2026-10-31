@@ -5,40 +5,33 @@ import {
   S4_EGG_CHOICES,
   S4_MILL_HINT,
   S4_MILL_RULE,
-  TEXT_AXLES,
-  TEXT_BACK,
-  TEXT_BIG_GEAR,
-  TEXT_CLOSE,
   TEXT_DOOR_OPEN,
   TEXT_ICE_MELTS,
   TEXT_MEMORY_DONE,
   TEXT_MEMORY_EASIER,
   TEXT_MEMORY_GO,
-  TEXT_MEMORY_REPLAY,
   TEXT_MEMORY_WATCH,
   TEXT_MEMORY_WRONG,
-  TEXT_MILL_CHOOSE_AXLE,
-  TEXT_MILL_CHOOSE_GEAR,
   TEXT_MILL_GAP,
   TEXT_MILL_JAM,
-  TEXT_MILL_PANEL,
   TEXT_MILL_RIGHT,
   TEXT_MILL_WRONG,
   TEXT_READ_STONE,
-  TEXT_REMOVE_GEAR,
   TEXT_SLIDE_DONE,
   TEXT_SLIDE_HINT,
-  TEXT_SMALL_GEAR,
   TEXT_STONE_WRONG,
   TEXT_TOUCH_EGG,
-  TEXT_TURN_CRANK,
+  BOARD_MEMORY,
+  BOARD_MILL,
+  BOARD_SLIDE,
+  TEXT_SLIDE_FIRST,
+  TEXT_SOLVE,
 } from '../data/sanctuaries';
 import { CubeModel } from '../entities/cubeModel';
 import { MODELS, PORTRAITS, type ModelId } from '../entities/models';
 import { presentRiddle } from '../questions/present';
-import { GEAR_PIECES, GEAR_SLOTS, IceMemory, MEMORY_EASY_AFTER, SLIDE_ROOM, SlidePuzzle, gearTrain, slide, type GearResult, type GearSize, type GearSlot, type Spin } from '../quests/frostPuzzles';
+import { GEAR_PIECES, GEAR_SLOTS, IceMemory, MEMORY_EASY_AFTER, SLIDE_ROOM, SlidePuzzle, slide, type GearSize, type GearSlot } from '../quests/frostPuzzles';
 import { RiddleStone, S4_STEPS, advance } from '../quests/sanctuary';
-import type { Dir } from '../quests/templePuzzles';
 import { NPC_NAMES } from '../story/dialogues';
 import type { WorldLabels } from '../ui/worldLabels';
 import type { FrostSanctuaryPlan } from '../world/givre';
@@ -52,14 +45,11 @@ import type { Interactable, Interactions } from './interactions';
 import type { Rng } from './rng';
 import type { SanctuaryHooks } from './sanctuaryLife';
 import { recordRiddle } from './stats';
+import { openMemoryBoard, openMillBoard, openSlideBoard } from '../ui/puzzleBoards';
 
 const STONE_LEVEL = 4;
 /** Vitesse d'une glissade (cases par seconde) et décalage du centre de la case qui la déclenche. */
-const SLIDE_SPEED = 8;
-const SLIDE_TRIGGER = 0.3;
 const MEMORY_COLORS = ['Blue', 'Green', 'Pink', 'Yellow'] as const;
-const MEMORY_STEP_S = 0.75;
-const CRANK_SPIN_S = 2.6;
 /** Hauteur des axes (le milieu est un peu plus haut) et de la manivelle, au-dessus du sol. */
 const AXLE_Y: Record<GearSlot, number> = { L: 1.2, M: 2.1, R: 1.2 };
 const MECH_Y = 1.2;
@@ -88,13 +78,7 @@ export class FrostSanctuaryLife {
   private readonly gears: { size: GearSize; model: CubeModel; slot: GearSlot | null; rest: THREE.Vector3 }[] = [];
   private readonly crank: CubeModel;
   private readonly mill: CubeModel;
-  private readonly talks: Record<'stone' | 'stone4' | 'egg' | 'replay' | 'mill', Interactable>;
-  private sliding: { from: THREE.Vector2; to: THREE.Vector2; t: number; duration: number; exit: boolean } | null = null;
-  private playback: { index: number; t: number } | null = null;
-  private memoryShown = false;
-  private lastTile = -1;
-  private spinning: { t: number; result: GearResult } | null = null;
-  private millTries = 0;
+  private readonly talks: Record<'stone' | 'stone4' | 'egg' | 'slide' | 'replay' | 'mill', Interactable>;
   private busy = false;
   private wobble = 0;
   private synced: string | undefined;
@@ -143,8 +127,9 @@ export class FrostSanctuaryLife {
       stone: { id: 's4-stone', ...plan.stone, y, radius: 2.4, label: TEXT_READ_STONE, action: () => void this.readStone('stone') },
       stone4: { id: 's4-stone4', ...plan.stone4, y, radius: 2.4, label: TEXT_READ_STONE, action: () => void this.readStone('stone4') },
       egg: { id: 's4-egg', ...plan.nest, y, radius: 2.4, label: TEXT_TOUCH_EGG, action: () => void this.hatch() },
-      replay: { id: 's4-replay', ...plan.memoryStele, y, radius: 1.6, label: TEXT_MEMORY_REPLAY, action: () => this.play() },
-      mill: { id: 's4-mill', ...plan.millPanel, y, radius: 2, label: TEXT_MILL_PANEL, action: () => void this.millPanel() },
+      slide: { id: 's4-slide', x: plan.slideOrigin.x + SLIDE_ROOM.start[0], z: plan.slideOrigin.z + SLIDE_ROOM.start[1], y, radius: 3, label: TEXT_SOLVE, action: () => void this.openSlide() },
+      replay: { id: 's4-memory', ...plan.memoryStele, y, radius: 3, label: TEXT_SOLVE, action: () => void this.openMemory() },
+      mill: { id: 's4-mill', ...plan.millPanel, y, radius: 2.4, label: TEXT_SOLVE, action: () => void this.openMill() },
     };
     this.syncWorld();
   }
@@ -194,6 +179,7 @@ export class FrostSanctuaryLife {
       if (on) this.interactions.add(it);
     };
     set(this.talks.stone, s === 'stone');
+    set(this.talks.slide, s === 'slide');
     set(this.talks.replay, s === 'memory');
     set(this.talks.mill, s === 'mill');
     set(this.talks.stone4, s === 'stone4');
@@ -231,117 +217,62 @@ export class FrostSanctuaryLife {
 
   // ---------- La glissade ----------
 
-  /** Case de la salle de glace où se trouve le héros, ou null. */
-  private slideCell(x: number, z: number): [number, number] | null {
-    const gx = Math.floor(x - this.plan.slideOrigin.x + 0.5);
-    const gz = Math.floor(z - this.plan.slideOrigin.z + 0.5);
-    if (gx < 0 || gz < 0 || gx >= SLIDE_ROOM.size || gz >= SLIDE_ROOM.size) return null;
-    return [gx, gz];
-  }
-
   private cellCenter(c: [number, number]): THREE.Vector2 {
     return new THREE.Vector2(this.plan.slideOrigin.x + c[0], this.plan.slideOrigin.z + c[1]);
   }
 
-  private updateSlide(dt: number, hero: { x: number; z: number }, playing: boolean): void {
-    if (this.sliding) {
-      const s = this.sliding;
-      s.t = Math.min(s.duration, s.t + dt);
-      const p = s.from.clone().lerp(s.to, s.duration > 0 ? s.t / s.duration : 1);
-      this.hooks.moveHero(p.x, p.y);
-      if (s.t >= s.duration) {
-        this.sliding = null;
-        this.hooks.lock(false);
-        if (s.exit) {
-          audio.sfx('chime');
-          this.hooks.toast(TEXT_SLIDE_DONE);
-          this.next();
-        }
-      }
-      return;
-    }
-    if (!playing || this.step !== 'slide') return;
-    const cell = this.slideCell(hero.x, hero.z);
-    if (!cell) return;
-    const c = this.cellCenter(cell);
-    const dx = hero.x - c.x;
-    const dz = hero.z - c.y;
-    if (Math.max(Math.abs(dx), Math.abs(dz)) < SLIDE_TRIGGER) return;
-    const dir: Dir = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? 'E' : 'W') : dz > 0 ? 'S' : 'N';
-    this.slide.pos = cell;
-    const to = this.slide.move(dir);
-    const exit = to === 'exit';
-    // On sort par l'ouverture nord jusque dans la salle suivante.
-    const target = exit ? this.cellCenter([SLIDE_ROOM.exit, -2]) : this.cellCenter(to);
-    const from = new THREE.Vector2(hero.x, hero.z);
-    const duration = from.distanceTo(target) / SLIDE_SPEED;
-    if (duration < 0.05) {
-      this.hooks.moveHero(target.x, target.y);
-      return;
-    }
-    audio.sfx('slide');
+  /** La salle de glace se joue sur un plateau 2D ; le héros sort par l'ouverture nord une fois résolue. */
+  private async openSlide(): Promise<void> {
+    if (this.busy || this.step !== 'slide') return;
+    this.busy = true;
     this.hooks.lock(true);
-    this.sliding = { from, to: target, t: 0, duration, exit };
+    const solved = await openSlideBoard(this.hooks.uiLayer, {
+      puzzle: this.slide,
+      ...BOARD_SLIDE,
+      firstMove: TEXT_SLIDE_FIRST,
+      timeScale: this.hooks.timeScale,
+      onSlide: () => audio.sfx('slide'),
+    });
+    this.hooks.lock(false);
+    this.busy = false;
+    if (!solved) return;
+    const out = this.cellCenter([SLIDE_ROOM.exit, -2]);
+    this.hooks.moveHero(out.x, out.y);
+    audio.sfx('chime');
+    this.hooks.toast(TEXT_SLIDE_DONE);
+    this.next();
   }
 
   // ---------- La mémoire de glace ----------
-
-  private play(): void {
-    if (this.step !== 'memory' || this.playback) return;
-    this.memory.input = [];
-    this.playback = { index: -1, t: 0.6 };
-    this.hooks.toast(TEXT_MEMORY_WATCH);
-  }
 
   private light(tile: number, on: boolean): void {
     this.tilesOn[tile].root.visible = on;
     this.tilesOff[tile].root.visible = !on;
   }
 
-  private updateMemory(dt: number, hero: { x: number; z: number }, playing: boolean): void {
-    if (this.step !== 'memory') return;
-    // La séquence se joue d'elle-même quand on entre dans la salle.
-    if (!this.memoryShown && hero.z < this.plan.slideOrigin.z - 1.5) {
-      this.memoryShown = true;
-      this.play();
-    }
-    if (this.playback) {
-      const pb = this.playback;
-      pb.t -= dt;
-      if (pb.t > 0) return;
-      if (pb.index >= 0) this.light(this.memory.sequence[pb.index], false);
-      pb.index++;
-      if (pb.index >= this.memory.sequence.length) {
-        this.playback = null;
-        this.hooks.toast(TEXT_MEMORY_GO);
-        return;
-      }
-      const tile = this.memory.sequence[pb.index];
-      this.light(tile, true);
-      audio.sfx('tile');
-      pb.t = MEMORY_STEP_S;
-      return;
-    }
-    if (!playing) return;
-    const i = this.plan.memoryTiles.findIndex((t) => Math.abs(t.x - hero.x) < 0.6 && Math.abs(t.z - hero.z) < 0.6);
-    if (i === this.lastTile) return;
-    this.lastTile = i;
-    if (i < 0) return;
-    const res = this.memory.press(i);
-    this.light(i, true);
-    setTimeout(() => this.step === 'memory' && this.light(i, false), 400);
-    if (res === 'wrong') {
-      audio.sfx('wrong');
-      this.hooks.toast(this.memory.failures === MEMORY_EASY_AFTER ? TEXT_MEMORY_EASIER : TEXT_MEMORY_WRONG);
-      this.playback = { index: -1, t: 1.2 };
-    } else if (res === 'done') {
-      for (let k = 0; k < 4; k++) this.light(k, true);
-      const t = this.plan.memoryTiles[1];
-      this.hooks.burst(t.x + 1, this.plan.floorY + 0.6, t.z, 0x9fd8ff, 26);
-      audio.sfx('door');
-      this.hooks.toast(TEXT_MEMORY_DONE);
-      this.next();
-    } else audio.sfx('correct');
+  private async openMemory(): Promise<void> {
+    if (this.busy || this.step !== 'memory') return;
+    this.busy = true;
+    this.hooks.lock(true);
+    const solved = await openMemoryBoard(this.hooks.uiLayer, {
+      puzzle: this.memory,
+      ...BOARD_MEMORY,
+      timeScale: this.hooks.timeScale,
+      watchText: TEXT_MEMORY_WATCH,
+      goText: TEXT_MEMORY_GO,
+      wrongText: TEXT_MEMORY_WRONG,
+      easierText: TEXT_MEMORY_EASIER,
+      easyAfter: MEMORY_EASY_AFTER,
+      onPress: (_tile, res) => audio.sfx(res === 'wrong' ? 'wrong' : res === 'done' ? 'door' : 'correct'),
+    });
+    this.hooks.lock(false);
+    this.busy = false;
+    if (!solved) return;
+    for (let k = 0; k < 4; k++) this.light(k, true);
+    const t = this.plan.memoryTiles[1];
+    this.hooks.burst(t.x + 1, this.plan.floorY + 0.6, t.z, 0x9fd8ff, 26);
+    this.hooks.toast(TEXT_MEMORY_DONE);
+    this.next();
   }
 
   // ---------- Le moulin gelé ----------
@@ -365,85 +296,47 @@ export class FrostSanctuaryLife {
     return out;
   }
 
-  private async millPanel(): Promise<void> {
-    if (this.busy || this.spinning || this.step !== 'mill') return;
+  /** Les roues se posent sur un plateau 2D ; celles du décor suivent. */
+  private async openMill(): Promise<void> {
+    if (this.busy || this.step !== 'mill') return;
     this.busy = true;
     this.hooks.lock(true);
-    for (;;) {
-      const slot = await this.hooks.choose(TEXT_MILL_CHOOSE_AXLE, [...TEXT_AXLES, TEXT_TURN_CRANK, TEXT_CLOSE], 'mill-axle');
-      if (slot === 3) {
-        this.turnCrank();
-        break;
-      }
-      if (slot > 3) break;
-      const s = GEAR_SLOTS[slot];
-      const here = this.gears.find((g) => g.slot === s);
-      const small = this.gears.find((g) => g.size === 'small' && g.slot === null);
-      const big = this.gears.find((g) => g.size === 'big' && g.slot === null);
-      const options: { label: string; pick: () => void }[] = [];
-      if (small) options.push({ label: TEXT_SMALL_GEAR, pick: () => (here && this.mount(here, null), this.mount(small, s)) });
-      if (big) options.push({ label: TEXT_BIG_GEAR, pick: () => (here && this.mount(here, null), this.mount(big, s)) });
-      if (here) options.push({ label: TEXT_REMOVE_GEAR, pick: () => this.mount(here, null) });
-      const k = await this.hooks.choose(TEXT_MILL_CHOOSE_GEAR, [...options.map((o) => o.label), TEXT_BACK], 'mill-gear');
-      if (k < options.length) {
-        options[k].pick();
+    const solved = await openMillBoard(this.hooks.uiLayer, {
+      ...BOARD_MILL,
+      hint: S4_MILL_HINT,
+      hintAfter: MILL_HINT_AFTER,
+      timeScale: this.hooks.timeScale,
+      gapText: TEXT_MILL_GAP,
+      jamText: TEXT_MILL_JAM,
+      wrongText: TEXT_MILL_WRONG,
+      onCrank: () => audio.sfx('crate'),
+      onPlaced: (placed) => {
         audio.sfx('tile');
-      }
-    }
+        for (const g of this.gears) this.mount(g, null);
+        for (const slot of GEAR_SLOTS) {
+          const size = placed[slot];
+          const gear = this.gears.find((g) => g.size === size && g.slot === null);
+          if (gear) this.mount(gear, slot);
+        }
+      },
+    });
     this.hooks.lock(false);
     this.busy = false;
+    if (!solved) return;
+    this.hooks.burst(this.plan.mill.x, this.plan.floorY + 1.5, this.plan.mill.z, 0x9fd8ff, 30);
+    audio.sfx('door');
+    this.hooks.toast(TEXT_MILL_RIGHT);
+    this.next();
   }
 
-  private turnCrank(): void {
-    const result = gearTrain(this.placed());
-    this.spinning = { t: 0, result };
-    audio.sfx('crate');
-  }
-
+  /** Le moulin réparé continue de tourner dans le bon sens. */
   private updateMill(dt: number): void {
-    const sp = this.spinning;
     const crankWheel = this.crank.part('wheel');
     const millWheel = this.mill.part('wheel');
-    if (!sp) {
-      // Le moulin réparé continue de tourner dans le bon sens.
-      if (this.index() > this.index('mill') && millWheel) {
-        millWheel.rotation.z += dt * 1.5;
-        if (crankWheel) crankWheel.rotation.z -= dt * 1.5;
-        for (const g of this.gears) if (g.slot) g.model.part('wheel')!.rotation.z += dt * (g.slot === 'L' ? 3 : -3);
-      }
-      return;
-    }
-    sp.t += dt;
-    const r = sp.result;
-    const spinSign = (s: Spin): number => (s === 'cw' ? -1 : 1);
-    const turning = r.kind !== 'jam';
-    // La manivelle tourne toujours (sauf blocage : elle tremble).
-    if (crankWheel) crankWheel.rotation.z += turning ? -dt * 2 : Math.sin(sp.t * 40) * 0.02;
-    if (r.kind === 'turns') {
-      r.chain.forEach((slot, i) => {
-        const g = this.gears.find((k) => k.slot === slot);
-        const wheel = g?.model.part('wheel');
-        if (wheel) wheel.rotation.z += dt * 2 * spinSign(r.spins[i]) * (g!.size === 'big' ? 0.6 : 1.2);
-      });
-      if (millWheel) millWheel.rotation.z += dt * 1.6 * spinSign(r.mill);
-    } else if (r.kind === 'gap') {
-      // Seule la roue accrochée à la manivelle tourne.
-      const g = r.after === 'L' ? this.gears.find((k) => k.slot === 'L') : undefined;
-      const wheel = g?.model.part('wheel');
-      if (wheel) wheel.rotation.z += dt * 2.4;
-    }
-    if (sp.t < CRANK_SPIN_S) return;
-    this.spinning = null;
-    if (r.kind === 'turns' && r.right) {
-      this.hooks.burst(this.plan.mill.x, this.plan.floorY + 1.5, this.plan.mill.z, 0x9fd8ff, 30);
-      audio.sfx('door');
-      this.hooks.toast(TEXT_MILL_RIGHT);
-      this.next();
-      return;
-    }
-    audio.sfx('wrong');
-    this.hooks.toast(r.kind === 'turns' ? TEXT_MILL_WRONG : r.kind === 'gap' ? TEXT_MILL_GAP : TEXT_MILL_JAM);
-    if (++this.millTries % MILL_HINT_AFTER === 0) this.hooks.dialog.show({ speaker: NPC_NAMES.lumibloc, portrait: PORTRAITS.lumibloc, text: S4_MILL_HINT });
+    if (this.index() <= this.index('mill') || !millWheel) return;
+    millWheel.rotation.z += dt * 1.5;
+    if (crankWheel) crankWheel.rotation.z -= dt * 1.5;
+    for (const g of this.gears) if (g.slot) g.model.part('wheel')!.rotation.z += dt * (g.slot === 'L' ? 3 : -3);
   }
 
   // ---------- Éclosion ----------
@@ -471,7 +364,7 @@ export class FrostSanctuaryLife {
 
   // ---------- Mise à jour ----------
 
-  update(dt: number, hero: { x: number; z: number }, playing: boolean): void {
+  update(dt: number, hero: { x: number; z: number }): void {
     this.time += dt;
     this.stones.forEach((st, i) => {
       const rune = st.part('rune');
@@ -480,16 +373,9 @@ export class FrostSanctuaryLife {
     });
     this.wobble = Math.max(0, this.wobble - dt);
     this.egg.root.rotation.z = this.wobble > 0 ? Math.sin(this.time * 25) * 0.15 * Math.min(1, this.wobble) : Math.sin(this.time * 1.5) * 0.03;
-    this.updateSlide(dt, hero, playing);
-    this.updateMemory(dt, hero, playing);
     this.updateMill(dt);
-    // La flèche d'aide de la glissade (sur la case de départ) et la plaque du moulin.
+    // La plaque du moulin.
     const y = this.plan.floorY;
-    if (this.step === 'slide') {
-      const start = this.cellCenter(SLIDE_ROOM.start);
-      const arrow = { N: '⬆️', E: '➡️', S: '⬇️', W: '⬅️' }[SLIDE_ROOM.hint];
-      this.labels.text('s4-arrow', arrow, start.x, y + 0.4, start.y, 'symbol-tile');
-    }
     const nearMill = Math.hypot(hero.x - this.plan.millPanel.x, hero.z - this.plan.millPanel.z) < 9;
     if (nearMill && this.index() <= this.index('mill')) this.labels.text('s4-rule', S4_MILL_RULE, this.plan.mill.x - 1.5, y + 3.2, this.plan.mill.z, 'tag-label');
   }
@@ -498,7 +384,7 @@ export class FrostSanctuaryLife {
     step: string;
     slideCell: [number, number];
     slides: number;
-    memory: { input: number; failures: number; playing: boolean; sequence: readonly number[] };
+    memory: { input: number; failures: number; sequence: readonly number[] };
     gears: Partial<Record<GearSlot, GearSize>>;
     plan: FrostSanctuaryPlan;
   } {
@@ -506,7 +392,7 @@ export class FrostSanctuaryLife {
       step: this.step,
       slideCell: [...this.slide.pos],
       slides: this.slide.slides,
-      memory: { input: this.memory.input.length, failures: this.memory.failures, playing: this.playback !== null, sequence: this.memory.sequence },
+      memory: { input: this.memory.input.length, failures: this.memory.failures, sequence: this.memory.sequence },
       gears: this.placed(),
       plan: this.plan,
     };

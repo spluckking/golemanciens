@@ -18,12 +18,10 @@ test('temple ensablé : bloc de grès, miroirs du soleil, dalles-symboles, pierr
   await waitReady(page);
   expect((await temple(page)).step).toBe('push');
 
-  // Bloc de grès : deux fois vers le sud, deux fois vers l'est (le héros se place de l'autre côté).
-  for (const [dx, dz] of [[0, -1], [0, -1], [-1, 0], [-1, 0]]) {
-    const b = (await temple(page)).blockPos;
-    await interactAt(page, b.x + dx * 1.1, b.z + dz * 1.1, 'Pousser');
-    await expect.poll(async () => (await temple(page)).blockPos).not.toEqual(b);
-  }
+  // Bloc de grès, sur le plateau 2D : deux fois vers le sud, deux fois vers l'est.
+  const start = (await temple(page)).blockPos;
+  await interactAt(page, start.x + 1, start.z + 1, 'Résoudre');
+  for (const d of ['S', 'S', 'E', 'E']) await page.getByTestId(`dpad-${d}`).tap();
   await expect.poll(async () => (await temple(page)).step).toBe('mirrors');
 
   // Miroirs, sur le plateau 2D : deux quarts de tour chacun ; le rayon atteint le cristal.
@@ -37,13 +35,11 @@ test('temple ensablé : bloc de grès, miroirs du soleil, dalles-symboles, pierr
   await expect(page.getByTestId('mirror-board')).toHaveCount(0);
   await expect.poll(async () => (await temple(page)).step).toBe('symbols');
 
-  // Dalles-symboles : ☀️ (première dalle), puis 7 (deuxième dalle).
-  for (const [i, wall] of [[0, 1], [1, 2]] as const) {
-    await page.evaluate(([x, z]) => window.__game!.teleport(x, z + 2, 0), [t.tiles[i].x, t.tiles[i].z]);
-    await settle(page);
-    await page.evaluate(([x, z]) => window.__game!.teleport(x, z, 0), [t.tiles[i].x, t.tiles[i].z]);
-    await expect.poll(async () => (await temple(page)).wall).toBe(wall);
-  }
+  // Dalles-symboles, sur le plateau 2D : ☀️ (première dalle), puis 7 (deuxième dalle).
+  await interactAt(page, t.tiles[1].x, t.tiles[1].z + 1, 'Résoudre');
+  await page.getByTestId('symbol-0').tap();
+  await expect(page.getByTestId('symbol-sequence')).toContainText('1, 3, 5');
+  await page.getByTestId('symbol-1').tap();
   await expect.poll(async () => (await temple(page)).step).toBe('stone3');
 
   // Pierre-énigme de niveau 3, puis l'œuf : Sable ou Cuivre.

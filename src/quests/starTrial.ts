@@ -1,11 +1,10 @@
 import type { GameState, GolemData } from '../core/gameState';
 import type { Rng } from '../core/rng';
 import { EVOLUTION_MULT, GALAXY_MULT } from '../data/balance';
-import type { Riddle } from '../data/types';
 import { ITEMS, type EvolutionItem } from '../data/items';
 import { generateCalc, generateChallengeCalc } from '../questions/calc';
 import { presentCalc, presentRiddle, type QuestionView } from '../questions/present';
-import { RiddleStone } from './sanctuary';
+import { generateRiddle } from '../questions/riddleGen';
 
 /**
  * Épreuve des Étoiles (SPEC.md § 4.3, révision 1.7) : 12 étoiles, une par bonne réponse. 6 calculs du
@@ -16,29 +15,43 @@ import { RiddleStone } from './sanctuary';
 export type StarKind = 'calc7' | 'calc6' | 'riddle5';
 export const STAR_PATTERN: readonly StarKind[] = ['calc7', 'riddle5', 'calc7', 'calc6', 'calc7', 'riddle5', 'calc7', 'calc6', 'calc7', 'riddle5', 'calc7', 'calc6'];
 export const STAR_COUNT = STAR_PATTERN.length;
+/** Grandes énigmes 2D : une toutes les 4 étoiles, dans cet ordre. */
+export type GrandBoard = 'canals' | 'mirrors' | 'slide';
+export const GRAND_BOARDS: readonly GrandBoard[] = ['canals', 'mirrors', 'slide'];
+export const STARS_PER_BOARD = 4;
+/** Niveau des énigmes de l'épreuve : le plus dur des énigmes générées. */
+const TRIAL_RIDDLE_LEVEL = 6;
+const TRIAL_PHASE = 5;
+
 /** Étoiles après lesquelles Lumibloc encourage (CONTENU.md, section G). */
 export const STAR_CHEERS: Readonly<Record<number, 'stars4' | 'stars8'>> = { 4: 'stars4', 8: 'stars8' };
 
 export interface StarTrialProgress {
   /** Étoiles allumées (enregistrées : on peut partir et revenir). */
   lit: number;
+  /** Grandes énigmes réussies (absent dans les anciennes parties : déjà franchies). */
+  boards?: number;
+}
+
+/** La grande énigme à résoudre maintenant, s'il y en a une. */
+export function pendingBoard(progress: StarTrialProgress): GrandBoard | null {
+  const earned = Math.floor(progress.lit / STARS_PER_BOARD);
+  const done = progress.boards ?? earned;
+  return done < earned ? (GRAND_BOARDS[done] ?? null) : null;
 }
 
 export function createStarTrial(): StarTrialProgress {
-  return { lit: 0 };
+  return { lit: 0, boards: 0 };
 }
 
 export class StarTrial {
-  private readonly stone: RiddleStone;
   view: QuestionView;
 
   constructor(
     private readonly progress: StarTrialProgress,
-    state: Pick<GameState, 'riddles'>,
-    riddles: readonly Riddle[],
+    private readonly state: Pick<GameState, 'riddles'>,
     private readonly rng: Rng,
   ) {
-    this.stone = new RiddleStone(riddles, state.riddles, 5, rng);
     this.view = this.draw();
   }
 
@@ -57,7 +70,7 @@ export class StarTrial {
   /** Une question du genre de l'étoile à allumer. */
   private draw(): QuestionView {
     const k = this.kind;
-    if (k === 'riddle5') return presentRiddle(this.stone.current, this.rng);
+    if (k === 'riddle5') return presentRiddle(generateRiddle(TRIAL_RIDDLE_LEVEL, TRIAL_PHASE, (this.state.riddles.asked ??= []), this.rng), this.rng);
     return presentCalc(k === 'calc7' ? generateChallengeCalc(this.rng) : generateCalc(6, this.rng), this.rng);
   }
 
@@ -65,7 +78,6 @@ export class StarTrial {
   answer(chosen: number): { correct: boolean; previous: QuestionView; cheer?: 'stars4' | 'stars8' } {
     const previous = this.view;
     const correct = chosen === previous.correctIndex;
-    if (this.kind === 'riddle5') this.stone.answer(previous.sourceIndex[chosen]);
     if (correct) this.progress.lit++;
     const cheer = correct ? STAR_CHEERS[this.progress.lit] : undefined;
     if (!this.done) this.view = this.draw();

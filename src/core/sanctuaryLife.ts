@@ -5,7 +5,8 @@ import {
   S1_EGG_CHOICES,
   S1_HINT,
   TEXT_READ_STONE,
-  TEXT_RESTART,
+  BOARD_TILES,
+  TEXT_SOLVE,
   TEXT_STONE_SOLVED,
   TEXT_STONE_WRONG,
   TEXT_TILES_DONE,
@@ -13,10 +14,9 @@ import {
   TEXT_TOUCH_EGG,
 } from '../data/sanctuaries';
 import { CubeModel } from '../entities/cubeModel';
-import { MODELS, PORTRAITS, type ModelId } from '../entities/models';
+import { MODELS, type ModelId } from '../entities/models';
 import { presentRiddle, type QuestionView } from '../questions/present';
-import { RiddleStone, TilePuzzle, advance, type TileColor } from '../quests/sanctuary';
-import { NPC_NAMES } from '../story/dialogues';
+import { RiddleStone, TilePuzzle, advance, type TileColor, S1_FRESCO, S1_TILES } from '../quests/sanctuary';
 import type { DialogBubble } from '../ui/dialog';
 import type { Cell, SanctuaryPlan } from '../world/structures';
 import type { VoxelWorld } from '../world/voxelWorld';
@@ -27,6 +27,8 @@ import { audio } from '../audio/audio';
 import { recordRiddle } from './stats';
 import type { Interactable, Interactions } from './interactions';
 import type { Rng } from './rng';
+import { el } from '../ui/dom';
+import { openOrderBoard } from '../ui/puzzleBoards';
 
 /** Niveau des pierres-énigmes du sanctuaire de la phase 1 (SPEC.md § 10.1). */
 const STONE_LEVEL = 1;
@@ -40,6 +42,7 @@ const TILE_MODELS: Record<TileColor, [ModelId, ModelId]> = {
   white: ['tileWhite', 'tileWhiteLit'],
   violet: ['tileViolet', 'tileVioletLit'],
 };
+const TILE_CSS: Record<TileColor, string> = { red: '#e0453a', yellow: '#f2c43c', blue: '#3f7fe0', white: '#f4f2ea', violet: '#9a5ad0' };
 const TILE_BURST: Record<TileColor, number> = { red: 0xe0453a, yellow: 0xf2c43c, blue: 0x3f7fe0, white: 0xf4f2ea, violet: 0x9a5ad0 };
 
 export interface SanctuaryHooks {
@@ -87,12 +90,10 @@ export class SanctuaryLife {
   private readonly group = new THREE.Group();
   private readonly floorY: number;
   private readonly stoneTalk: Interactable;
-  private readonly restartTalk: Interactable;
+  private readonly boardTalk: Interactable;
   private readonly eggTalk: Interactable;
-  private lastCell = '';
   private shake = 0;
   private wobble = 0;
-  private hintShownAt = 0;
   private busy = false;
   /** Étape déjà accordée au monde (pour enregistrer à chaque changement). */
   private synced: string | undefined;
@@ -125,8 +126,8 @@ export class SanctuaryLife {
     }
 
     this.stoneTalk = { id: 'sanct-stone', x: plan.stone.x, y: this.floorY, z: plan.stone.z, radius: STONE_RADIUS, label: TEXT_READ_STONE, action: () => void this.readStone() };
-    const door = plan.door[0];
-    this.restartTalk = { id: 'sanct-restart', x: door.x - 1, y: this.floorY, z: plan.nest.z, radius: 1.6, label: TEXT_RESTART, action: () => this.restartTiles() };
+    const middle = plan.tiles[Math.floor(plan.tiles.length / 2)];
+    this.boardTalk = { id: 'sanct-tiles', x: middle.x + 0.5, y: this.floorY, z: middle.z + 0.5, radius: 3.5, label: TEXT_SOLVE, action: () => void this.openTiles() };
     this.eggTalk = { id: 'sanct-egg', x: plan.nest.x, y: this.floorY, z: plan.nest.z, radius: EGG_RADIUS, label: TEXT_TOUCH_EGG, action: () => void this.hatch() };
     this.syncWorld();
   }
@@ -156,7 +157,7 @@ export class SanctuaryLife {
     if (s !== 'stone') open(this.plan.gate);
     if (s === 'open' || s === 'hatched') open(this.plan.door);
     this.toggle(this.stoneTalk, s === 'stone');
-    this.toggle(this.restartTalk, s === 'tiles');
+    this.toggle(this.boardTalk, s === 'tiles');
     this.toggle(this.eggTalk, s === 'open');
     this.egg.root.visible = s !== 'hatched';
     const solved = s === 'open' || s === 'hatched';
@@ -205,36 +206,45 @@ export class SanctuaryLife {
 
   // ---------- Dalles fleuries ----------
 
-  private stepOn(t: Tile): void {
-    const res = this.puzzle.step(t.color);
-    if (res === 'ignored') return;
+  /** L'énigme se joue sur un plateau 2D ; les dalles du décor s'allument en même temps. */
+  private async openTiles(): Promise<void> {
+    if (this.busy || this.step !== 'tiles') return;
+    this.busy = true;
+    this.hooks.lock(true);
+    const fresco = el('div', { className: 'order-clue' }, S1_FRESCO.map(() => el('span', { className: 'order-flower', text: '✿' })));
+    S1_FRESCO.forEach((c, i) => ((fresco.children[i] as HTMLElement).style.color = TILE_CSS[c]));
+    const solved = await openOrderBoard(this.hooks.uiLayer, {
+      id: 'tile',
+      ...BOARD_TILES,
+      timeScale: this.hooks.timeScale,
+      items: S1_TILES.map((c) => ({ id: c, label: '✿', color: TILE_CSS[c] })),
+      clue: fresco,
+      puzzle: this.puzzle,
+      wrongText: TEXT_TILES_WRONG,
+      hintAfterWrong: () => (this.puzzle.needsHint ? S1_HINT : null),
+      onStep: (color, res) => this.stepOn(color, res),
+      onReset: () => this.tiles.forEach((t) => this.lightTile(t, false)),
+    });
+    this.hooks.lock(false);
+    this.busy = false;
+    if (!solved) return;
+    advance(progress(this.state).sanctuary);
+    this.syncWorld();
+    for (const c of this.plan.door) this.hooks.burst(c.x + 0.5, c.y + 0.5, c.z + 0.5, 0xffe27a, 6);
+    audio.sfx('door');
+    this.hooks.toast(TEXT_TILES_DONE);
+  }
+
+  private stepOn(color: TileColor, res: 'progress' | 'wrong' | 'done'): void {
+    const t = this.tiles.find((k) => k.color === color)!;
     if (res === 'wrong') {
       for (const tile of this.tiles) this.lightTile(tile, false);
-      this.hooks.burst(t.x + 0.5, this.floorY + 0.3, t.z + 0.5, 0x888888, 10);
       audio.sfx('wrong');
-      this.hooks.toast(TEXT_TILES_WRONG);
-      if (this.puzzle.needsHint && this.hintShownAt !== this.puzzle.fails) {
-        this.hintShownAt = this.puzzle.fails;
-        this.hooks.dialog.show({ speaker: NPC_NAMES.lumibloc, portrait: PORTRAITS.lumibloc, text: S1_HINT });
-      }
       return;
     }
     this.lightTile(t, true);
-    this.hooks.burst(t.x + 0.5, this.floorY + 0.4, t.z + 0.5, TILE_BURST[t.color], 12);
+    this.hooks.burst(t.x + 0.5, this.floorY + 0.4, t.z + 0.5, TILE_BURST[color], 12);
     audio.sfx('tile');
-    if (res === 'done') {
-      advance(progress(this.state).sanctuary);
-      this.syncWorld();
-      for (const c of this.plan.door) this.hooks.burst(c.x + 0.5, c.y + 0.5, c.z + 0.5, 0xffe27a, 6);
-      audio.sfx('door');
-      this.hooks.toast(TEXT_TILES_DONE);
-    }
-  }
-
-  private restartTiles(): void {
-    this.puzzle.reset();
-    for (const t of this.tiles) this.lightTile(t, false);
-    this.lastCell = '';
   }
 
   // ---------- Éclosion ----------
@@ -261,7 +271,7 @@ export class SanctuaryLife {
 
   // ---------- Mise à jour ----------
 
-  update(dt: number, hero: { x: number; z: number }, playing: boolean): void {
+  update(dt: number): void {
     this.time += dt;
     // La rune de la pierre pulse tant que l'énigme n'est pas résolue ; elle tremble après une erreur.
     const rune = this.stone.part('rune');
@@ -271,14 +281,6 @@ export class SanctuaryLife {
     this.wobble = Math.max(0, this.wobble - dt);
     this.egg.root.rotation.z = this.wobble > 0 ? Math.sin(this.time * 25) * 0.15 * Math.min(1, this.wobble) : Math.sin(this.time * 1.5) * 0.03;
 
-    if (!playing || this.step !== 'tiles') return;
-    const cx = Math.floor(hero.x);
-    const cz = Math.floor(hero.z);
-    const key = `${cx},${cz}`;
-    if (key === this.lastCell) return;
-    this.lastCell = key;
-    const tile = this.tiles.find((t) => t.x === cx && t.z === cz);
-    if (tile) this.stepOn(tile);
   }
 
   snapshot(): {

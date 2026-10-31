@@ -6,13 +6,14 @@ import {
   S3_PUSH_HINT,
   TEMPLE_HINT_AFTER,
   TEXT_DOOR_OPEN,
-  TEXT_MIRROR,
+  BOARD_MIRRORS,
+  BOARD_PUSH,
+  BOARD_SYMBOLS,
+  TEXT_SOLVE,
   TEXT_MIRRORS_DONE,
-  TEXT_PUSH,
   TEXT_PUSH_DONE,
   TEXT_PUSH_STUCK,
   TEXT_READ_STONE,
-  TEXT_RESTART,
   TEXT_STONE_WRONG,
   TEXT_SYMBOL_RIGHT,
   TEXT_SYMBOL_WRONG,
@@ -20,12 +21,11 @@ import {
   TEXT_TOUCH_EGG,
 } from '../data/sanctuaries';
 import { CubeModel } from '../entities/cubeModel';
-import { MODELS, PORTRAITS, type ModelId } from '../entities/models';
+import { MODELS, type ModelId } from '../entities/models';
 import { presentRiddle } from '../questions/present';
 import { RiddleStone, S3_STEPS, advance } from '../quests/sanctuary';
 import { MIRROR_ROOM, MirrorPuzzle, PUSH_ROOM, PushPuzzle, SYMBOL_WALLS, traceRay, type Dir } from '../quests/templePuzzles';
-import { NPC_NAMES } from '../story/dialogues';
-import { openMirrorBoard } from '../ui/mirrorBoard';
+import { openMirrorBoard, openPushBoard, openSymbolBoard } from '../ui/puzzleBoards';
 import type { WorldLabels } from '../ui/worldLabels';
 import type { TemplePlan } from '../world/desert';
 import type { Cell } from '../world/structures';
@@ -61,13 +61,10 @@ export class TempleLife {
   private readonly riddle: RiddleStone;
   private readonly blockTalk: Interactable;
   private readonly mirrorTalks: Interactable[];
-  private readonly restartPush: Interactable;
+  private readonly symbolTalk: Interactable;
   private readonly stoneTalk: Interactable;
   private readonly eggTalk: Interactable;
   private wall = 0;
-  private tries = 0;
-  private hero = { x: 0, z: 0 };
-  private lastCell = '';
   private busy = false;
   private wobble = 0;
   private synced: string | undefined;
@@ -94,8 +91,7 @@ export class TempleLife {
     const plate = cell(plan.pushOrigin, ...PUSH_ROOM.plate);
     this.place('pressurePlate', plate.x, plate.z, 0);
     this.block = this.place('sandstoneBlock', 0, 0, 0);
-    this.blockTalk = { id: 's3-block', x: 0, y, z: 0, radius: 1.6, label: TEXT_PUSH, action: () => this.pushBlock() };
-    this.restartPush = { id: 's3-restart-push', ...plan.restartPush, y, radius: 1.2, label: TEXT_RESTART, action: () => this.resetPush() };
+    this.blockTalk = { id: 's3-block', x: plan.pushOrigin.x + 2, y, z: plan.pushOrigin.z + 2, radius: 3.6, label: TEXT_SOLVE, action: () => void this.openPush() };
 
     // Salle des miroirs : deux miroirs, le cristal de la porte, le rayon.
     this.mirrors = MIRROR_ROOM.mirrors.map((m) => {
@@ -104,7 +100,7 @@ export class TempleLife {
     });
     this.mirrorTalks = MIRROR_ROOM.mirrors.map((m, i) => {
       const p = cell(plan.mirrorOrigin, m.x, m.y);
-      return { id: `s3-mirror-${i}`, x: p.x, y, z: p.z, radius: 2.2, label: TEXT_MIRROR, action: () => void this.openMirrors() };
+      return { id: `s3-mirror-${i}`, x: p.x, y, z: p.z, radius: 2.2, label: TEXT_SOLVE, action: () => void this.openMirrors() };
     });
     const cp = cell(plan.mirrorOrigin, ...MIRROR_ROOM.crystal);
     this.crystal = this.place('doorCrystal', cp.x, cp.z, 0);
@@ -113,6 +109,7 @@ export class TempleLife {
 
     // Dernière salle : les dalles de la suite, la pierre-énigme, le nid.
     for (const t of plan.symbolTiles) this.place('symbolNumber', t.x, t.z, 0);
+    this.symbolTalk = { id: 's3-symbols', ...plan.symbolTiles[1], y, radius: 3, label: TEXT_SOLVE, action: () => void this.openSymbols() };
     this.stone = this.place('riddleStone', plan.stone.x, plan.stone.z, -Math.PI / 2);
     this.stoneTalk = { id: 's3-stone', ...plan.stone, y, radius: 2.4, label: TEXT_READ_STONE, action: () => void this.readStone() };
     this.place('nest', plan.nest.x, plan.nest.z, 0);
@@ -141,7 +138,6 @@ export class TempleLife {
 
   private next(): void {
     advance(progress(this.state).sanctuary, S3_STEPS);
-    this.tries = 0;
     this.syncWorld();
   }
 
@@ -167,7 +163,7 @@ export class TempleLife {
       if (on) this.interactions.add(it);
     };
     set(this.blockTalk, s === 'push');
-    set(this.restartPush, s === 'push');
+    set(this.symbolTalk, s === 'symbols');
     for (const t of this.mirrorTalks) set(t, s === 'mirrors');
     set(this.stoneTalk, s === 'stone3');
     set(this.eggTalk, s === 'open');
@@ -180,8 +176,6 @@ export class TempleLife {
   private refresh(): void {
     const o = this.plan.pushOrigin;
     this.block.root.position.set(o.x + this.push.block[0], this.plan.floorY, o.z + this.push.block[1]);
-    this.blockTalk.x = this.block.root.position.x;
-    this.blockTalk.z = this.block.root.position.z;
     this.mirror.facing.forEach((d, i) => (this.mirrors[i].root.rotation.y = FACING[d]));
     const { path, lit } = traceRay(this.mirror.facing);
     const m = this.plan.mirrorOrigin;
@@ -198,38 +192,31 @@ export class TempleLife {
     this.crystal.root.visible = !lit;
   }
 
-  private hint(text: string): void {
-    if (++this.tries % TEMPLE_HINT_AFTER === 0) this.hooks.dialog.show({ speaker: NPC_NAMES.lumibloc, portrait: PORTRAITS.lumibloc, text });
-  }
-
   // ---------- Bloc de grès ----------
 
-  /** On pousse le bloc dans la direction héros → bloc (l'axe le plus marqué). */
-  private pushBlock(): void {
-    if (this.step !== 'push') return;
+  /** Le bloc se pousse sur un plateau 2D, vu de dessus ; celui du décor suit. */
+  private async openPush(): Promise<void> {
+    if (this.busy || this.step !== 'push') return;
+    this.busy = true;
+    this.hooks.lock(true);
+    const solved = await openPushBoard(this.hooks.uiLayer, {
+      puzzle: this.push,
+      ...BOARD_PUSH,
+      hint: S3_PUSH_HINT,
+      hintAfter: TEMPLE_HINT_AFTER,
+      stuckText: TEXT_PUSH_STUCK,
+      timeScale: this.hooks.timeScale,
+      onChange: () => this.refresh(),
+      onPush: (moved) => audio.sfx(moved ? 'crate' : 'knock'),
+    });
+    this.hooks.lock(false);
+    this.busy = false;
+    if (!solved) return;
     const b = this.block.root.position;
-    const dx = b.x - this.hero.x;
-    const dz = b.z - this.hero.z;
-    const dir: Dir = Math.abs(dx) > Math.abs(dz) ? (dx > 0 ? 'E' : 'W') : dz > 0 ? 'S' : 'N';
-    if (!this.push.push(dir)) {
-      this.hooks.toast(TEXT_PUSH_STUCK);
-      audio.sfx('knock');
-      this.hint(S3_PUSH_HINT);
-      return;
-    }
-    audio.sfx('crate');
-    this.refresh();
-    if (this.push.solved) {
-      this.hooks.burst(b.x, this.plan.floorY + 1, b.z, 0xffe27a, 20);
-      audio.sfx('door');
-      this.hooks.toast(TEXT_PUSH_DONE);
-      this.next();
-    } else this.hint(S3_PUSH_HINT);
-  }
-
-  private resetPush(): void {
-    this.push.reset();
-    this.refresh();
+    this.hooks.burst(b.x, this.plan.floorY + 1, b.z, 0xffe27a, 20);
+    audio.sfx('door');
+    this.hooks.toast(TEXT_PUSH_DONE);
+    this.next();
   }
 
   // ---------- Miroirs ----------
@@ -241,6 +228,7 @@ export class TempleLife {
     this.hooks.lock(true);
     const solved = await openMirrorBoard(this.hooks.uiLayer, {
       puzzle: this.mirror,
+      ...BOARD_MIRRORS,
       hint: S3_MIRROR_HINT,
       hintAfter: TEMPLE_HINT_AFTER,
       onChange: () => this.refresh(),
@@ -259,22 +247,27 @@ export class TempleLife {
 
   // ---------- Dalles-symboles ----------
 
-  private stepOn(tile: number): void {
-    const w = SYMBOL_WALLS[this.wall];
-    if (!w) return;
-    const t = this.plan.symbolTiles[tile];
-    if (w.tiles[tile] !== w.answer) {
-      audio.sfx('wrong');
-      this.hooks.toast(TEXT_SYMBOL_WRONG);
-      return;
-    }
-    this.hooks.burst(t.x, this.plan.floorY + 0.5, t.z, 0xfff3a0, 14);
-    audio.sfx('correct');
-    this.wall++;
-    if (this.wall >= SYMBOL_WALLS.length) {
-      this.hooks.toast(TEXT_SYMBOLS_DONE);
-      this.next();
-    } else this.hooks.toast(TEXT_SYMBOL_RIGHT);
+  private async openSymbols(): Promise<void> {
+    if (this.busy || this.step !== 'symbols') return;
+    this.busy = true;
+    this.hooks.lock(true);
+    const solved = await openSymbolBoard(this.hooks.uiLayer, {
+      ...BOARD_SYMBOLS,
+      timeScale: this.hooks.timeScale,
+      wall: this.wall,
+      wrongText: TEXT_SYMBOL_WRONG,
+      rightText: TEXT_SYMBOL_RIGHT,
+      onWrong: () => audio.sfx('wrong'),
+      onRight: () => {
+        audio.sfx('correct');
+        this.wall++;
+      },
+    });
+    this.hooks.lock(false);
+    this.busy = false;
+    if (!solved) return;
+    this.hooks.toast(TEXT_SYMBOLS_DONE);
+    this.next();
   }
 
   // ---------- Pierre-énigme (niveau 3) ----------
@@ -328,9 +321,8 @@ export class TempleLife {
 
   // ---------- Mise à jour ----------
 
-  update(dt: number, hero: { x: number; z: number }, playing: boolean): void {
+  update(dt: number): void {
     this.time += dt;
-    this.hero = { x: hero.x, z: hero.z };
     const rune = this.stone.part('rune');
     if (rune) rune.visible = this.step === 'stone3' ? Math.sin(this.time * 3) > -0.6 : this.index() > this.index('stone3');
     this.wobble = Math.max(0, this.wobble - dt);
@@ -342,14 +334,6 @@ export class TempleLife {
       this.labels.text('s3-wall', w ? w.sequence : SYMBOL_WALLS[SYMBOL_WALLS.length - 1].sequence.replace('❓', '7'), p.x, p.y, p.z, 'symbol-wall');
       if (w) this.plan.symbolTiles.forEach((t, i) => this.labels.text(`s3-tile-${i}`, w.tiles[i], t.x, this.plan.floorY + 0.6, t.z, 'symbol-tile'));
     }
-    if (!playing || this.step !== 'symbols') return;
-    const cx = Math.floor(hero.x);
-    const cz = Math.floor(hero.z);
-    const key = `${cx},${cz}`;
-    if (key === this.lastCell) return;
-    this.lastCell = key;
-    const i = this.plan.symbolTiles.findIndex((t) => Math.floor(t.x) === cx && Math.floor(t.z) === cz);
-    if (i >= 0) this.stepOn(i);
   }
 
   snapshot(): { step: string; block: number[]; mirrors: string[]; lit: boolean; wall: number; tiles: { x: number; z: number }[]; stone: { x: number; z: number }; nest: { x: number; z: number }; blockPos: { x: number; z: number }; mirrorPos: { x: number; z: number }[] } {

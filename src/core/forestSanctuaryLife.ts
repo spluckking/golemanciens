@@ -10,21 +10,20 @@ import {
   TEXT_DOOR_OPEN,
   TEXT_LEVERS_DONE,
   TEXT_LEVERS_WRONG,
-  TEXT_PULL_LEVER,
   TEXT_READ_STONE,
-  TEXT_RESTART,
   TEXT_STELE,
   TEXT_STONE_SOLVED,
   TEXT_STONE_WRONG,
   TEXT_TOUCH_EGG,
-  TEXT_TURN_PIECE,
+  BOARD_CANALS,
+  BOARD_LEVERS,
+  TEXT_SOLVE,
 } from '../data/sanctuaries';
 import { CubeModel } from '../entities/cubeModel';
 import { MODELS, PORTRAITS, type ModelId } from '../entities/models';
 import { presentRiddle } from '../questions/present';
 import { CANAL_COLS, CANAL_ROWS, CanalPuzzle, flow } from '../quests/canals';
 import { RiddleStone, S2_LEVER_ORDER, S2_STEPS, TilePuzzle, advance, type LeverSymbol } from '../quests/sanctuary';
-import { NPC_NAMES } from '../story/dialogues';
 import type { Cell } from '../world/structures';
 import type { MossPlan } from '../world/forestStructures';
 import type { VoxelWorld } from '../world/voxelWorld';
@@ -36,26 +35,25 @@ import type { Interactable, Interactions } from './interactions';
 import type { Rng } from './rng';
 import type { SanctuaryHooks } from './sanctuaryLife';
 import { recordRiddle } from './stats';
+import { el } from '../ui/dom';
+import { openCanalBoard, openOrderBoard } from '../ui/puzzleBoards';
 
 /** Niveau des pierres-énigmes de la phase 2 (SPEC.md § 10.1). */
 const STONE_LEVEL = 2;
 const STONE_RADIUS = 2.4;
-const LEVER_RADIUS = 1.2;
-const PIECE_RADIUS = 0.85;
+const LEVER_LABELS: Record<LeverSymbol, string> = { sun: '☀️', moon: '🌙', star: '⭐' };
 
 const LEVER_MODELS: Record<LeverSymbol, ModelId> = { sun: 'leverSun', moon: 'leverMoon', star: 'leverStar' };
 
 interface Lever {
   symbol: LeverSymbol;
   model: CubeModel;
-  talk: Interactable;
 }
 
 interface Piece {
   gx: number;
   gy: number;
   model: CubeModel;
-  talk: Interactable;
 }
 
 /**
@@ -75,12 +73,12 @@ export class ForestSanctuaryLife {
   private readonly riddle: RiddleStone;
   private readonly stoneTalks: Interactable[];
   private readonly steleTalk: Interactable;
-  private readonly restartTalk: Interactable;
+  private readonly leverTalk: Interactable;
+  private readonly canalTalk: Interactable;
   private readonly eggTalk: Interactable;
   private shake = 0;
   private wobble = 0;
   private busy = false;
-  private turnsSinceHint = 0;
   private synced: string | undefined;
   private time = 0;
 
@@ -112,17 +110,19 @@ export class ForestSanctuaryLife {
     this.place('stele', plan.stele.x, plan.stele.z, Math.PI);
     this.steleTalk = { id: 's2-stele', x: plan.stele.x, y, z: plan.stele.z + 1, radius: 1.6, label: TEXT_STELE, action: () => this.readStele() };
     this.interactions.add(this.steleTalk);
+    const middle = plan.levers[1];
+    this.leverTalk = { id: 's2-levers', x: middle.x, y, z: middle.z + 0.8, radius: 3, label: TEXT_SOLVE, action: () => void this.openLevers() };
 
     for (const l of plan.levers) {
       const lever: Lever = {
         symbol: l.symbol,
         model: this.place(LEVER_MODELS[l.symbol], l.x, l.z, Math.PI),
-        talk: { id: `s2-lever-${l.symbol}`, x: l.x, y, z: l.z + 0.8, radius: LEVER_RADIUS, label: TEXT_PULL_LEVER, action: () => this.pull(lever) },
       };
       this.levers.push(lever);
     }
 
-    // Canaux : chaque morceau se tourne quand on se tient dessus.
+    // Canaux : les morceaux du décor suivent le plateau 2D.
+    this.canalTalk = { id: 's2-canals', x: plan.canal.x0 + 1.5 * plan.canal.step, y, z: plan.canal.z0 + plan.canal.step, radius: 3.5, label: TEXT_SOLVE, action: () => void this.openCanals() };
     const { x0, z0, step } = plan.canal;
     for (let gy = 0; gy < CANAL_ROWS; gy++)
       for (let gx = 0; gx < CANAL_COLS; gx++) {
@@ -133,14 +133,12 @@ export class ForestSanctuaryLife {
           gx,
           gy,
           model: this.place(kind === 'straight' ? 'canalStraight' : 'canalCorner', px, pz, 0),
-          talk: { id: `s2-canal-${gx}-${gy}`, x: px, y, z: pz, radius: PIECE_RADIUS, label: TEXT_TURN_PIECE, action: () => this.turn(piece) },
         };
         piece.model.root.scale.setScalar(step / 1.5);
         this.pieces.push(piece);
       }
     this.place('spring', plan.spring.x, plan.spring.z, 0);
     this.mill = this.place('millWheel', plan.mill.x, plan.mill.z, 0);
-    this.restartTalk = { id: 's2-restart', x: plan.restart.x, y, z: plan.restart.z, radius: 1.3, label: TEXT_RESTART, action: () => this.restartCanals() };
 
     this.place('nest', plan.nest.x, plan.nest.z, 0);
     this.egg = this.place('eggForet', plan.nest.x, plan.nest.z, Math.PI / 2);
@@ -181,15 +179,14 @@ export class ForestSanctuaryLife {
     if (i >= this.stepIndex('open')) open(this.plan.door);
     this.toggle(this.stoneTalks[0], s === 'stone');
     this.toggle(this.stoneTalks[1], s === 'stone2');
+    this.toggle(this.leverTalk, s === 'levers');
     for (const l of this.levers) {
-      this.toggle(l.talk, s === 'levers');
       const down = i > this.stepIndex('levers') || this.leverPuzzle.lit.includes(l.symbol);
       l.model.swing('handle', down ? 1.2 : 0);
     }
     // Énigme des canaux déjà réussie (partie rechargée) : on remet la grille dans sa solution.
     if (i > this.stepIndex('canals') && !this.canals.solved) for (const [x, y] of [[0, 1], [1, 1], [1, 0], [2, 0], [3, 0], [3, 1]]) this.canals.rotate(x, y);
-    for (const p of this.pieces) this.toggle(p.talk, s === 'canals');
-    this.toggle(this.restartTalk, s === 'canals');
+    this.toggle(this.canalTalk, s === 'canals');
     this.refreshCanals();
     this.toggle(this.eggTalk, s === 'open');
     this.egg.root.visible = s !== 'hatched';
@@ -198,10 +195,6 @@ export class ForestSanctuaryLife {
   private toggle(it: Interactable, on: boolean): void {
     this.interactions.remove(it.id);
     if (on) this.interactions.add(it);
-  }
-
-  private lumibloc(text: string): void {
-    this.hooks.dialog.show({ speaker: NPC_NAMES.lumibloc, portrait: PORTRAITS.lumibloc, text });
   }
 
   // ---------- Pierres-énigmes (niveau 2) ----------
@@ -240,56 +233,74 @@ export class ForestSanctuaryLife {
     this.hooks.dialog.show({ speaker: TEXT_STELE, portrait: PORTRAITS.lumibloc, text: `« ${S2_INSCRIPTION} »` });
   }
 
-  private pull(lever: Lever): void {
-    if (this.step !== 'levers') return;
-    const res = this.leverPuzzle.step(lever.symbol);
-    if (res === 'ignored') return;
-    lever.model.swing('handle', 1.2);
+  /** Les leviers se jouent sur un plateau 2D ; ceux du décor s'abaissent en même temps. */
+  private async openLevers(): Promise<void> {
+    if (this.busy || this.step !== 'levers') return;
+    this.busy = true;
+    this.hooks.lock(true);
+    const solved = await openOrderBoard(this.hooks.uiLayer, {
+      id: 'lever',
+      ...BOARD_LEVERS,
+      timeScale: this.hooks.timeScale,
+      items: S2_LEVER_ORDER.map((id) => ({ id, label: LEVER_LABELS[id] })).sort((a, b) => a.id.localeCompare(b.id)),
+      clue: el('p', { className: 'order-inscription', text: `« ${S2_INSCRIPTION} »` }),
+      puzzle: this.leverPuzzle,
+      wrongText: TEXT_LEVERS_WRONG,
+      hintAfterWrong: () => {
+        const sanct = progress(this.state).sanctuary;
+        sanct.tileFails++;
+        return sanct.tileFails % 3 === 0 ? S2_LEVER_HINT : null;
+      },
+      onStep: (symbol, res) => this.pull(symbol, res),
+      onReset: () => this.levers.forEach((l) => l.model.swing('handle', 0)),
+    });
+    this.hooks.lock(false);
+    this.busy = false;
+    if (!solved) return;
+    advance(progress(this.state).sanctuary, S2_STEPS);
+    this.syncWorld();
+    for (const c of this.plan.hedgeGap) this.hooks.burst(c.x + 0.5, c.y + 0.5, c.z + 0.5, 0x6fae52, 6);
+    audio.sfx('door');
+    this.hooks.toast(TEXT_LEVERS_DONE);
+  }
+
+  private pull(symbol: LeverSymbol, res: 'progress' | 'wrong' | 'done'): void {
+    const lever = this.levers.find((l) => l.symbol === symbol)!;
     audio.sfx('knock');
     if (res === 'wrong') {
-      // Les leviers remontent ; après 3 erreurs, Lumibloc aide.
       for (const l of this.levers) l.model.swing('handle', 0);
       audio.sfx('wrong');
-      this.hooks.toast(TEXT_LEVERS_WRONG);
-      const sanct = progress(this.state).sanctuary;
-      sanct.tileFails++;
-      if (sanct.tileFails % 3 === 0) this.lumibloc(S2_LEVER_HINT);
       return;
     }
+    lever.model.swing('handle', 1.2);
     this.hooks.burst(lever.model.root.position.x, this.plan.floorY + 1.4, lever.model.root.position.z, 0xfff3a0, 10);
-    if (res === 'done') {
-      advance(progress(this.state).sanctuary, S2_STEPS);
-      this.syncWorld();
-      for (const c of this.plan.hedgeGap) this.hooks.burst(c.x + 0.5, c.y + 0.5, c.z + 0.5, 0x6fae52, 6);
-      audio.sfx('door');
-      this.hooks.toast(TEXT_LEVERS_DONE);
-    }
   }
 
   // ---------- Canaux d'eau ----------
 
-  private turn(piece: Piece): void {
-    if (this.step !== 'canals') return;
-    const solved = this.canals.rotate(piece.gx, piece.gy);
-    audio.sfx('tile');
-    this.refreshCanals();
-    if (solved) {
-      advance(progress(this.state).sanctuary, S2_STEPS);
-      this.syncWorld();
-      audio.sfx('quest');
-      this.hooks.burst(this.plan.mill.x, this.plan.floorY + 1.2, this.plan.mill.z, 0x7ac0ff, 20);
-      this.hooks.toast(TEXT_CANALS_DONE);
-      return;
-    }
-    if (++this.turnsSinceHint >= CANAL_HINT_AFTER) {
-      this.turnsSinceHint = 0;
-      this.lumibloc(S2_CANAL_HINT);
-    }
-  }
-
-  private restartCanals(): void {
-    this.canals.reset();
-    this.refreshCanals();
+  private async openCanals(): Promise<void> {
+    if (this.busy || this.step !== 'canals') return;
+    this.busy = true;
+    this.hooks.lock(true);
+    const solved = await openCanalBoard(this.hooks.uiLayer, {
+      puzzle: this.canals,
+      ...BOARD_CANALS,
+      hint: S2_CANAL_HINT,
+      hintAfter: CANAL_HINT_AFTER,
+      timeScale: this.hooks.timeScale,
+      onTurn: () => {
+        audio.sfx('tile');
+        this.refreshCanals();
+      },
+    });
+    this.hooks.lock(false);
+    this.busy = false;
+    if (!solved) return;
+    advance(progress(this.state).sanctuary, S2_STEPS);
+    this.syncWorld();
+    audio.sfx('quest');
+    this.hooks.burst(this.plan.mill.x, this.plan.floorY + 1.2, this.plan.mill.z, 0x7ac0ff, 20);
+    this.hooks.toast(TEXT_CANALS_DONE);
   }
 
   /** Oriente chaque morceau et montre l'eau là où elle passe. */
@@ -349,7 +360,7 @@ export class ForestSanctuaryLife {
     step: string;
     stones: { x: number; z: number }[];
     levers: { symbol: string; x: number; z: number }[];
-    pieces: { gx: number; gy: number; x: number; z: number; rot: number }[];
+    pieces: { gx: number; gy: number; rot: number }[];
     wet: number;
     nest: { x: number; z: number };
     fails: number;
@@ -358,7 +369,7 @@ export class ForestSanctuaryLife {
       step: this.step,
       stones: [this.plan.stone1, this.plan.stone2],
       levers: this.plan.levers.map((l) => ({ symbol: l.symbol, x: l.x, z: l.z + 0.8 })),
-      pieces: this.pieces.map((p) => ({ gx: p.gx, gy: p.gy, x: p.talk.x, z: p.talk.z, rot: this.canals.grid[p.gy][p.gx].rot })),
+      pieces: this.pieces.map((p) => ({ gx: p.gx, gy: p.gy, rot: this.canals.grid[p.gy][p.gx].rot })),
       wet: flow(this.canals.grid).wet.length,
       nest: this.plan.nest,
       fails: progress(this.state).sanctuary.tileFails,

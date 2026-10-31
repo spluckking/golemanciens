@@ -4,12 +4,9 @@ import {
   BALANCE_HINT_AFTER,
   S5_BALANCE_HINT,
   S5_EGG_CHOICES,
-  TEXT_BALANCE_CHOOSE,
   TEXT_BALANCE_DONE,
   TEXT_BALANCE_HEAVY,
   TEXT_BALANCE_LIGHT,
-  TEXT_BALANCE_PANEL,
-  TEXT_CLOSE,
   TEXT_CLOUD_FALL,
   TEXT_CLOUD_RIGHT,
   TEXT_CLOUD_WRONG,
@@ -19,8 +16,8 @@ import {
   TEXT_READ_STONE,
   TEXT_STONE_WRONG,
   TEXT_TOUCH_EGG,
-  TEXT_WEIGHT_OFF,
-  TEXT_WEIGHT_ON,
+  BOARD_BALANCE,
+  TEXT_SOLVE,
 } from '../data/sanctuaries';
 import { CubeModel } from '../entities/cubeModel';
 import { MODELS, PORTRAITS, type ModelId } from '../entities/models';
@@ -40,6 +37,7 @@ import { progress, type GameState } from './gameState';
 import type { Interactable, Interactions } from './interactions';
 import type { Rng } from './rng';
 import { recordRiddle } from './stats';
+import { openBalanceBoard } from '../ui/puzzleBoards';
 
 const STONE_LEVEL = 5;
 const CLOUD_COLORS: Record<CloudColor, number> = { red: 0xe84a4a, orange: 0xf0943c, yellow: 0xf4d83c, green: 0x5ac85a, blue: 0x4a8ae8, violet: 0x9a5ad8 };
@@ -65,8 +63,6 @@ export class SkySanctuaryLife {
   private readonly talks: Record<'stone' | 'stone5' | 'egg' | 'balance', Interactable>;
   private lastCloud: CloudColor | null = null;
   private gateLevel = 0;
-  private toggles = 0;
-  private hinted = false;
   private busy = false;
   private wobble = 0;
   private synced: string | undefined;
@@ -103,7 +99,7 @@ export class SkySanctuaryLife {
       stone: { id: 's5-stone', ...plan.stone, y, radius: 2.4, label: TEXT_READ_STONE, action: () => void this.readStone('stone') },
       stone5: { id: 's5-stone5', ...plan.stone5, y, radius: 2.4, label: TEXT_READ_STONE, action: () => void this.readStone('stone5') },
       egg: { id: 's5-egg', ...plan.nest, y, radius: 2.4, label: TEXT_TOUCH_EGG, action: () => void this.hatch() },
-      balance: { id: 's5-balance', ...plan.balancePanel, y, radius: 2, label: TEXT_BALANCE_PANEL, action: () => void this.balancePanel() },
+      balance: { id: 's5-balance', ...plan.balancePanel, y, radius: 2.4, label: TEXT_SOLVE, action: () => void this.openBalance() },
     };
     this.syncWorld();
     this.layoutBalance(0);
@@ -255,35 +251,28 @@ export class SkySanctuaryLife {
     this.gate.root.position.y = this.plan.floorY + this.gateLevel * GATE_RISE;
   }
 
-  private async balancePanel(): Promise<void> {
+  /** La balance se joue sur un plateau 2D ; celle du décor penche en même temps. */
+  private async openBalance(): Promise<void> {
     if (this.busy || this.step !== 'balance') return;
     this.busy = true;
     this.hooks.lock(true);
-    for (;;) {
-      const labels = BALANCE_WEIGHTS.map((w, i) => (this.scale.placed.has(i) ? TEXT_WEIGHT_ON : TEXT_WEIGHT_OFF).replace('{n}', String(w)));
-      const k = await this.hooks.choose(TEXT_BALANCE_CHOOSE, [...labels, TEXT_CLOSE], 'balance-weight');
-      if (k >= BALANCE_WEIGHTS.length) break;
-      this.scale.toggle(k);
-      this.toggles++;
-      audio.sfx('knock');
-      if (this.scale.solved) {
-        this.hooks.toast(TEXT_BALANCE_DONE);
-        audio.sfx('door');
-        this.hooks.burst(this.plan.gate.x, this.plan.floorY + 2, this.plan.gate.z, 0xfff3a0, 24);
-        this.next();
-        break;
-      }
-      this.hooks.toast(this.scale.diff < 0 ? TEXT_BALANCE_LIGHT : TEXT_BALANCE_HEAVY);
-      if (!this.hinted && this.toggles >= BALANCE_HINT_AFTER) {
-        this.hinted = true;
-        this.hooks.lock(false);
-        this.busy = false;
-        this.hooks.dialog.show({ speaker: NPC_NAMES.lumibloc, portrait: PORTRAITS.lumibloc, text: S5_BALANCE_HINT });
-        return;
-      }
-    }
+    const solved = await openBalanceBoard(this.hooks.uiLayer, {
+      puzzle: this.scale,
+      ...BOARD_BALANCE,
+      hint: S5_BALANCE_HINT,
+      hintAfter: BALANCE_HINT_AFTER,
+      timeScale: this.hooks.timeScale,
+      lightText: TEXT_BALANCE_LIGHT,
+      heavyText: TEXT_BALANCE_HEAVY,
+      onToggle: () => audio.sfx('knock'),
+    });
     this.hooks.lock(false);
     this.busy = false;
+    if (!solved) return;
+    this.hooks.toast(TEXT_BALANCE_DONE);
+    audio.sfx('door');
+    this.hooks.burst(this.plan.gate.x, this.plan.floorY + 2, this.plan.gate.z, 0xfff3a0, 24);
+    this.next();
   }
 
   // ---------- Éclosion ----------

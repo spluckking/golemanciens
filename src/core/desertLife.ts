@@ -121,7 +121,7 @@ export class DesertLife extends WorldLife {
   }
 
   protected override updateChapter(dt: number, hero: HeroState, playing: boolean): void {
-    this.temple.update(dt, hero, playing);
+    this.temple.update(dt);
     if (!playing) return;
     this.quests.update(dt, hero, playing);
     this.arena.update(dt);

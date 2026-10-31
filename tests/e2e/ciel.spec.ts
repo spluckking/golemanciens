@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { GRAND_CANAL_PATH, grandGrid } from '../../src/quests/canals';
+import { GRAND_SLIDE_ROOM, solveSlide } from '../../src/quests/frostPuzzles';
 import { answerShown, interactAt, playFight, settle, talkTo, waitReady } from './helpers';
 
 type P = { x: number; z: number };
@@ -58,7 +60,7 @@ test('sanctuaire des Vents : pierre, nuages arc-en-ciel (chute et erreur), balan
   await expect.poll(async () => (await sky(page)).step).toBe('balance');
 
   // La balance : 5, puis 2 (pas assez), puis 1 : 8 de chaque côté.
-  await interactAt(page, plan.balancePanel.x, plan.balancePanel.z + 0.5, 'Poser les poids');
+  await interactAt(page, plan.balancePanel.x, plan.balancePanel.z + 0.5, 'Résoudre');
   await page.getByTestId('balance-weight-3').tap();
   await page.getByTestId('balance-weight-1').tap();
   await expect.poll(async () => (await sky(page)).right).toBe(7);
@@ -117,6 +119,22 @@ test('Village des Nuages : cristaux de vent, phare, jardin, lettre au gardien de
   expect(errors).toEqual([]);
 });
 
+/** Résout la grande énigme qui suit la 4e, la 8e ou la 12e étoile. */
+async function grandBoard(page: Page, lit: number): Promise<void> {
+  await page.getByTestId('stars-board-0').tap();
+  if (lit === 3) {
+    const grid = grandGrid();
+    const goal = grandGrid(true);
+    for (const [x, y] of GRAND_CANAL_PATH) {
+      for (let t = (goal[y][x].rot - grid[y][x].rot + 4) % 4; t > 0; t--) await page.getByTestId(`canal-${x}-${y}`).tap();
+    }
+  } else if (lit === 7) {
+    for (const [i, turns] of [[0, 3], [1, 1], [2, 1]]) for (let t = 0; t < turns; t++) await page.getByTestId(`mirror-${i}`).tap();
+  } else {
+    for (const d of solveSlide(GRAND_SLIDE_ROOM.start, GRAND_SLIDE_ROOM)!) await page.getByTestId(`dpad-${d}`).tap();
+  }
+}
+
 test('Les plumes noires, le Griffon, puis l’Épreuve des Étoiles à l’Académie et la naissance du Galaxie', async ({ page }) => {
   test.setTimeout(420_000);
   const errors: string[] = [];
@@ -157,6 +175,10 @@ test('Les plumes noires, le Griffon, puis l’Épreuve des Étoiles à l’Acad�
   for (let lit = 1; lit < 12; lit++) {
     await answerShown(page, true);
     if (lit === 3 || lit === 7) await page.getByTestId('stars-cheer-ok').tap();
+    if (lit % 4 === 3) {
+      await grandBoard(page, lit);
+      if (lit < 11) await page.getByTestId('stars-menu-0').tap();
+    }
   }
   await page.getByTestId('stars-end-ok').tap();
   // Garantie : aucun golem au stade 4, Lumibloc donne les objets manquants.

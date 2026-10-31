@@ -11,9 +11,17 @@ const STEP: Record<Dir, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], 
  * jusqu'à un obstacle (bloc ou mur). La sortie est une ouverture du mur nord, au-dessus de la
  * colonne `exit` : glisser vers le nord dans cette colonne fait sortir de la salle.
  */
-export const SLIDE_ROOM = {
+export interface SlideRoom {
+  size: number;
+  start: [number, number];
+  exit: number;
+  rocks: [number, number][];
+  hint: Dir;
+}
+
+export const SLIDE_ROOM: SlideRoom = {
   size: 6,
-  start: [0, 5] as [number, number],
+  start: [0, 5],
   exit: 4,
   rocks: [
     [1, 1],
@@ -21,14 +29,23 @@ export const SLIDE_ROOM = {
     [1, 4],
     [4, 2],
     [2, 3],
-  ] as [number, number][],
+  ],
   /** Première glissade de la solution, montrée par la flèche d'aide. */
-  hint: 'E' as Dir,
+  hint: 'E',
+};
+
+/** Épreuve des Étoiles : une salle de 8 × 8, la solution demande 8 glissades (vérifié par test). */
+export const GRAND_SLIDE_ROOM: SlideRoom = {
+  size: 8,
+  start: [0, 7],
+  exit: 6,
+  rocks: [[3, 1], [3, 0], [7, 0], [0, 4], [4, 6], [2, 5], [5, 6], [3, 4], [1, 0], [4, 7]],
+  hint: 'E',
 };
 
 /** Case d'arrivée d'une glissade, ou « exit » si le héros sort par l'ouverture nord. */
-export function slide(from: [number, number], dir: Dir): [number, number] | 'exit' {
-  const { size, rocks, exit } = SLIDE_ROOM;
+export function slide(from: [number, number], dir: Dir, room: SlideRoom = SLIDE_ROOM): [number, number] | 'exit' {
+  const { size, rocks, exit } = room;
   let [x, y] = from;
   const [dx, dy] = STEP[dir];
   for (;;) {
@@ -43,7 +60,7 @@ export function slide(from: [number, number], dir: Dir): [number, number] | 'exi
 }
 
 /** Plus court chemin (parcours en largeur) : la liste des glissades jusqu'à la sortie, ou null. */
-export function solveSlide(from: [number, number] = SLIDE_ROOM.start): Dir[] | null {
+export function solveSlide(from: [number, number] = SLIDE_ROOM.start, room: SlideRoom = SLIDE_ROOM): Dir[] | null {
   const key = (p: [number, number]): string => `${p[0]},${p[1]}`;
   const seen = new Map<string, Dir[]>([[key(from), []]]);
   const queue: [number, number][] = [from];
@@ -51,7 +68,7 @@ export function solveSlide(from: [number, number] = SLIDE_ROOM.start): Dir[] | n
     const p = queue.shift()!;
     const path = seen.get(key(p))!;
     for (const d of ['N', 'E', 'S', 'W'] as const) {
-      const to = slide(p, d);
+      const to = slide(p, d, room);
       if (to === 'exit') return [...path, d];
       if (seen.has(key(to))) continue;
       seen.set(key(to), [...path, d]);
@@ -62,14 +79,18 @@ export function solveSlide(from: [number, number] = SLIDE_ROOM.start): Dir[] | n
 }
 
 export class SlidePuzzle {
-  pos: [number, number] = [...SLIDE_ROOM.start];
+  pos: [number, number];
   out = false;
   slides = 0;
+
+  constructor(readonly room: SlideRoom = SLIDE_ROOM) {
+    this.pos = [...room.start];
+  }
 
   /** Une glissade ; renvoie la case d'arrivée (ou « exit »). */
   move(dir: Dir): [number, number] | 'exit' {
     if (this.out) return 'exit';
-    const to = slide(this.pos, dir);
+    const to = slide(this.pos, dir, this.room);
     this.slides++;
     if (to === 'exit') this.out = true;
     else this.pos = to;
@@ -78,7 +99,7 @@ export class SlidePuzzle {
 
   reset(): void {
     if (this.out) return;
-    this.pos = [...SLIDE_ROOM.start];
+    this.pos = [...this.room.start];
   }
 }
 

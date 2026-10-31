@@ -44,20 +44,49 @@ export function startGrid(): Piece[][] {
   ];
 }
 
+/** Grande grille de l'Épreuve des Étoiles (5 × 4) : le chemin de la solution, case par case. */
+export const GRAND_CANAL_PATH: readonly [number, number][] = [[0, 1], [1, 1], [1, 2], [1, 3], [2, 3], [3, 3], [3, 2], [3, 1], [3, 0], [4, 0], [4, 1]];
+export const GRAND_CANAL_ROW = 1;
+
+/** Morceau qui relie deux côtés. */
+function pieceFor(a: Side, b: Side): Piece {
+  const kind: PieceKind = OPPOSITE[a] === b ? 'straight' : 'corner';
+  for (let rot = 0; rot < 4; rot++) {
+    const [p, q] = openings({ kind, rot });
+    if ((p === a && q === b) || (p === b && q === a)) return { kind, rot };
+  }
+  throw new Error(`Morceau impossible : ${a} ${b}`);
+}
+
+/** La grande grille : résolue, ou mélangée (chaque morceau du chemin à 1 à 3 quarts de tour de sa place). */
+export function grandGrid(solved = false): Piece[][] {
+  const side = (from: [number, number], to: [number, number]): Side => (to[0] > from[0] ? 'E' : to[0] < from[0] ? 'W' : to[1] > from[1] ? 'S' : 'N');
+  const grid: Piece[][] = Array.from({ length: 4 }, (_, y) => Array.from({ length: 5 }, (_u, x) => ({ kind: (x + y) % 2 ? 'corner' : 'straight', rot: (x * 3 + y) % 4 }) as Piece));
+  GRAND_CANAL_PATH.forEach((cell, i) => {
+    const before: Side = i === 0 ? 'W' : side(cell, GRAND_CANAL_PATH[i - 1]);
+    const after: Side = i === GRAND_CANAL_PATH.length - 1 ? 'E' : side(cell, GRAND_CANAL_PATH[i + 1]);
+    const p = pieceFor(before, after);
+    grid[cell[1]][cell[0]] = solved ? p : { ...p, rot: (p.rot + 1 + i % 3) % 4 };
+  });
+  return grid;
+}
+
 /** Trajet de l'eau : les cases mouillées, dans l'ordre ; arrived = l'eau sort vers la roue. */
-export function flow(grid: Piece[][]): { wet: [number, number][]; arrived: boolean } {
+export function flow(grid: Piece[][], inRow = CANAL_IN_ROW, outRow = CANAL_OUT_ROW): { wet: [number, number][]; arrived: boolean } {
+  const rows = grid.length;
+  const cols = grid[0].length;
   const wet: [number, number][] = [];
   let x = 0;
-  let y = CANAL_IN_ROW;
+  let y = inRow;
   let from: Side = 'W';
-  for (let guard = 0; guard < CANAL_COLS * CANAL_ROWS + 1; guard++) {
-    if (x < 0 || y < 0 || x >= CANAL_COLS || y >= CANAL_ROWS) break;
+  for (let guard = 0; guard < cols * rows + 1; guard++) {
+    if (x < 0 || y < 0 || x >= cols || y >= rows) break;
     const [a, b] = openings(grid[y][x]);
     if (a !== from && b !== from) break;
     if (wet.some(([wx, wy]) => wx === x && wy === y)) break;
     wet.push([x, y]);
     const out: Side = a === from ? b : a;
-    if (x === CANAL_COLS - 1 && y === CANAL_OUT_ROW && out === 'E') return { wet, arrived: true };
+    if (x === cols - 1 && y === outRow && out === 'E') return { wet, arrived: true };
     const [dx, dy] = STEP[out];
     x += dx;
     y += dy;
@@ -68,11 +97,19 @@ export function flow(grid: Piece[][]): { wet: [number, number][]; arrived: boole
 
 /** État de l'énigme : la grille, les rotations faites, résolue ou non. */
 export class CanalPuzzle {
-  grid = startGrid();
+  grid: Piece[][];
   turns = 0;
 
+  constructor(
+    private readonly make: () => Piece[][] = startGrid,
+    readonly inRow = CANAL_IN_ROW,
+    readonly outRow = CANAL_OUT_ROW,
+  ) {
+    this.grid = make();
+  }
+
   get solved(): boolean {
-    return flow(this.grid).arrived;
+    return flow(this.grid, this.inRow, this.outRow).arrived;
   }
 
   /** Toucher un morceau : un quart de tour (rien une fois l'eau arrivée). */
@@ -87,6 +124,6 @@ export class CanalPuzzle {
   /** Bouton « Recommencer » : la grille revient à son état de départ. */
   reset(): void {
     if (this.solved) return;
-    this.grid = startGrid();
+    this.grid = this.make();
   }
 }

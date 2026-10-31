@@ -165,7 +165,7 @@ export class GivreLife extends WorldLife {
   }
 
   protected override updateChapter(dt: number, hero: HeroState, playing: boolean): void {
-    this.sanctuary.update(dt, hero, playing);
+    this.sanctuary.update(dt, hero);
     this.updateSnow(dt, hero);
     if (!playing) return;
     this.quests.update(dt, hero, playing);

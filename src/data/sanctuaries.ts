@@ -69,7 +69,7 @@ export const S3_MIRROR_HINT = 'Un miroir renvoie la lumière comme un ballon qui
 export const TEXT_PUSH = 'Pousser';
 export const TEXT_PUSH_STUCK = 'Le bloc ne bouge pas : quelque chose le bloque.';
 export const TEXT_PUSH_DONE = 'Le bloc est sur la dalle : une porte s’ouvre !';
-export const TEXT_MIRROR = 'Résoudre';
+export const TEXT_SOLVE = 'Résoudre';
 export const TEXT_MIRRORS_DONE = 'Le rayon touche le cristal : la porte s’ouvre !';
 export const TEXT_SYMBOL_WRONG = 'Ce n’est pas ça. Regarde bien la suite !';
 export const TEXT_SYMBOL_RIGHT = 'Bravo ! Voici une autre suite.';
@@ -85,9 +85,9 @@ export const S4_MILL_RULE = "Chaque roue tourne dans l'autre sens que sa voisine
 export const S4_MILL_HINT = 'Si la première roue tourne à droite, la suivante tourne à gauche.';
 /** Textes d'interface nouveaux (à valider). */
 export const TEXT_SLIDE_DONE = 'Tu es sorti de la salle de glace !';
-export const TEXT_SLIDE_HINT = 'Le sol glisse ! Pousse ton pouce dans une direction : tu iras tout droit jusqu’au prochain bloc.';
+export const TEXT_SLIDE_HINT = 'Le sol glisse ! Touche une flèche : tu iras tout droit jusqu’au prochain bloc.';
 export const TEXT_MEMORY_WATCH = 'Regarde bien l’ordre des dalles…';
-export const TEXT_MEMORY_GO = 'À toi ! Marche sur les dalles dans le même ordre.';
+export const TEXT_MEMORY_GO = 'À toi ! Touche les dalles dans le même ordre.';
 export const TEXT_MEMORY_WRONG = 'Oups ! Regarde encore une fois.';
 export const TEXT_MEMORY_EASIER = 'On essaie avec 3 dalles seulement.';
 export const TEXT_MEMORY_DONE = 'Bravo, tu t’en es souvenu ! La glace fond.';
@@ -130,3 +130,16 @@ export const TEXT_BALANCE_HEAVY = 'Trop lourd ! La balance penche de l’autre c
 export const TEXT_BALANCE_DONE = 'La balance est droite : la herse se lève !';
 /** Poses de poids sans succès avant l'aide de Lumibloc. */
 export const BALANCE_HINT_AFTER = 6;
+
+/** Plateaux 2D des énigmes : titres et consignes (à valider par le parent). */
+export const BOARD_TILES = { title: 'Les dalles fleuries', help: 'Touche les dalles dans l’ordre de la fresque.' };
+export const BOARD_LEVERS = { title: 'Les trois leviers', help: 'Abaisse les leviers dans l’ordre de l’inscription.' };
+export const BOARD_CANALS = { title: 'Les canaux d’eau', help: 'Touche les rigoles pour les tourner : l’eau doit aller jusqu’à la roue.' };
+export const BOARD_PUSH = { title: 'Le bloc de grès', help: 'Pousse le bloc avec les flèches jusque sur la dalle dorée.' };
+export const BOARD_MIRRORS = { title: 'Les miroirs du soleil', help: 'Touche un miroir pour le faire tourner. Envoie le rayon sur le cristal !' };
+export const BOARD_SYMBOLS = { title: 'Les dalles-symboles', help: 'Trouve ce qui remplace le point d’interrogation.' };
+export const BOARD_SLIDE = { title: 'La glissade', help: 'Touche une flèche : tu glisses tout droit jusqu’au prochain bloc. Atteins la porte !' };
+export const BOARD_MEMORY = { title: 'La mémoire de glace', help: 'Regarde l’ordre des dalles, puis touche-les dans le même ordre.' };
+export const BOARD_MILL = { title: 'Le moulin gelé', help: 'Touche un axe pour y poser une roue, puis tourne la manivelle.' };
+export const BOARD_BALANCE = { title: 'La balance', help: 'Le plateau de gauche porte 8. Touche les poids pour équilibrer la balance.' };
+export const TEXT_SLIDE_FIRST = 'Essaie d’abord vers la droite.';

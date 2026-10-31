@@ -59,11 +59,9 @@ test('chapitre 1 de bout en bout', async ({ page }) => {
   await interactAt(page, s.stone.x - 1.6, s.stone.z, 'Lire', -Math.PI / 2);
   await answerShown(page, true);
   await expect.poll(() => page.evaluate(() => window.__game!.sanctuary().step)).toBe('tiles');
-  for (const c of ['red', 'yellow', 'blue']) {
-    const t = s.tiles.find((x) => x.color === c)!;
-    await page.evaluate(([x, z]) => window.__game!.teleport(x, z), [t.x, t.z]);
-    await page.waitForTimeout(250);
-  }
+  const middle = s.tiles[2];
+  await interactAt(page, middle.x, middle.z, 'Résoudre', -Math.PI / 2);
+  for (const c of ['red', 'yellow', 'blue']) await page.getByTestId(`tile-${c}`).tap();
   await expect.poll(() => page.evaluate(() => window.__game!.sanctuary().step)).toBe('open');
   await interactAt(page, s.nest.x - 1.8, s.nest.z, 'Toucher', -Math.PI / 2);
   await page.getByTestId('choose-pierre').tap({ timeout: 10_000 });

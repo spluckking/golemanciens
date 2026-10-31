@@ -197,3 +197,10 @@ Textes nouveaux :
 
 - Titres de fin de combat : « Victoire ! » et « Tes golems sont fatigués… ».
 - Plateau 2D : « Les miroirs du soleil », « Touche un miroir pour le faire tourner. Envoie le rayon sur le cristal ! », « Recommencer », « Retour », et le bouton « Résoudre » dans le temple.
+
+## Plateaux 2D des sanctuaires et grandes énigmes
+
+- Toutes les énigmes du monde se jouent sur un plateau 2D, sauf les nuages arc-en-ciel (sauts) ; CONTENU.md les décrit dans le décor, les règles et solutions restent les mêmes. Le bouton est « Résoudre ».
+- Titres et consignes des plateaux : voir BOARD_* dans src/data/sanctuaries.ts.
+- Glissade : « Essaie d’abord vers la droite. » ; aide reformulée « Le sol glisse ! Touche une flèche… » ; mémoire : « Touche les dalles dans le même ordre. »
+- Épreuve des Étoiles : 3 grandes énigmes après la 4e, la 8e et la 12e étoile (grand canal 5×4, trois miroirs, grande glissade 8×8 en 8 coups) ; les 3 énigmes viennent maintenant du générateur, niveau 6. Textes dans src/core/starCeremony.ts.

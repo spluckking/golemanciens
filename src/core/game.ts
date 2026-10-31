@@ -648,6 +648,7 @@ export class Game {
       playOutro: (id) => this.playOutro(id),
       toast: (text) => this.hud.showToast(text, 4),
       save: () => void this.save(),
+      timeScale: this.timeScale,
     });
     audio.duck(false);
     this.paused = false;

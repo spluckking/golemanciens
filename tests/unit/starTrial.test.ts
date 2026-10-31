@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { createGameState, createGolem } from '../../src/core/gameState';
 import { createRng } from '../../src/core/rng';
 import { GALAXY_MULT } from '../../src/data/balance';
-import { CONTENT } from '../../src/data/content';
 import { GOLEMS, unlockedAttacks } from '../../src/data/creatures';
 import { STAR_COUNT, STAR_PATTERN, StarTrial, galaxyCandidates, guaranteeStage4, makeGalaxy } from '../../src/quests/starTrial';
 
@@ -17,7 +16,7 @@ describe('Épreuve des Étoiles (révision 1.7)', () => {
 
   it('une erreur n’éteint rien et propose une autre question du même genre ; Lumibloc encourage à 4 et 8', () => {
     const state = createGameState();
-    const trial = new StarTrial(state.starTrial, state, CONTENT.riddles, createRng(3));
+    const trial = new StarTrial(state.starTrial, state, createRng(3));
     const cheers: string[] = [];
     let mistakes = 0;
     for (let step = 0; !trial.done && step < 100; step++) {
@@ -42,9 +41,9 @@ describe('Épreuve des Étoiles (révision 1.7)', () => {
 
   it('les étoiles allumées sont enregistrées : on reprend où l’on s’était arrêté', () => {
     const state = createGameState();
-    const a = new StarTrial(state.starTrial, state, CONTENT.riddles, createRng(1));
+    const a = new StarTrial(state.starTrial, state, createRng(1));
     for (let i = 0; i < 5; i++) a.answer(a.view.correctIndex);
-    const b = new StarTrial(state.starTrial, state, CONTENT.riddles, createRng(2));
+    const b = new StarTrial(state.starTrial, state, createRng(2));
     expect(b.lit).toBe(5);
     expect(b.kind).toBe(STAR_PATTERN[5]);
   });

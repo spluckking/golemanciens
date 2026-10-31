@@ -330,6 +330,7 @@ Un court texte de fin de phase, raconté par une cinématique (§ 9.4), avec l'�
 
 - **Pierre-énigme** : une énigme de la banque, au niveau indiqué. En cas d'erreur, la pierre « tremble », l'explication s'affiche et **une autre énigme** du même niveau est proposée. Ça ne bloque jamais.
 - **Énigmes dans le monde** (dalles, leviers, blocs à pousser, mémoire, glissade) : définies dans `CONTENU.md`. Un bouton « Recommencer » remet l'énigme à zéro. Après 3 échecs, un indice de Lumibloc s'affiche.
+- **Plateaux 2D** : les énigmes du monde s'ouvrent avec « Résoudre » sur un plateau vu de dessus (`src/ui/puzzleBoards.ts`), sans caméra ni golem ; les nuages arc-en-ciel restent en 3D. L'Épreuve des Étoiles ajoute 3 grandes énigmes, après les 4e, 8e et 12e étoiles.
 - **Énigmes d'ingénierie** (révision 1.6) : à partir de la Forêt, chaque sanctuaire contient un petit mécanisme déjà posé dans le décor, que l'enfant manipule pour ouvrir le passage : **canaux d'eau** (Forêt), **miroirs et lumière** (Désert), **engrenages** (Pics de Givre), **balance à contrepoids** (Île Céleste). On tourne, on pose ou on choisit des pièces prévues ; ce n'est pas de la construction libre (§ 16). Chaque mécanisme montre son effet à l'écran (l'eau coule, le rayon avance, les roues tournent, la herse monte). Leur solvabilité et leur nombre de coups sont vérifiés par test.
 
 ### 10.2 Quêtes villageoises

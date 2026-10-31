@@ -93,7 +93,7 @@ export class PrairieLife extends WorldLife {
   }
 
   protected override updateChapter(dt: number, hero: HeroState, playing: boolean, controllable: boolean): void {
-    this.sanctuary.update(dt, hero, controllable);
+    this.sanctuary.update(dt);
     if (!playing) return;
     this.home.update(dt, hero);
     const boss = this.layout.marsh.boss;

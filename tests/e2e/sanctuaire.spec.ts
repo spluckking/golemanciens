@@ -19,9 +19,12 @@ async function answerRiddle(page: Page, correct: boolean): Promise<void> {
   await page.locator('.choice', { hasText: formatText(target, NAME) }).first().tap();
 }
 
-async function walkOn(page: Page, x: number, z: number): Promise<void> {
-  await page.evaluate(([px, pz]) => window.__game!.teleport(px, pz, -Math.PI / 2), [x, z]);
-  await page.waitForTimeout(250);
+/** Ouvre le plateau des dalles fleuries. */
+async function openTiles(page: Page, t: { x: number; z: number }): Promise<void> {
+  await page.evaluate(([x, z]) => window.__game!.teleport(x, z, -Math.PI / 2), [t.x, t.z]);
+  await expect(page.getByTestId('btn-interact')).toContainText('Résoudre', { timeout: 5_000 });
+  await page.getByTestId('btn-interact').tap({ force: true });
+  await expect(page.getByTestId('tile-board')).toBeVisible();
 }
 
 test('sanctuaire S1 : pierre-énigme, dalles fleuries, éclosion et choix du golem', async ({ page }) => {
@@ -49,13 +52,13 @@ test('sanctuaire S1 : pierre-énigme, dalles fleuries, éclosion et choix du gol
   await expect(page.getByTestId('btn-jump')).toBeVisible();
 
   // 2. Les dalles : une erreur éteint tout ; puis rouge, jaune, bleue.
-  const tile = (c: string) => s.tiles.find((t) => t.color === c)!;
-  await walkOn(page, tile('red').x, tile('red').z);
+  await openTiles(page, s.tiles[2]);
+  await page.getByTestId('tile-red').tap();
   await expect.poll(() => page.evaluate(() => window.__game!.sanctuary().tiles.find((t) => t.color === 'red')!.lit)).toBe(true);
-  await walkOn(page, tile('violet').x, tile('violet').z);
-  await expect(page.getByTestId('toast')).toContainText('On recommence');
+  await page.getByTestId('tile-violet').tap();
+  await expect(page.getByTestId('tile-message')).toContainText('On recommence');
   expect((await page.evaluate(() => window.__game!.sanctuary())).tiles.every((t) => !t.lit)).toBe(true);
-  for (const c of ['red', 'yellow', 'blue']) await walkOn(page, tile(c).x, tile(c).z);
+  for (const c of ['red', 'yellow', 'blue']) await page.getByTestId('tile-' + c).tap();
   await expect.poll(() => page.evaluate(() => window.__game!.sanctuary().step)).toBe('open');
   await expect(page.getByTestId('toast')).toContainText('la porte du sanctuaire s’ouvre');
 
@@ -87,20 +90,14 @@ test('sanctuaire S1 : pierre-énigme, dalles fleuries, éclosion et choix du gol
 test('l’aide de Lumibloc arrive au 3e échec, et « Recommencer » éteint les dalles', async ({ page }) => {
   await open(page, '&sanctuary=tiles');
   const s = await page.evaluate(() => window.__game!.sanctuary());
-  const tile = (c: string) => s.tiles.find((t) => t.color === c)!;
-  for (let i = 0; i < 3; i++) {
-    await walkOn(page, tile('white').x, tile('white').z);
-    await walkOn(page, 107.5, 100.5);
-  }
-  await expect(page.getByTestId('dialog-text')).toContainText('Regarde bien la fresque, de gauche à droite');
+  await openTiles(page, s.tiles[2]);
+  for (let i = 0; i < 3; i++) await page.getByTestId('tile-white').tap();
+  await expect(page.getByTestId('tile-hint')).toContainText('Regarde bien la fresque, de gauche à droite');
 
-  await walkOn(page, tile('red').x, tile('red').z);
-  await walkOn(page, tile('yellow').x, tile('yellow').z);
-  await page.evaluate(() => window.__game!.teleport(113.5, 100.5, -Math.PI / 2));
-  const interact = page.getByTestId('btn-interact');
-  await expect(interact).toContainText('Recommencer', { timeout: 5_000 });
+  await page.getByTestId('tile-red').tap();
+  await page.getByTestId('tile-yellow').tap();
   expect((await page.evaluate(() => window.__game!.sanctuary())).tiles.filter((t) => t.lit)).toHaveLength(2);
-  await interact.tap();
+  await page.getByTestId('tile-restart').tap();
   await expect.poll(() => page.evaluate(() => window.__game!.sanctuary().tiles.every((t) => !t.lit))).toBe(true);
 });
 

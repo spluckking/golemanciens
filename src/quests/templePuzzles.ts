@@ -93,19 +93,38 @@ export function minPushes(start: [number, number] = PUSH_ROOM.block, hero: [numb
  * Chaque miroir renvoie la lumière là où il regarde (4 positions : nord, est, sud, ouest).
  * Le cristal de la porte est en (4, 0).
  */
-export const MIRROR_ROOM = {
+export interface MirrorRoom {
+  size: number;
+  entryRow: number;
+  mirrors: readonly { x: number; y: number; start: Dir }[];
+  crystal: [number, number];
+}
+
+export const MIRROR_ROOM: MirrorRoom = {
   size: 5,
   entryRow: 2,
   mirrors: [
-    { x: 2, y: 2, start: 'S' as Dir },
-    { x: 2, y: 0, start: 'W' as Dir },
+    { x: 2, y: 2, start: 'S' },
+    { x: 2, y: 0, start: 'W' },
   ],
-  crystal: [4, 0] as [number, number],
+  crystal: [4, 0],
+};
+
+/** Épreuve des Étoiles : une salle plus grande, trois miroirs à régler. */
+export const GRAND_MIRROR_ROOM: MirrorRoom = {
+  size: 6,
+  entryRow: 3,
+  mirrors: [
+    { x: 3, y: 3, start: 'E' },
+    { x: 3, y: 1, start: 'S' },
+    { x: 1, y: 1, start: 'E' },
+  ],
+  crystal: [1, 5],
 };
 
 /** Trajet du rayon : les cases traversées (dans l'ordre) et s'il atteint le cristal. */
-export function traceRay(facing: readonly Dir[]): { path: [number, number][]; lit: boolean } {
-  const { size, entryRow, mirrors, crystal } = MIRROR_ROOM;
+export function traceRay(facing: readonly Dir[], room: MirrorRoom = MIRROR_ROOM): { path: [number, number][]; lit: boolean } {
+  const { size, entryRow, mirrors, crystal } = room;
   const path: [number, number][] = [];
   let x = 0;
   let y = entryRow;
@@ -124,11 +143,15 @@ export function traceRay(facing: readonly Dir[]): { path: [number, number][]; li
 }
 
 export class MirrorPuzzle {
-  facing: Dir[] = MIRROR_ROOM.mirrors.map((m) => m.start);
+  facing: Dir[];
   turns = 0;
 
+  constructor(readonly room: MirrorRoom = MIRROR_ROOM) {
+    this.facing = room.mirrors.map((m) => m.start);
+  }
+
   get solved(): boolean {
-    return traceRay(this.facing).lit;
+    return traceRay(this.facing, this.room).lit;
   }
 
   /** Toucher un miroir : un quart de tour dans le sens des aiguilles d'une montre. */
@@ -141,7 +164,7 @@ export class MirrorPuzzle {
 
   reset(): void {
     if (this.solved) return;
-    this.facing = MIRROR_ROOM.mirrors.map((m) => m.start);
+    this.facing = this.room.mirrors.map((m) => m.start);
   }
 }
 

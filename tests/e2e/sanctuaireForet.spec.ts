@@ -21,17 +21,18 @@ test('sanctuaire de Mousse : pierre, leviers, canaux d’eau, deuxième pierre, 
   await expect.poll(() => step(page)).toBe('levers');
 
   // Leviers : une erreur (la lune d'abord), puis le bon ordre soleil, lune, étoile.
-  const lever = (sym: string) => s.levers.find((l) => l.symbol === sym)!;
-  await use(page, lever('moon').x, lever('moon').z, 'Abaisser');
-  await expect(page.getByTestId('toast')).toContainText('Les leviers remontent');
-  for (const sym of ['sun', 'moon', 'star']) await use(page, lever(sym).x, lever(sym).z, 'Abaisser');
+  const lever = s.levers[1];
+  await use(page, lever.x, lever.z, 'Résoudre');
+  await page.getByTestId('lever-moon').tap();
+  await expect(page.getByTestId('lever-message')).toContainText('Les leviers remontent');
+  for (const sym of ['sun', 'moon', 'star']) await page.getByTestId(`lever-${sym}`).tap();
   await expect.poll(() => step(page)).toBe('canals');
 
   // Canaux : on tourne les six morceaux du chemin ; l'eau arrive à la roue.
-  for (const [gx, gy] of [[0, 1], [1, 1], [1, 0], [2, 0], [3, 0], [3, 1]]) {
-    const p = s.pieces.find((q) => q.gx === gx && q.gy === gy)!;
-    await use(page, p.x, p.z, 'Tourner');
-  }
+  await expect(page.getByTestId('btn-interact')).toContainText('Résoudre', { timeout: 15_000 }).catch(() => undefined);
+  const canal = await page.evaluate(() => window.__game!.interactionAt('s2-canals'));
+  await use(page, canal!.x, canal!.z, 'Résoudre');
+  for (const [gx, gy] of [[0, 1], [1, 1], [1, 0], [2, 0], [3, 0], [3, 1]]) await page.getByTestId(`canal-${gx}-${gy}`).tap();
   await expect.poll(() => step(page)).toBe('stone2');
   expect((await page.evaluate(() => window.__game!.forestSanctuary())).wet).toBe(6);
 
